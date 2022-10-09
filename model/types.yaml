@@ -1,0 +1,18 @@
+types:
+  - kind: Resource
+    name: World
+    spec: WorldSpec
+    apimethods:
+      - apimethod: GET
+      - apimethod: PUT
+      - apimethod: POST
+      - apimethod: DELETE
+  - kind: Struct
+    name: WorldSpec
+    props:
+      - prop: name
+        type: string
+      - prop: description
+        type: string
+      - prop: list
+        type: "[]string"
