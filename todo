@@ -1,0 +1,5 @@
+Store:
+  - mgen
+    - add json tags for props @done
+    - move serialization to ObjectWrapper?
+    - 

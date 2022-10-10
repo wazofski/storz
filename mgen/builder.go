@@ -15,7 +15,7 @@ func Generate(path string, dest string) error {
 	endl(&b)
 
 	imports := []string{
-		"log",
+		// "log",
 		"encoding/json",
 		"github.com/wazofski/store",
 	}
@@ -66,9 +66,8 @@ func compileStruct(str _Struct) string {
 	methods := []string{}
 	fields := []string{}
 	for _, p := range str.Props {
-		pp := capitalize(p.Prop)
-		methods = append(methods, fmt.Sprintf("%s() %s", pp, p.Type))
-		methods = append(methods, fmt.Sprintf("Set%s(v %s)", pp, p.Type))
+		methods = append(methods, fmt.Sprintf("%s() %s", p.Prop, p.Type))
+		methods = append(methods, fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
 		fields = append(fields, fmt.Sprintf("%s %s", p.Prop, p.Type))
 	}
 
@@ -85,11 +84,11 @@ func compileResource(str _Resource) string {
 	fields := []string{"store.ObjectWrapper"}
 	if len(str.Spec) > 0 {
 		methods = append(methods, fmt.Sprintf("Spec() %s", str.Spec))
-		fields = append(fields, fmt.Sprintf("spec %s", str.Spec))
+		fields = append(fields, fmt.Sprintf("Spec %s", str.Spec))
 	}
 	if len(str.Status) > 0 {
 		methods = append(methods, fmt.Sprintf("Status() %s", str.Status))
-		fields = append(fields, fmt.Sprintf("status %s", str.Status))
+		fields = append(fields, fmt.Sprintf("Status %s", str.Status))
 	}
 	writeInterface(&b, str.Name, methods)
 	writeStruct(&b, str.Name, fields)
@@ -97,19 +96,19 @@ func compileResource(str _Resource) string {
 	lines := []string{"return o.ObjectWrapper.Metadata"}
 	writeFunction(&b,
 		"Metadata() store.Meta",
-		fmt.Sprintf("(o *%s%s)", str.Name, wrapperSuffix),
+		fmt.Sprintf("(o *%s%s)", wrapperPrefix, str.Name),
 		lines)
 
 	lines = []string{
-		"res, err := json.Marshal(*o)",
-		"if err != nil {",
-		"	log.Fatalln(err)",
-		"}",
+		"res, _ := json.MarshalIndent(*o, \"\", \"    \")",
+		// "if err != nil {",
+		// "	log.Fatalln(err)",
+		// "}",
 		"return res",
 	}
 	writeFunction(&b,
 		"Serialize() []byte",
-		fmt.Sprintf("(o *%s%s)", str.Name, wrapperSuffix),
+		fmt.Sprintf("(o *%s%s)", wrapperPrefix, str.Name),
 		lines)
 
 	return b.String()
@@ -124,44 +123,58 @@ func writeInterface(b *strings.Builder, name string, methods []string) {
 	endl(b)
 }
 
-const wrapperSuffix string = "Wrapper"
+const wrapperPrefix string = "_"
 const factorySuffix string = "Factory"
 
 func writeStruct(b *strings.Builder, name string, fields []string) {
-	write(b, fmt.Sprintf("type %s%s struct {", name, wrapperSuffix), 0)
+	write(b, fmt.Sprintf("type %s%s struct {", wrapperPrefix, name), 0)
 
 	for _, f := range fields {
-		write(b, f, 1)
+		tok := strings.Split(f, " ")
+		if len(tok) > 1 {
+			write(b,
+				fmt.Sprintf(
+					"%s%s %s %s",
+					tok[0],
+					wrapperPrefix,
+					tok[1],
+					fmt.Sprintf(
+						"`json:\"%s\"`",
+						strings.ToLower(tok[0]))), 1)
+		} else {
+			write(b, f, 1)
+		}
 	}
 
 	write(b, "}", 0)
 	endl(b)
 
 	lines := []string{
-		fmt.Sprintf("return &%s%s {", name, wrapperSuffix),
+		fmt.Sprintf("return &%s%s {", wrapperPrefix, name),
 	}
 
 	for _, f := range fields {
 		tok := strings.Split(f, " ")
 		nm := tok[0]
 		if strings.HasSuffix(nm, "ObjectWrapper") {
-			lines = append(lines, fmt.Sprintf("ObjectWrapper: store.ObjectWrapperFactory(\"%s\"),", name))
+			lines = append(lines,
+				fmt.Sprintf("ObjectWrapper: store.ObjectWrapperFactory(\"%s\"),", name))
 			continue
 		}
 		tp := tok[1]
-		pp := capitalize(nm)
-		lines = append(lines, fmt.Sprintf("%s: %s,", nm, typeDefault(tp)))
+		lines = append(lines,
+			fmt.Sprintf("%s%s: %s,", nm, wrapperPrefix, typeDefault(tp)))
 
 		writeFunction(b,
-			fmt.Sprintf("%s() %s", pp, tp),
-			fmt.Sprintf("(o *%s%s)", name, wrapperSuffix),
-			[]string{fmt.Sprintf("return o.%s", nm)})
+			fmt.Sprintf("%s() %s", nm, tp),
+			fmt.Sprintf("(o *%s%s)", wrapperPrefix, name),
+			[]string{fmt.Sprintf("return o.%s%s", nm, wrapperPrefix)})
 
 		if nm != "spec" && nm != "status" {
 			writeFunction(b,
-				fmt.Sprintf("Set%s(v %s)", pp, tp),
-				fmt.Sprintf("(o *%s%s)", name, wrapperSuffix),
-				[]string{fmt.Sprintf("o.%s = v", nm)})
+				fmt.Sprintf("Set%s(v %s)", nm, tp),
+				fmt.Sprintf("(o *%s%s)", wrapperPrefix, name),
+				[]string{fmt.Sprintf("o.%s%s = v", nm, wrapperPrefix)})
 		}
 	}
 

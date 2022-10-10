@@ -56,7 +56,7 @@ func loadModel(path string) (map[string]_Struct, map[string]_Resource) {
 			if m.Kind == "Struct" {
 				structs[m.Name] = _Struct{
 					Name:  m.Name,
-					Props: m.Props,
+					Props: capitalizeProps(m.Props),
 				}
 				continue
 			}
@@ -90,4 +90,16 @@ func readModel(path string) (*_Model, error) {
 	}
 
 	return &data, nil
+}
+
+func capitalizeProps(l []_Prop) []_Prop {
+	res := []_Prop{}
+	for _, p := range l {
+		res = append(res,
+			_Prop{
+				Prop: capitalize(p.Prop),
+				Type: p.Type,
+			})
+	}
+	return res
 }

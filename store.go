@@ -10,7 +10,7 @@ type Object interface {
 }
 
 type ObjectWrapper struct {
-	Metadata Meta
+	Metadata Meta `json:"metadata"`
 }
 
 type ObjectList []Object
@@ -23,23 +23,23 @@ type Meta interface {
 }
 
 type metaWrapper struct {
-	kind     ObjectKind
-	identity ObjectIdentity
+	Kind_     ObjectKind     `json:"kind"`
+	Identity_ ObjectIdentity `json:"identity"`
 }
 
 func (m *metaWrapper) Kind() ObjectKind {
-	return m.kind
+	return m.Kind_
 }
 
 func (m *metaWrapper) Identity() ObjectIdentity {
-	return m.identity
+	return m.Identity_
 }
 
 func ObjectWrapperFactory(kind ObjectKind) ObjectWrapper {
 	return ObjectWrapper{
 		Metadata: &metaWrapper{
-			kind:     kind,
-			identity: "",
+			Kind_:     kind,
+			Identity_: "",
 		},
 	}
 }
