@@ -89,32 +89,49 @@ func writeInterface(b *strings.Builder, name string, methods []string) {
 	endl(b)
 }
 
-func writeStruct(b *strings.Builder, name string, fields []string) {
-	const wrapperPrefix string = "Wrapper"
+const wrapperSuffix string = "Wrapper"
+const factorySuffix string = "Factory"
 
-	write(b, fmt.Sprintf("type %s%s struct {", name, wrapperPrefix), 0)
+func writeStruct(b *strings.Builder, name string, fields []string) {
+	write(b, fmt.Sprintf("type %s%s struct {", name, wrapperSuffix), 0)
+
 	for _, f := range fields {
 		write(b, f, 1)
 	}
+
 	write(b, "}", 0)
 	endl(b)
+
+	lines := []string{
+		fmt.Sprintf("return %s%s {", name, wrapperSuffix),
+	}
 
 	for _, f := range fields {
 		tok := strings.Split(f, " ")
 		nm := tok[0]
 		tp := tok[1]
 		pp := capitalize(nm)
+		lines = append(lines, fmt.Sprintf("%s: %s,", nm, typeDefault(tp)))
 
 		writeFunction(b,
 			fmt.Sprintf("%s() %s", pp, tp),
-			fmt.Sprintf("(o %s%s)", name, wrapperPrefix),
+			fmt.Sprintf("(o %s%s)", name, wrapperSuffix),
 			[]string{fmt.Sprintf("return o.%s", nm)})
 
-		writeFunction(b,
-			fmt.Sprintf("Set%s(v %s)", pp, tp),
-			fmt.Sprintf("(o %s%s)", name, wrapperPrefix),
-			[]string{fmt.Sprintf("o.%s = v", nm)})
+		if nm != "spec" && nm != "status" {
+			writeFunction(b,
+				fmt.Sprintf("Set%s(v %s)", pp, tp),
+				fmt.Sprintf("(o %s%s)", name, wrapperSuffix),
+				[]string{fmt.Sprintf("o.%s = v", nm)})
+		}
 	}
+
+	endl(b)
+
+	lines = append(lines, "}")
+	writeFunction(b,
+		fmt.Sprintf("%s%s() %s%s", name, factorySuffix, name, wrapperSuffix),
+		"", lines)
 }
 
 func writeFunction(
@@ -134,4 +151,28 @@ func writeFunction(
 
 	write(b, "}", 0)
 	endl(b)
+}
+
+func typeDefault(tp string) string {
+	if strings.HasPrefix(tp, "[]") {
+		return fmt.Sprintf("%s {}", tp)
+	}
+	if strings.HasPrefix(tp, "map") {
+		return fmt.Sprintf("make(%s)", tp)
+	}
+
+	if tp == "string" {
+		return "\"\""
+	}
+	if tp == "bool" {
+		return "false"
+	}
+	if tp == "int" {
+		return "0"
+	}
+	if tp == "float" {
+		return "0"
+	}
+
+	return fmt.Sprintf("%s%s()", tp, factorySuffix)
 }
