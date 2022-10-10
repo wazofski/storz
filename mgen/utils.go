@@ -1,4 +1,4 @@
-package codegen
+package mgen
 
 import (
 	"log"

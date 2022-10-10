@@ -1,4 +1,4 @@
-package codegen
+package mgen
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func ProcessModel(path string) error {
+func loadModel(path string) error {
 	yamls := findYamlFiles(path)
 	for _, y := range yamls {
 		err := readModel(y)
