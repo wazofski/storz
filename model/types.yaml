@@ -21,7 +21,7 @@ types:
       - prop: description
         type: string
       - prop: list
-        type: "[]string"
+        type: "[]NestedWorld"
   - kind: Struct
     name: NestedWorld
     props:

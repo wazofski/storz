@@ -44,6 +44,11 @@ var _ = Describe("mgen", func() {
 			world.Spec().Nested().SetAlive(true)
 			world.Spec().SetName("abc")
 			world.Status().SetDescription("qwe")
+			world.Status().SetList([]generated.NestedWorld{
+				generated.NestedWorldFactory(),
+				generated.NestedWorldFactory(),
+				generated.NestedWorldFactory(),
+			})
 
 			log.Println(string(world.Serialize()))
 		})
