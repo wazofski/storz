@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"encoding/json"
 	"log"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -38,7 +39,7 @@ var _ = Describe("mgen", func() {
 			Expect(world.Metadata().Kind()).To(Equal(store.ObjectKind("World")))
 		})
 
-		It("serialization", func() {
+		It("(de)serialization", func() {
 			world := generated.WorldFactory()
 			world.Spec().Nested().SetCounter(10)
 			world.Spec().Nested().SetAlive(true)
@@ -50,7 +51,18 @@ var _ = Describe("mgen", func() {
 				generated.NestedWorldFactory(),
 			})
 
-			log.Println(string(world.Serialize()))
+			data := world.Serialize()
+			log.Println(string(data))
+
+			newWorld := generated.WorldFactory()
+			err := json.Unmarshal(data, &newWorld)
+			Expect(err).To(BeNil())
+			Expect(newWorld.Spec().Nested().Alive()).To(BeTrue())
+			Expect(newWorld.Spec().Nested().Counter()).To(Equal(10))
+			Expect(newWorld.Spec().Name()).To(Equal("abc"))
+			Expect(newWorld.Status().Description()).To(Equal("qwe"))
+			Expect(len(newWorld.Status().List())).To(Equal(3))
+
 		})
 
 	})
