@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Generate(path string, dest string) string {
+func Generate(path string, dest string) error {
 	structs, resources := loadModel(path)
 
 	var b strings.Builder
@@ -18,7 +18,7 @@ func Generate(path string, dest string) string {
 	write(&b, compileStructs(structs), 0)
 	write(&b, compileResources(resources), 0)
 
-	return b.String()
+	return exportFile(dest+"/schema/", "objects.go", b.String())
 }
 
 func compileStructs(structs map[string]_Struct) string {
@@ -92,7 +92,7 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 
 	write(b, fmt.Sprintf("type %s%s struct {", name, wrapperPrefix), 0)
 	for _, f := range fields {
-		write(b, fmt.Sprintf("%s,", f), 1)
+		write(b, f, 1)
 	}
 	write(b, "}", 0)
 	endl(b)

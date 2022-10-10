@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -14,5 +13,5 @@ func main() {
 		log.Fatalln("missing arguments: go run builder.go model destination")
 	}
 
-	fmt.Println(mgen.Generate(os.Args[1], os.Args[2]))
+	mgen.Generate(os.Args[1], os.Args[2])
 }

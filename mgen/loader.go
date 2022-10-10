@@ -1,7 +1,6 @@
 package mgen
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -77,8 +76,7 @@ func loadModel(path string) (map[string]_Struct, map[string]_Resource) {
 }
 
 func readModel(path string) (*_Model, error) {
-	fmt.Printf("reading model %s ", path)
-	fmt.Println()
+	log.Printf("reading model %s ", path)
 
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -90,11 +88,6 @@ func readModel(path string) (*_Model, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// for _, t := range data.Types {
-	// 	fmt.Printf("%s", t)
-	// 	fmt.Println()
-	// }
 
 	return &data, nil
 }

@@ -50,3 +50,21 @@ func endl(b *strings.Builder) {
 func capitalize(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
+
+func exportFile(targetDir string, name string, content string) error {
+	targetDir = strings.ReplaceAll(targetDir, "//", "/")
+	os.RemoveAll(targetDir)
+	os.Mkdir(targetDir, 0755)
+
+	targetFile := targetDir + name
+	f, err := os.Create(targetFile)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	f.WriteString(content)
+
+	return nil
+}
