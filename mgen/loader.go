@@ -54,14 +54,14 @@ func loadModel(path string) (map[string]_Struct, map[string]_Resource) {
 		}
 
 		for _, m := range model.Types {
-			if m.Kind == "Resource" {
+			if m.Kind == "Struct" {
 				structs[m.Name] = _Struct{
 					Name:  m.Name,
 					Props: m.Props,
 				}
 				continue
 			}
-			if m.Kind == "Struct" {
+			if m.Kind == "Resource" {
 				resources[m.Name] = _Resource{
 					Name:       m.Name,
 					Spec:       m.Spec,
@@ -90,6 +90,11 @@ func readModel(path string) (*_Model, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// for _, t := range data.Types {
+	// 	fmt.Printf("%s", t)
+	// 	fmt.Println()
+	// }
 
 	return &data, nil
 }
