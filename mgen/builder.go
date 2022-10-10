@@ -10,7 +10,8 @@ func Generate(path string, dest string) error {
 
 	var b strings.Builder
 
-	write(&b, "package schema", 0)
+	packge := "generated"
+	write(&b, fmt.Sprintf("package %s", packge), 0)
 	endl(&b)
 
 	// TODO add imports
@@ -18,7 +19,8 @@ func Generate(path string, dest string) error {
 	write(&b, compileStructs(structs), 0)
 	write(&b, compileResources(resources), 0)
 
-	return exportFile(dest+"/generated/", "objects.go", b.String())
+	fullDest := fmt.Sprintf("%s/%s/", dest, packge)
+	return exportFile(fullDest, "objects.go", b.String())
 }
 
 func compileStructs(structs map[string]_Struct) string {
