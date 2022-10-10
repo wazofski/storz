@@ -18,7 +18,7 @@ func Generate(path string, dest string) error {
 	write(&b, compileStructs(structs), 0)
 	write(&b, compileResources(resources), 0)
 
-	return exportFile(dest+"/schema/", "objects.go", b.String())
+	return exportFile(dest+"/generated/", "objects.go", b.String())
 }
 
 func compileStructs(structs map[string]_Struct) string {
