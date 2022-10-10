@@ -1,6 +1,8 @@
 package store_test
 
 import (
+	"log"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/store"
@@ -34,6 +36,16 @@ var _ = Describe("mgen", func() {
 		It("metadata", func() {
 			world := generated.WorldFactory()
 			Expect(world.Metadata().Kind()).To(Equal(store.ObjectKind("World")))
+		})
+
+		It("serialization", func() {
+			world := generated.WorldFactory()
+			world.Spec().Nested().SetCounter(10)
+			world.Spec().Nested().SetAlive(true)
+			world.Spec().SetName("abc")
+			world.Status().SetDescription("qwe")
+
+			log.Println(string(world.Serialize()))
 		})
 
 	})
