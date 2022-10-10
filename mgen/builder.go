@@ -1,7 +1,7 @@
 package mgen
 
 func Generate(path string, dest string) error {
-	loadModel
+	structs, resources := loadModel(path)
 
 	return nil
 }
