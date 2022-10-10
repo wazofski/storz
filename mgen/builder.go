@@ -131,4 +131,5 @@ func writeFunction(
 	}
 
 	write(b, "}", 0)
+	endl(b)
 }
