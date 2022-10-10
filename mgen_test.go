@@ -24,6 +24,9 @@ var _ = Describe("mgen", func() {
 
 		world.Spec().Nested().SetCounter(10)
 		Expect(world.Spec().Nested().Counter()).To(Equal(10))
+
+		world.Status().SetDescription("qwe")
+		Expect(world.Status().Description()).To(Equal("qwe"))
 	})
 
 })

@@ -103,7 +103,7 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 	endl(b)
 
 	lines := []string{
-		fmt.Sprintf("return %s%s {", name, wrapperSuffix),
+		fmt.Sprintf("return &%s%s {", name, wrapperSuffix),
 	}
 
 	for _, f := range fields {
@@ -121,7 +121,7 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 		if nm != "spec" && nm != "status" {
 			writeFunction(b,
 				fmt.Sprintf("Set%s(v %s)", pp, tp),
-				fmt.Sprintf("(o %s%s)", name, wrapperSuffix),
+				fmt.Sprintf("(o *%s%s)", name, wrapperSuffix),
 				[]string{fmt.Sprintf("o.%s = v", nm)})
 		}
 	}
@@ -130,7 +130,7 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 
 	lines = append(lines, "}")
 	writeFunction(b,
-		fmt.Sprintf("%s%s() %s%s", name, factorySuffix, name, wrapperSuffix),
+		fmt.Sprintf("%s%s() *%s%s", name, factorySuffix, name, wrapperSuffix),
 		"", lines)
 }
 
