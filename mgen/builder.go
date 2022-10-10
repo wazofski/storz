@@ -14,8 +14,13 @@ func Generate(path string, dest string) error {
 	write(&b, fmt.Sprintf("package %s", packge), 0)
 	endl(&b)
 
-	// TODO add imports
+	imports := []string{
+		"log",
+		"encoding/json",
+		"github.com/wazofski/store",
+	}
 
+	write(&b, compileImports(imports), 0)
 	write(&b, compileStructs(structs), 0)
 	write(&b, compileResources(resources), 0)
 
@@ -29,6 +34,18 @@ func compileStructs(structs map[string]_Struct) string {
 	for _, s := range structs {
 		write(&b, compileStruct(s), 0)
 	}
+
+	return b.String()
+}
+
+func compileImports(imports []string) string {
+	var b strings.Builder
+
+	write(&b, "import (", 0)
+	for _, s := range imports {
+		write(&b, fmt.Sprintf("\"%s\"", s), 1)
+	}
+	write(&b, ")", 0)
 
 	return b.String()
 }
@@ -64,8 +81,8 @@ func compileStruct(str _Struct) string {
 func compileResource(str _Resource) string {
 	var b strings.Builder
 
-	methods := []string{}
-	fields := []string{}
+	methods := []string{"store.Object"}
+	fields := []string{"store.ObjectWrapper"}
 	if len(str.Spec) > 0 {
 		methods = append(methods, fmt.Sprintf("Spec() %s", str.Spec))
 		fields = append(fields, fmt.Sprintf("spec %s", str.Spec))
@@ -76,6 +93,24 @@ func compileResource(str _Resource) string {
 	}
 	writeInterface(&b, str.Name, methods)
 	writeStruct(&b, str.Name, fields)
+
+	lines := []string{"return o.ObjectWrapper.Metadata"}
+	writeFunction(&b,
+		"Metadata() store.Meta",
+		fmt.Sprintf("(o *%s%s)", str.Name, wrapperSuffix),
+		lines)
+
+	lines = []string{
+		"res, err := json.Marshal(*o)",
+		"if err != nil {",
+		"	log.Fatalln(err)",
+		"}",
+		"return res",
+	}
+	writeFunction(&b,
+		"Serialize() []byte",
+		fmt.Sprintf("(o *%s%s)", str.Name, wrapperSuffix),
+		lines)
 
 	return b.String()
 }
@@ -109,13 +144,17 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 	for _, f := range fields {
 		tok := strings.Split(f, " ")
 		nm := tok[0]
+		if strings.HasSuffix(nm, "ObjectWrapper") {
+			lines = append(lines, fmt.Sprintf("ObjectWrapper: store.ObjectWrapperFactory(\"%s\"),", name))
+			continue
+		}
 		tp := tok[1]
 		pp := capitalize(nm)
 		lines = append(lines, fmt.Sprintf("%s: %s,", nm, typeDefault(tp)))
 
 		writeFunction(b,
 			fmt.Sprintf("%s() %s", pp, tp),
-			fmt.Sprintf("(o %s%s)", name, wrapperSuffix),
+			fmt.Sprintf("(o *%s%s)", name, wrapperSuffix),
 			[]string{fmt.Sprintf("return o.%s", nm)})
 
 		if nm != "spec" && nm != "status" {
@@ -130,8 +169,9 @@ func writeStruct(b *strings.Builder, name string, fields []string) {
 
 	lines = append(lines, "}")
 	writeFunction(b,
-		fmt.Sprintf("%s%s() *%s%s", name, factorySuffix, name, wrapperSuffix),
-		"", lines)
+		fmt.Sprintf("%s%s() %s", name, factorySuffix, name),
+		"",
+		lines)
 }
 
 func writeFunction(
