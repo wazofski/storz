@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Generate(path string, dest string) error {
+func Generate(path string, dest string) string {
 	structs, resources := loadModel(path)
 
 	var b strings.Builder
@@ -18,9 +18,7 @@ func Generate(path string, dest string) error {
 	write(&b, compileStructs(structs), 0)
 	write(&b, compileResources(resources), 0)
 
-	fmt.Println(b.String())
-
-	return nil
+	return b.String()
 }
 
 func compileStructs(structs map[string]_Struct) string {
