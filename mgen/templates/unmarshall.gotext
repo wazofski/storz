@@ -63,3 +63,4 @@ func (entity *_{{.Name}}) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+

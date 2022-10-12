@@ -12,14 +12,14 @@ import (
 
 var _ = Describe("mgen", func() {
 	Describe("class", func() {
-		It("factory", func() {
+		It("can factory", func() {
 			world := generated.WorldFactory()
 			Expect(world).ToNot(BeNil())
 			Expect(world.Spec()).ToNot(BeNil())
 			Expect(world.Status()).ToNot(BeNil())
 		})
 
-		It("setters and getters ", func() {
+		It("can call setters and getters ", func() {
 			world := generated.WorldFactory()
 			world.Spec().SetName("abc")
 			Expect(world.Spec().Name()).To(Equal("abc"))
@@ -34,12 +34,12 @@ var _ = Describe("mgen", func() {
 			Expect(world.Status().Description()).To(Equal("qwe"))
 		})
 
-		It("metadata", func() {
+		It("has metadata", func() {
 			world := generated.WorldFactory()
 			Expect(world.Metadata().Kind()).To(Equal(store.ObjectKind("World")))
 		})
 
-		It("(de)serialization", func() {
+		It("can deserialize", func() {
 			world := generated.WorldFactory()
 			world.Spec().Nested().SetCounter(10)
 			world.Spec().Nested().SetAlive(true)
@@ -77,12 +77,38 @@ var _ = Describe("mgen", func() {
 			Expect(data).To(Equal(data2))
 		})
 
-		It("schema", func() {
+		It("has working schema", func() {
 			world := generated.WorldFactory()
 			obj := generated.ObjectForKind(string(world.Metadata().Kind()))
 			Expect(obj).ToNot(BeNil())
 			anotherWorld := obj.(generated.World)
 			Expect(anotherWorld).ToNot(BeNil())
+		})
+
+		It("can clone objects", func() {
+			world := generated.WorldFactory()
+			world.Spec().Nested().SetCounter(10)
+			world.Spec().Nested().SetAlive(true)
+			world.Spec().SetName("abc")
+			world.Status().SetDescription("qwe")
+			world.Status().SetList([]generated.NestedWorld{
+				generated.NestedWorldFactory(),
+				generated.NestedWorldFactory(),
+			})
+
+			world.Status().SetMap(map[string]generated.NestedWorld{
+				"a": generated.NestedWorldFactory(),
+				"b": generated.NestedWorldFactory(),
+			})
+
+			world.Status().Map()["a"].SetL1([]bool{false, false, true})
+
+			newWorld := world.Clone().(generated.World)
+			Expect(newWorld.Spec().Nested().Alive()).To(BeTrue())
+			Expect(newWorld.Spec().Nested().Counter()).To(Equal(10))
+			Expect(newWorld.Spec().Name()).To(Equal("abc"))
+			Expect(newWorld.Status().Description()).To(Equal("qwe"))
+			Expect(len(newWorld.Status().List())).To(Equal(2))
 		})
 
 	})

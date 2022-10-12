@@ -6,6 +6,7 @@ import (
 
 type Object interface {
 	MetaHolder
+	Clone() Object
 }
 
 type ObjectList []Object
