@@ -59,3 +59,12 @@ func exportFile(targetDir string, name string, content string) error {
 
 	return nil
 }
+
+func readFile(path string) []byte {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return bytes
+}

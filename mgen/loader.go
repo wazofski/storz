@@ -2,7 +2,6 @@ package mgen
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"strings"
 
@@ -97,13 +96,9 @@ func loadModel(path string) ([]_Struct, []_Resource) {
 func readModel(path string) (*_Model, error) {
 	log.Printf("processing model file %s ", path)
 
-	yfile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
+	yfile := readFile(path)
 	data := _Model{}
-	err = yaml.Unmarshal(yfile, &data)
+	err := yaml.Unmarshal(yfile, &data)
 	if err != nil {
 		return nil, err
 	}

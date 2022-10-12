@@ -1,4 +1,4 @@
-package store_test
+package mgen_test
 
 import (
 	"encoding/json"
