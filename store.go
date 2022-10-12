@@ -10,11 +10,6 @@ type Object interface {
 	Clone() Object
 }
 
-type SchemaHolder interface {
-	ObjectForKind(kind string) Object
-	ObjectMethods() map[string][]string
-}
-
 type ObjectList []Object
 type ObjectIdentity string
 
@@ -24,6 +19,11 @@ type Store interface {
 	Create(context.Context, Object, ...CreateOption) (Object, error)
 	Delete(context.Context, ObjectIdentity, ...DeleteOption) error
 	Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
+}
+
+type SchemaHolder interface {
+	ObjectForKind(kind string) Object
+	ObjectMethods() map[string][]string
 }
 
 type Factory func(schema SchemaHolder) (Store, error)
