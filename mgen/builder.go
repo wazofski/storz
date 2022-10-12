@@ -179,20 +179,18 @@ func typeDefault(tp string) string {
 		return fmt.Sprintf("make(%s)", tp)
 	}
 
-	if tp == "string" {
+	switch tp {
+	case "string":
 		return "fmt.Sprint()"
-	}
-	if tp == "bool" {
+	case "bool":
 		return "false"
-	}
-	if tp == "int" {
+	case "int":
 		return "0"
-	}
-	if tp == "float" {
+	case "float":
 		return "0"
+	default:
+		return fmt.Sprintf("%sFactory()", tp)
 	}
-
-	return fmt.Sprintf("%sFactory()", tp)
 }
 
 func (u _Prop) IsMap() bool {

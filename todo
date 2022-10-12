@@ -1,13 +1,22 @@
 Store:
   - mgen
+    - basic model generation @done
+    - factory @done
     - add json tags for props @done
     - list of generated type deserialization @done
     - deserialize map structures with custom struct @done
     - templates implementation @done
     - generate schema @done
+    - cloning @done
     - add primary key
+    - complex object identity
+      - 
+    - MatcherOp
+    - selectors
   - RAM store
+    - 
   - rest endpoint
+    - 
   - parse list of objects
   - rest store
   - mongodb store
