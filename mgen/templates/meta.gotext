@@ -3,3 +3,14 @@ func (entity *_{{.Name}}) Metadata() store.Meta {
 	return *entity.Meta_
 }
 
+func (entity *_{{.Name}}) PKey() string {
+	return string(entity.{{.Pkey}})
+}
+
+func ObjectIdentityFor{{.Name}}(pkey string) store.ObjectIdentity {
+	return store.ObjectIdentity(
+		fmt.Sprintf("%s/%s", 
+			"{{ .IdentityPrefix }}",
+			pkey))
+}
+

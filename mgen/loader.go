@@ -1,8 +1,10 @@
 package mgen
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,6 +25,7 @@ type _Type struct {
 	Kind       string       `yaml:"kind,omitempty"`
 	Spec       string       `yaml:"spec,omitempty"`
 	Status     string       `yaml:"status,omitempty"`
+	Pkey       string       `yaml:"pkey,omitempty"`
 	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
 	Props      []_Prop      `yaml:"props,omitempty"`
 }
@@ -32,17 +35,22 @@ type _Model struct {
 }
 
 type _Struct struct {
-	Name       string  `yaml:"name"`
-	Props      []_Prop `yaml:"props,omitempty"`
+	Name       string
 	Embeds     []string
 	Implements []string
+	Props      []_Prop
 }
 
 type _Resource struct {
-	Name       string       `yaml:"name"`
-	Spec       string       `yaml:"spec,omitempty"`
-	Status     string       `yaml:"status,omitempty"`
-	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
+	Name       string
+	Spec       string
+	Status     string
+	Pkey       string
+	ApiMethods []_ApiMethod
+}
+
+func (r _Resource) IdentityPrefix() string {
+	return strings.ToLower(r.Name)
 }
 
 func loadModel(path string) ([]_Struct, []_Resource) {
@@ -65,10 +73,17 @@ func loadModel(path string) ([]_Struct, []_Resource) {
 				continue
 			}
 			if m.Kind == "Resource" {
+				pkey := "metadata.identity"
+				if len(m.Pkey) > 0 {
+					pkey = m.Pkey
+				}
+				pkey = makePropCallerString(pkey)
+
 				resources = append(resources, _Resource{
 					Name:       m.Name,
 					Spec:       m.Spec,
 					Status:     m.Status,
+					Pkey:       pkey,
 					ApiMethods: m.ApiMethods,
 				})
 				continue
@@ -108,4 +123,14 @@ func capitalizeProps(l []_Prop) []_Prop {
 			})
 	}
 	return res
+}
+
+func makePropCallerString(pkey string) string {
+	tok := strings.Split(pkey, ".")
+	cap := []string{}
+	for _, t := range tok {
+		cap = append(cap, fmt.Sprintf("%s()", capitalize(t)))
+	}
+
+	return strings.Join(cap, ".")
 }

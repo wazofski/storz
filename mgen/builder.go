@@ -16,6 +16,7 @@ func Generate() error {
 		// "errors",
 		// "log",
 		"fmt",
+		// "strings",
 		"encoding/json",
 		"github.com/wazofski/store/utils",
 		"github.com/wazofski/store",
@@ -84,7 +85,7 @@ func compileResources(resources []_Resource) string {
 		}
 
 		b.WriteString(compileStruct(s))
-		b.WriteString(render("mgen/templates/meta.gotext", s))
+		b.WriteString(render("mgen/templates/meta.gotext", r))
 		b.WriteString(render("mgen/templates/clonable.gotext", s))
 	}
 

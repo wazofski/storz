@@ -8,11 +8,15 @@ Store:
     - templates implementation @done
     - generate schema @done
     - cloning @done
-    - add primary key
-    - complex object identity
+    - add primary key @done
+      - only string type suppor!!
+    - object identity @done
+    - MatcherOp + Selectors ?
+  - repackage
+    - mgen install
+    - need a top level name
       - 
-    - MatcherOp
-    - selectors
+    - go geneerate integration?
   - RAM store
     - 
   - rest endpoint

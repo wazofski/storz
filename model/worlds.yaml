@@ -8,6 +8,14 @@ types:
       - apimethod: PUT
       - apimethod: POST
       - apimethod: DELETE
+  - kind: Resource
+    name: SecondWorld
+    spec: WorldSpec
+    pkey: spec.name
+    apimethods:
+      - apimethod: GET
+      - apimethod: POST
+      - apimethod: DELETE
   - kind: Struct
     name: WorldSpec
     props:
