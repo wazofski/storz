@@ -17,6 +17,7 @@ Store:
     - need a top level name
       - 
     - go geneerate integration?
+      - mgen command in the target repo as gogenerate comment
   - RAM store
     - 
   - rest endpoint
