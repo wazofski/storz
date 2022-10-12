@@ -1,8 +1,8 @@
 package store
 
 type Meta interface {
-	Kind() ObjectKind
-	SetKind(ObjectKind)
+	Kind() string
+	SetKind(string)
 	Identity() ObjectIdentity
 	SetIdentity(ObjectIdentity)
 }
@@ -12,11 +12,11 @@ type MetaHolder interface {
 }
 
 type metaWrapper struct {
-	Kind_     *ObjectKind     `json:"kind"`
+	Kind_     *string         `json:"kind"`
 	Identity_ *ObjectIdentity `json:"identity"`
 }
 
-func (m *metaWrapper) Kind() ObjectKind {
+func (m *metaWrapper) Kind() string {
 	return *m.Kind_
 }
 
@@ -24,7 +24,7 @@ func (m *metaWrapper) Identity() ObjectIdentity {
 	return *m.Identity_
 }
 
-func (m *metaWrapper) SetKind(kind ObjectKind) {
+func (m *metaWrapper) SetKind(kind string) {
 	m.Kind_ = &kind
 }
 
@@ -32,7 +32,7 @@ func (m *metaWrapper) SetIdentity(identity ObjectIdentity) {
 	m.Identity_ = &identity
 }
 
-func MetaFactory(kind ObjectKind) Meta {
+func MetaFactory(kind string) Meta {
 	emptyIdentity := ObjectIdentity("")
 	mw := metaWrapper{
 		Kind_:     &kind,

@@ -15,7 +15,6 @@ type SchemaHolder interface {
 }
 
 type ObjectList []Object
-type ObjectKind string
 type ObjectIdentity string
 
 type Option interface {

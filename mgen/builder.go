@@ -13,10 +13,11 @@ func Generate() error {
 	structs, resources := loadModel("model/")
 
 	imports := []string{
+		// "errors",
+		// "log",
 		"fmt",
 		"encoding/json",
-		// "errors",
-		"log",
+		"github.com/wazofski/store/utils",
 		"github.com/wazofski/store",
 	}
 

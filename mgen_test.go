@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/wazofski/store"
 	"github.com/wazofski/store/generated"
 )
 
@@ -36,13 +35,14 @@ var _ = Describe("mgen", func() {
 
 		It("has metadata", func() {
 			world := generated.WorldFactory()
-			Expect(world.Metadata().Kind()).To(Equal(store.ObjectKind("World")))
+			Expect(world.Metadata().Kind()).To(Equal("World"))
 		})
 
 		It("can deserialize", func() {
 			world := generated.WorldFactory()
 			world.Spec().Nested().SetCounter(10)
 			world.Spec().Nested().SetAlive(true)
+			world.Spec().Nested().SetAnotherDescription("qwe")
 			world.Spec().SetName("abc")
 			world.Status().SetDescription("qwe")
 			world.Status().SetList([]generated.NestedWorld{
@@ -90,6 +90,8 @@ var _ = Describe("mgen", func() {
 			world := generated.WorldFactory()
 			world.Spec().Nested().SetCounter(10)
 			world.Spec().Nested().SetAlive(true)
+			world.Spec().Nested().SetAnotherDescription("qwe")
+
 			world.Spec().SetName("abc")
 			world.Status().SetDescription("qwe")
 			world.Status().SetList([]generated.NestedWorld{
@@ -107,6 +109,7 @@ var _ = Describe("mgen", func() {
 			newWorld := world.Clone().(generated.World)
 			Expect(newWorld.Spec().Nested().Alive()).To(BeTrue())
 			Expect(newWorld.Spec().Nested().Counter()).To(Equal(10))
+			Expect(newWorld.Spec().Nested().AnotherDescription()).To(Equal("qwe"))
 			Expect(newWorld.Spec().Name()).To(Equal("abc"))
 			Expect(newWorld.Status().Description()).To(Equal("qwe"))
 			Expect(len(newWorld.Status().List())).To(Equal(2))
