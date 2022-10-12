@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"log"
 )
 
 type Object interface {
@@ -17,49 +18,6 @@ type SchemaHolder interface {
 type ObjectList []Object
 type ObjectIdentity string
 
-type Option interface {
-	ApplyFunction() OptionFunction
-}
-
-type CreateOption interface {
-	Option
-	GetCreateOption() Option
-}
-
-type DeleteOption interface {
-	Option
-	GetDeleteOption() Option
-}
-
-type GetOption interface {
-	Option
-	GetGetOption() Option
-}
-
-type UpdateOption interface {
-	Option
-	GetUpdateOption() Option
-}
-
-type ListOption interface {
-	Option
-	GetListOption() Option
-}
-
-type OptionFunction func(OptionHolder) (OptionHolder, error)
-
-type CommonOptionHolder struct {
-	// Filter           core.MatcherOp
-	OrderBy          string
-	OrderIncremental bool
-	PageSize         int
-	PageOffset       int
-}
-
-type OptionHolder interface {
-	CommonOptions() *CommonOptionHolder
-}
-
 type Store interface {
 	Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)
 	List(context.Context, ObjectIdentity, ...ListOption) (ObjectList, error)
@@ -68,12 +26,12 @@ type Store interface {
 	Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
 }
 
-// type Factory func(schema core.Schema) (Store, error)
+type Factory func(schema SchemaHolder) (Store, error)
 
-// func New(schema core.Schema, factory Factory) Store {
-// 	store, err := factory(schema)
-// 	if err != nil {
-// 		log.Fatalln(err)
-// 	}
-// 	return store
-// }
+func New(schema SchemaHolder, factory Factory) Store {
+	store, err := factory(schema)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return store
+}
