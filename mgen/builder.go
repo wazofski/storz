@@ -21,7 +21,7 @@ func Generate() error {
 	}
 
 	var b strings.Builder
-	b.WriteString(render("mgen/templates/imports.go", imports))
+	b.WriteString(render("mgen/templates/imports.gotext", imports))
 	b.WriteString(compileResources(resources))
 	b.WriteString(compileStructs(structs))
 
@@ -83,8 +83,10 @@ func compileResources(resources []_Resource) string {
 		}
 
 		b.WriteString(compileStruct(s))
-		b.WriteString(render("mgen/templates/meta.go", s))
+		b.WriteString(render("mgen/templates/meta.gotext", s))
 	}
+
+	b.WriteString(render("mgen/templates/schema.gotext", resources))
 
 	return b.String()
 }
@@ -106,10 +108,12 @@ func compileStruct(s _Struct) string {
 	s.Props = addDefaultPropValues(s.Props)
 
 	for _, p := range s.Props {
-		methods = append(methods,
-			fmt.Sprintf("%s() %s", p.Prop, p.Type))
+		if p.Prop != "Meta" {
+			methods = append(methods,
+				fmt.Sprintf("%s() %s", p.Prop, p.Type))
+		}
 
-		if p.Prop != "Spec" && p.Prop != "Status" {
+		if p.Prop != "Meta" && p.Prop != "Spec" && p.Prop != "Status" {
 			methods = append(methods,
 				fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
 		}
@@ -117,14 +121,14 @@ func compileStruct(s _Struct) string {
 
 	impl := append(s.Implements, "json.Unmarshaler")
 
-	b.WriteString(render("mgen/templates/interface.go", _Interface{
+	b.WriteString(render("mgen/templates/interface.gotext", _Interface{
 		Name:       s.Name,
 		Methods:    methods,
 		Implements: impl,
 	}))
 
-	b.WriteString(render("mgen/templates/structure.go", s))
-	b.WriteString(render("mgen/templates/unmarshall.go", s))
+	b.WriteString(render("mgen/templates/structure.gotext", s))
+	b.WriteString(render("mgen/templates/unmarshall.gotext", s))
 
 	return b.String()
 }

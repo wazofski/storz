@@ -1,0 +1,11 @@
+
+func ObjectForKind(kind string) store.Object {
+	switch kind {
+	{{ range . }}
+		case "{{.Name}}":
+			return {{.Name}}Factory()
+	{{ end }}
+	}
+
+	return nil
+}

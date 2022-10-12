@@ -77,6 +77,14 @@ var _ = Describe("mgen", func() {
 			Expect(data).To(Equal(data2))
 		})
 
+		It("schema", func() {
+			world := generated.WorldFactory()
+			obj := generated.ObjectForKind(string(world.Metadata().Kind()))
+			Expect(obj).ToNot(BeNil())
+			anotherWorld := obj.(generated.World)
+			Expect(anotherWorld).ToNot(BeNil())
+		})
+
 	})
 
 })
