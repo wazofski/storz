@@ -115,7 +115,7 @@ func compileStruct(s _Struct) string {
 				fmt.Sprintf("%s() %s", p.Prop, p.Type))
 		}
 
-		if p.Prop != "Meta" && p.Prop != "Spec" && p.Prop != "Status" {
+		if p.Prop != "Meta" && p.Prop != "Status" {
 			methods = append(methods,
 				fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
 		}

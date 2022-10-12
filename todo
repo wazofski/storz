@@ -4,6 +4,11 @@ Store:
     - list of generated type deserialization @done
     - deserialize map structures with custom struct @done
     - templates implementation @done
-    - generate schema
-    - parse list of objects
-    - 
+    - generate schema @done
+    - add primary key
+  - RAM store
+  - rest endpoint
+  - parse list of objects
+  - rest store
+  - mongodb store
+  - sqlite store

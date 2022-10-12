@@ -1,5 +1,7 @@
 package store
 
+import "github.com/google/uuid"
+
 type Meta interface {
 	Kind() string
 	SetKind(string)
@@ -33,7 +35,7 @@ func (m *metaWrapper) SetIdentity(identity ObjectIdentity) {
 }
 
 func MetaFactory(kind string) Meta {
-	emptyIdentity := ObjectIdentity("")
+	emptyIdentity := ObjectIdentity(uuid.New().String())
 	mw := metaWrapper{
 		Kind_:     &kind,
 		Identity_: &emptyIdentity,
