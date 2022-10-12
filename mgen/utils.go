@@ -45,6 +45,9 @@ func exportFile(targetDir string, name string, content string) error {
 	os.Mkdir(targetDir, 0755)
 
 	targetFile := targetDir + name
+
+	log.Printf("exporting file %s", targetFile)
+
 	f, err := os.Create(targetFile)
 	if err != nil {
 		return err

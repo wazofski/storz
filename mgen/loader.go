@@ -95,7 +95,7 @@ func loadModel(path string) ([]_Struct, []_Resource) {
 }
 
 func readModel(path string) (*_Model, error) {
-	log.Printf("reading model %s ", path)
+	log.Printf("processing model file %s ", path)
 
 	yfile, err := ioutil.ReadFile(path)
 	if err != nil {
