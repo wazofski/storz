@@ -2,7 +2,6 @@ package store_test
 
 import (
 	"encoding/json"
-	"log"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -60,7 +59,7 @@ var _ = Describe("mgen", func() {
 			data, err := json.MarshalIndent(world, "", "  ")
 			Expect(err).To(BeNil())
 
-			log.Println(string(data))
+			// log.Println(string(data))
 
 			newWorld := generated.WorldFactory()
 			err = json.Unmarshal(data, &newWorld)
