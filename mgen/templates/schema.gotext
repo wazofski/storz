@@ -1,11 +1,29 @@
 
-func ObjectForKind(kind string) store.Object {
+type _Schema struct {
+	Objects map[string][]string
+}
+
+func (o _Schema) ObjectMethods() map[string][]string {
+	return o.Objects
+}
+
+func (o _Schema) ObjectForKind(kind string) store.Object {
 	switch kind {
 	{{ range . }}
-		case "{{.Name}}":
-			return {{.Name}}Factory()
+	case "{{.Name}}":
+		return {{.Name}}Factory()
 	{{ end }}
 	}
 
 	return nil
+}
+
+func Schema() store.SchemaHolder {
+	var objects map[string][]string = make(map[string][]string)
+	
+	{{ range . }}
+	objects["{{.Name}}"] = []string { {{ range .ApiMethods }} "{{.ApiMethod }}", {{ end }} }
+	{{ end }}
+
+	return _Schema { Objects: objects }
 }

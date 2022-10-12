@@ -29,6 +29,8 @@ types:
     props:
       - prop: description
         type: string
+      - prop: anotherDescription
+        type: string
       - prop: counter
         type: int
       - prop: alive

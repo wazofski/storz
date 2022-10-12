@@ -79,7 +79,8 @@ var _ = Describe("mgen", func() {
 
 		It("has working schema", func() {
 			world := generated.WorldFactory()
-			obj := generated.ObjectForKind(string(world.Metadata().Kind()))
+			schema := generated.Schema()
+			obj := schema.ObjectForKind(string(world.Metadata().Kind()))
 			Expect(obj).ToNot(BeNil())
 			anotherWorld := obj.(generated.World)
 			Expect(anotherWorld).ToNot(BeNil())

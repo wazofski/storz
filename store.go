@@ -9,6 +9,11 @@ type Object interface {
 	Clone() Object
 }
 
+type SchemaHolder interface {
+	ObjectForKind(kind string) Object
+	ObjectMethods() map[string][]string
+}
+
 type ObjectList []Object
 type ObjectKind string
 type ObjectIdentity string
