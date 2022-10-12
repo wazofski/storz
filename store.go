@@ -5,44 +5,12 @@ import (
 )
 
 type Object interface {
-	Metadata() Meta
-	Serialize() []byte
-}
-
-type ObjectWrapper struct {
-	Metadata Meta `json:"metadata"`
+	MetaHolder
 }
 
 type ObjectList []Object
 type ObjectKind string
 type ObjectIdentity string
-
-type Meta interface {
-	Kind() ObjectKind
-	Identity() ObjectIdentity
-}
-
-type metaWrapper struct {
-	Kind_     ObjectKind     `json:"kind"`
-	Identity_ ObjectIdentity `json:"identity"`
-}
-
-func (m *metaWrapper) Kind() ObjectKind {
-	return m.Kind_
-}
-
-func (m *metaWrapper) Identity() ObjectIdentity {
-	return m.Identity_
-}
-
-func ObjectWrapperFactory(kind ObjectKind) ObjectWrapper {
-	return ObjectWrapper{
-		Metadata: &metaWrapper{
-			Kind_:     kind,
-			Identity_: "",
-		},
-	}
-}
 
 type Option interface {
 	ApplyFunction() OptionFunction

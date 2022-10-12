@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func findYamlFiles(path string) []string {
+func yamlFiles(path string) []string {
 	res := []string{}
 
 	libRegEx, e := regexp.Compile(`^\w+\.(?:yaml|yml)$`)
@@ -31,24 +31,12 @@ func findYamlFiles(path string) []string {
 	return res
 }
 
-func write(b *strings.Builder, s string, indentation int) {
-	const tabs string = "    "
-
-	for i := 0; i < indentation; i++ {
-		b.WriteString(tabs)
-	}
-
-	b.WriteString(s)
-	endl(b)
-}
-
-func endl(b *strings.Builder) {
-	b.WriteString(`
-`)
-}
-
 func capitalize(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+func decapitalize(s string) string {
+	return strings.ToLower(s[:1]) + s[1:]
 }
 
 func exportFile(targetDir string, name string, content string) error {

@@ -22,6 +22,8 @@ types:
         type: string
       - prop: list
         type: "[]NestedWorld"
+      - prop: map
+        type: "map[string]NestedWorld"
   - kind: Struct
     name: NestedWorld
     props:
@@ -31,4 +33,7 @@ types:
         type: int
       - prop: alive
         type: bool
-       
+      - prop: l1
+        type: "[]bool"
+      - prop: l2
+        type: map[string]int

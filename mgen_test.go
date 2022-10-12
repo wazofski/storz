@@ -48,21 +48,33 @@ var _ = Describe("mgen", func() {
 			world.Status().SetList([]generated.NestedWorld{
 				generated.NestedWorldFactory(),
 				generated.NestedWorldFactory(),
-				generated.NestedWorldFactory(),
 			})
 
-			data := world.Serialize()
+			world.Status().SetMap(map[string]generated.NestedWorld{
+				"a": generated.NestedWorldFactory(),
+				"b": generated.NestedWorldFactory(),
+			})
+
+			world.Status().Map()["a"].SetL1([]bool{false, false, true})
+
+			data, err := json.MarshalIndent(world, "", "  ")
+			Expect(err).To(BeNil())
+
 			log.Println(string(data))
 
 			newWorld := generated.WorldFactory()
-			err := json.Unmarshal(data, &newWorld)
+			err = json.Unmarshal(data, &newWorld)
+
 			Expect(err).To(BeNil())
 			Expect(newWorld.Spec().Nested().Alive()).To(BeTrue())
 			Expect(newWorld.Spec().Nested().Counter()).To(Equal(10))
 			Expect(newWorld.Spec().Name()).To(Equal("abc"))
 			Expect(newWorld.Status().Description()).To(Equal("qwe"))
-			Expect(len(newWorld.Status().List())).To(Equal(3))
+			Expect(len(newWorld.Status().List())).To(Equal(2))
 
+			data2, err := json.MarshalIndent(newWorld, "", "  ")
+			Expect(err).To(BeNil())
+			Expect(data).To(Equal(data2))
 		})
 
 	})

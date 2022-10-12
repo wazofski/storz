@@ -12,8 +12,10 @@ type _ApiMethod struct {
 }
 
 type _Prop struct {
-	Prop string `yaml:"prop"`
-	Type string `yaml:"type"`
+	Prop    string `yaml:"prop"`
+	Type    string `yaml:"type"`
+	Json    string
+	Default string
 }
 
 type _Type struct {
@@ -30,8 +32,10 @@ type _Model struct {
 }
 
 type _Struct struct {
-	Name  string  `yaml:"name"`
-	Props []_Prop `yaml:"props,omitempty"`
+	Name       string  `yaml:"name"`
+	Props      []_Prop `yaml:"props,omitempty"`
+	Embeds     []string
+	Implements []string
 }
 
 type _Resource struct {
@@ -41,10 +45,10 @@ type _Resource struct {
 	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
 }
 
-func loadModel(path string) (map[string]_Struct, map[string]_Resource) {
-	yamls := findYamlFiles(path)
-	structs := make(map[string]_Struct)
-	resources := make(map[string]_Resource)
+func loadModel(path string) ([]_Struct, []_Resource) {
+	yamls := yamlFiles(path)
+	structs := []_Struct{}
+	resources := []_Resource{}
 
 	for _, y := range yamls {
 		model, err := readModel(y)
@@ -54,19 +58,19 @@ func loadModel(path string) (map[string]_Struct, map[string]_Resource) {
 
 		for _, m := range model.Types {
 			if m.Kind == "Struct" {
-				structs[m.Name] = _Struct{
+				structs = append(structs, _Struct{
 					Name:  m.Name,
 					Props: capitalizeProps(m.Props),
-				}
+				})
 				continue
 			}
 			if m.Kind == "Resource" {
-				resources[m.Name] = _Resource{
+				resources = append(resources, _Resource{
 					Name:       m.Name,
 					Spec:       m.Spec,
 					Status:     m.Status,
 					ApiMethods: m.ApiMethods,
-				}
+				})
 				continue
 			}
 		}
@@ -97,8 +101,10 @@ func capitalizeProps(l []_Prop) []_Prop {
 	for _, p := range l {
 		res = append(res,
 			_Prop{
-				Prop: capitalize(p.Prop),
-				Type: p.Type,
+				Prop:    capitalize(p.Prop),
+				Json:    decapitalize(p.Prop),
+				Type:    p.Type,
+				Default: p.Default,
 			})
 	}
 	return res

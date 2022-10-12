@@ -1,5 +1,9 @@
 Store:
   - mgen
     - add json tags for props @done
-    - list of generated type deserialization
+    - list of generated type deserialization @done
+    - deserialize map structures with custom struct @done
+    - templates implementation @done
+    - generate schema
+    - parse list of objects
     - 

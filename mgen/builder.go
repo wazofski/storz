@@ -1,209 +1,168 @@
 package mgen
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
+	"html/template"
+	"log"
 	"strings"
 )
 
-func Generate(path string, dest string) error {
-	structs, resources := loadModel(path)
-
-	var b strings.Builder
-
-	packge := "generated"
-	write(&b, fmt.Sprintf("package %s", packge), 0)
-	endl(&b)
+func Generate() error {
+	structs, resources := loadModel("model/")
 
 	imports := []string{
-		// "log",
+		"fmt",
 		"encoding/json",
+		// "errors",
+		// "log",
 		"github.com/wazofski/store",
 	}
 
-	write(&b, compileImports(imports), 0)
-	write(&b, compileStructs(structs), 0)
-	write(&b, compileResources(resources), 0)
+	var b strings.Builder
+	b.WriteString(render("mgen/templates/imports.go", imports))
+	b.WriteString(compileResources(resources))
+	b.WriteString(compileStructs(structs))
 
-	fullDest := fmt.Sprintf("%s/%s/", dest, packge)
-	return exportFile(fullDest, "objects.go", b.String())
+	str := strings.ReplaceAll(b.String(), "&#34;", "\"")
+	res, err := format.Source([]byte(str))
+
+	if err != nil {
+		log.Println(err)
+		res = []byte(str)
+	}
+
+	return exportFile("generated/", "objects.go", string(res))
 }
 
-func compileStructs(structs map[string]_Struct) string {
+type _Interface struct {
+	Name       string
+	Methods    []string
+	Implements []string
+}
+
+func compileResources(resources []_Resource) string {
+	var b strings.Builder
+
+	for _, r := range resources {
+		props := []_Prop{
+			{
+				Prop:    "Meta",
+				Type:    "store.Meta",
+				Json:    "metadata",
+				Default: fmt.Sprintf("store.MetaFactory(\"%s\")", r.Name),
+			},
+		}
+
+		if len(r.Spec) > 0 {
+			props = append(props,
+				_Prop{
+					Prop: "Spec",
+					Type: r.Spec,
+					Json: "spec",
+				})
+		}
+
+		if len(r.Status) > 0 {
+			props = append(props,
+				_Prop{
+					Prop: "Status",
+					Type: r.Status,
+					Json: "status",
+				})
+		}
+
+		s := _Struct{
+			Name:   r.Name,
+			Props:  props,
+			Embeds: []string{},
+			Implements: []string{
+				"store.Object",
+			},
+		}
+
+		b.WriteString(compileStruct(s))
+		b.WriteString(render("mgen/templates/meta.go", s))
+	}
+
+	return b.String()
+}
+
+func compileStructs(structs []_Struct) string {
 	var b strings.Builder
 
 	for _, s := range structs {
-		write(&b, compileStruct(s), 0)
+		b.WriteString(compileStruct(s))
 	}
 
 	return b.String()
 }
 
-func compileImports(imports []string) string {
+func compileStruct(s _Struct) string {
 	var b strings.Builder
-
-	write(&b, "import (", 0)
-	for _, s := range imports {
-		write(&b, fmt.Sprintf("\"%s\"", s), 1)
-	}
-	write(&b, ")", 0)
-
-	return b.String()
-}
-
-func compileResources(resources map[string]_Resource) string {
-	var b strings.Builder
-
-	for _, s := range resources {
-		write(&b, compileResource(s), 0)
-	}
-
-	return b.String()
-}
-
-func compileStruct(str _Struct) string {
-	var b strings.Builder
-
 	methods := []string{}
-	fields := []string{}
-	for _, p := range str.Props {
-		methods = append(methods, fmt.Sprintf("%s() %s", p.Prop, p.Type))
-		methods = append(methods, fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
-		fields = append(fields, fmt.Sprintf("%s %s", p.Prop, p.Type))
-	}
 
-	writeInterface(&b, str.Name, methods)
-	writeStruct(&b, str.Name, fields)
+	s.Props = addDefaultPropValues(s.Props)
 
-	return b.String()
-}
+	for _, p := range s.Props {
+		methods = append(methods,
+			fmt.Sprintf("%s() %s", p.Prop, p.Type))
 
-func compileResource(str _Resource) string {
-	var b strings.Builder
-
-	methods := []string{"store.Object"}
-	fields := []string{"store.ObjectWrapper"}
-	if len(str.Spec) > 0 {
-		methods = append(methods, fmt.Sprintf("Spec() %s", str.Spec))
-		fields = append(fields, fmt.Sprintf("Spec %s", str.Spec))
-	}
-	if len(str.Status) > 0 {
-		methods = append(methods, fmt.Sprintf("Status() %s", str.Status))
-		fields = append(fields, fmt.Sprintf("Status %s", str.Status))
-	}
-	writeInterface(&b, str.Name, methods)
-	writeStruct(&b, str.Name, fields)
-
-	lines := []string{"return o.ObjectWrapper.Metadata"}
-	writeFunction(&b,
-		"Metadata() store.Meta",
-		fmt.Sprintf("(o *%s%s)", wrapperPrefix, str.Name),
-		lines)
-
-	lines = []string{
-		"res, _ := json.MarshalIndent(*o, \"\", \"    \")",
-		// "if err != nil {",
-		// "	log.Fatalln(err)",
-		// "}",
-		"return res",
-	}
-	writeFunction(&b,
-		"Serialize() []byte",
-		fmt.Sprintf("(o *%s%s)", wrapperPrefix, str.Name),
-		lines)
-
-	return b.String()
-}
-
-func writeInterface(b *strings.Builder, name string, methods []string) {
-	write(b, fmt.Sprintf("type %s interface {", name), 0)
-	for _, m := range methods {
-		write(b, m, 1)
-	}
-	write(b, "}", 0)
-	endl(b)
-}
-
-const wrapperPrefix string = "_"
-const factorySuffix string = "Factory"
-
-func writeStruct(b *strings.Builder, name string, fields []string) {
-	write(b, fmt.Sprintf("type %s%s struct {", wrapperPrefix, name), 0)
-
-	for _, f := range fields {
-		tok := strings.Split(f, " ")
-		if len(tok) > 1 {
-			write(b,
-				fmt.Sprintf(
-					"%s%s %s %s",
-					tok[0],
-					wrapperPrefix,
-					tok[1],
-					fmt.Sprintf(
-						"`json:\"%s\"`",
-						strings.ToLower(tok[0]))), 1)
-		} else {
-			write(b, f, 1)
+		if p.Prop != "Spec" && p.Prop != "Status" {
+			methods = append(methods,
+				fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
 		}
 	}
 
-	write(b, "}", 0)
-	endl(b)
+	impl := append(s.Implements, "json.Unmarshaler")
 
-	lines := []string{
-		fmt.Sprintf("return &%s%s {", wrapperPrefix, name),
+	b.WriteString(render("mgen/templates/interface.go", _Interface{
+		Name:       s.Name,
+		Methods:    methods,
+		Implements: impl,
+	}))
+
+	b.WriteString(render("mgen/templates/structure.go", s))
+	b.WriteString(render("mgen/templates/unmarshall.go", s))
+
+	return b.String()
+}
+
+func render(path string, data interface{}) string {
+	t, err := template.ParseFiles(path)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	for _, f := range fields {
-		tok := strings.Split(f, " ")
-		nm := tok[0]
-		if strings.HasSuffix(nm, "ObjectWrapper") {
-			lines = append(lines,
-				fmt.Sprintf("ObjectWrapper: store.ObjectWrapperFactory(\"%s\"),", name))
+	buf := bytes.NewBufferString("")
+	err = t.Execute(buf, data)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return buf.String()
+}
+
+func addDefaultPropValues(props []_Prop) []_Prop {
+	res := []_Prop{}
+
+	for _, p := range props {
+		if len(p.Default) > 0 {
+			res = append(res, p)
 			continue
 		}
-		tp := tok[1]
-		lines = append(lines,
-			fmt.Sprintf("%s%s: %s,", nm, wrapperPrefix, typeDefault(tp)))
 
-		writeFunction(b,
-			fmt.Sprintf("%s() %s", nm, tp),
-			fmt.Sprintf("(o *%s%s)", wrapperPrefix, name),
-			[]string{fmt.Sprintf("return o.%s%s", nm, wrapperPrefix)})
-
-		if nm != "spec" && nm != "status" {
-			writeFunction(b,
-				fmt.Sprintf("Set%s(v %s)", nm, tp),
-				fmt.Sprintf("(o *%s%s)", wrapperPrefix, name),
-				[]string{fmt.Sprintf("o.%s%s = v", nm, wrapperPrefix)})
-		}
+		res = append(res, _Prop{
+			Prop:    p.Prop,
+			Json:    p.Json,
+			Type:    p.Type,
+			Default: typeDefault(p.Type),
+		})
 	}
 
-	endl(b)
-
-	lines = append(lines, "}")
-	writeFunction(b,
-		fmt.Sprintf("%s%s() %s", name, factorySuffix, name),
-		"",
-		lines)
-}
-
-func writeFunction(
-	b *strings.Builder,
-	name string,
-	instance string,
-	lines []string) {
-
-	write(b,
-		fmt.Sprintf(
-			"func %s %s {", instance, name),
-		0)
-
-	for _, l := range lines {
-		write(b, l, 1)
-	}
-
-	write(b, "}", 0)
-	endl(b)
+	return res
 }
 
 func typeDefault(tp string) string {
@@ -215,7 +174,7 @@ func typeDefault(tp string) string {
 	}
 
 	if tp == "string" {
-		return "\"\""
+		return "fmt.Sprint()"
 	}
 	if tp == "bool" {
 		return "false"
@@ -227,5 +186,35 @@ func typeDefault(tp string) string {
 		return "0"
 	}
 
-	return fmt.Sprintf("%s%s()", tp, factorySuffix)
+	return fmt.Sprintf("%sFactory()", tp)
+}
+
+func (u _Prop) IsMap() bool {
+	if len(u.Type) < 3 {
+		return false
+	}
+
+	return u.Type[:3] == "map"
+}
+
+func (u _Prop) IsArray() bool {
+	if len(u.Type) < 2 {
+		return false
+	}
+
+	return u.Type[:2] == "[]"
+}
+
+func (u _Prop) StrippedType() string {
+	if u.IsMap() {
+		return u.Type[strings.LastIndex(u.Type, "]")+1:]
+	}
+	if u.IsArray() {
+		return u.Type[2:]
+	}
+	return u.Type
+}
+
+func (u _Prop) StrippedDefault() string {
+	return typeDefault(u.StrippedType())
 }
