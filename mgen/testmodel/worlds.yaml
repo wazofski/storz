@@ -21,6 +21,8 @@ types:
     props:
       - prop: name
         type: string
+      - prop: description
+        type: string
       - prop: nested
         type: NestedWorld
   - kind: Struct

@@ -29,7 +29,11 @@ type ListOption interface {
 	GetListOption() Option
 }
 
-type OptionFunction func(OptionHolder) (OptionHolder, error)
+type OptionHolder interface {
+	CommonOptions() *CommonOptionHolder
+}
+
+type OptionFunction func(OptionHolder) error
 
 type CommonOptionHolder struct {
 	// Filter           core.MatcherOp
@@ -39,6 +43,6 @@ type CommonOptionHolder struct {
 	PageOffset       int
 }
 
-type OptionHolder interface {
-	CommonOptions() *CommonOptionHolder
+func (d *CommonOptionHolder) CommonOptions() *CommonOptionHolder {
+	return d
 }

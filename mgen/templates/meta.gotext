@@ -3,7 +3,7 @@ func (entity *_{{.Name}}) Metadata() store.Meta {
 	return *entity.Meta_
 }
 
-func (entity *_{{.Name}}) PKey() string {
+func (entity *_{{.Name}}) PrimaryKey() string {
 	return string(entity.{{.Pkey}})
 }
 

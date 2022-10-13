@@ -3,6 +3,7 @@ module github.com/wazofski/store
 go 1.16
 
 require (
+	github.com/Jeffail/gabs v1.4.0
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.2.0 // indirect
 	github.com/onsi/gomega v1.21.1 // indirect

@@ -1,4 +1,4 @@
-package mgen_test
+package store_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMgen(t *testing.T) {
+func TestStore(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "mGen Suite")
+	RunSpecs(t, "Store Suite")
 }

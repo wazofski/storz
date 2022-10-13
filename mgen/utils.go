@@ -1,6 +1,7 @@
 package mgen
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -44,9 +45,8 @@ func exportFile(targetDir string, name string, content string) error {
 	os.RemoveAll(targetDir)
 	os.Mkdir(targetDir, 0755)
 
-	targetFile := targetDir + name
-
-	log.Printf("exporting file %s", targetFile)
+	targetFile := fmt.Sprintf("%s/%s", targetDir, name)
+	// log.Printf("exporting file %s", targetFile)
 
 	f, err := os.Create(targetFile)
 	if err != nil {

@@ -1,4 +1,3 @@
-// func (entity *_{{.Name}}) UnmarshalJSON([]byte) error {
 func (entity *_{{.Name}}) UnmarshalJSON(data []byte) error {
 	rawMap := make(map[string]*json.RawMessage)
 	err := json.Unmarshal(data, &rawMap)

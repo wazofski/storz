@@ -2,16 +2,41 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 )
 
 type Object interface {
 	MetaHolder
 	Clone() Object
+	UnmarshalJSON(data []byte) error
+	PrimaryKey() string
 }
 
 type ObjectList []Object
 type ObjectIdentity string
+
+func (o ObjectIdentity) Path() string {
+	if strings.Index(string(o), "/") > 0 {
+		return string(o)
+	}
+
+	return fmt.Sprintf("id/%s", o)
+}
+
+func (o ObjectIdentity) Type() string {
+	tokens := strings.Split(o.Path(), "/")
+	return tokens[0]
+}
+
+func (o ObjectIdentity) Key() string {
+	tokens := strings.Split(o.Path(), "/")
+	if len(tokens) > 1 {
+		return tokens[1]
+	}
+	return ""
+}
 
 type Store interface {
 	Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)

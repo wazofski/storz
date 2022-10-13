@@ -19,7 +19,13 @@ Store:
     - go geneerate integration?
       - mgen command in the target repo as gogenerate comment
   - RAM store
-    - 
+    - get
+    - put
+    - post
+    - delete
+    - list
+      - options
+    - support both identity types
   - rest endpoint
     - 
   - parse list of objects

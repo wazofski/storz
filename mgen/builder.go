@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func Generate() error {
-	structs, resources := loadModel("model/")
+func Generate(model string) error {
+	structs, resources := loadModel(model)
 
 	imports := []string{
 		// "errors",
@@ -35,7 +35,7 @@ func Generate() error {
 		res = []byte(str)
 	}
 
-	return exportFile("generated/", "objects.go", string(res))
+	return exportFile("generated", "objects.go", string(res))
 }
 
 type _Interface struct {

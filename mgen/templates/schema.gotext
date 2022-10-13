@@ -27,7 +27,3 @@ func Schema() store.SchemaHolder {
 
 	return _Schema { Objects: objects }
 }
-
-func ObjectIdentityForID(id string) store.ObjectIdentity {
-	return store.ObjectIdentity(fmt.Sprintf("id/%s", id))
-}

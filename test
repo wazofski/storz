@@ -1,0 +1,4 @@
+ginkgo -r -focus "store"
+ginkgo -r -focus "mgen"
+ginkgo -r -focus "memory"
+
