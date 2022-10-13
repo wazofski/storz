@@ -9,7 +9,7 @@ Store:
     - generate schema @done
     - cloning @done
     - add primary key @done
-      - only string type suppor!!
+      - only string type suppor!! 
     - object identity @done
     - MatcherOp + Selectors ?
   - repackage
@@ -18,14 +18,15 @@ Store:
       - 
     - go geneerate integration?
       - mgen command in the target repo as gogenerate comment
-  - RAM store
-    - get
-    - put
-    - post
-    - delete
-    - list
-      - options
-    - support both identity types
+  - RAM store @done
+    - get @done
+    - put @done
+    - post @done
+    - delete @done
+    - list @done
+      - options @done
+      - filtering
+    - support both identity types @done
   - rest endpoint
     - 
   - parse list of objects
