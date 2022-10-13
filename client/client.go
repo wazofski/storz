@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,14 +14,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wazofski/store"
-)
-
-const (
-	filterArg      = "filter"
-	incrementalArg = "inc"
-	pageSizeArg    = "pageSize"
-	pageOffsetArg  = "pageOffset"
-	orderByArg     = "orderBy"
+	"github.com/wazofski/store/rest"
+	"github.com/wazofski/store/utils"
 )
 
 type restStore struct {
@@ -33,12 +26,6 @@ type restStore struct {
 }
 
 type requestMaker func(path *url.URL, content []byte, method string, headers map[string]string) ([]byte, error)
-
-type resource struct {
-	Metadata interface{} `json:"metadata,omitempty"`
-	Spec     interface{} `json:"spec,omitempty"`
-	Status   interface{} `json:"status,omitempty"`
-}
 
 type restOptions struct {
 	store.CommonOptionHolder
@@ -102,7 +89,7 @@ func makeHttpRequest(path *url.URL, content []byte, requestType string, headers 
 		return nil, err
 	}
 
-	rd, err := readAll(resp.Body)
+	rd, err := utils.ReadStream(resp.Body)
 
 	defer resp.Body.Close()
 
@@ -125,7 +112,7 @@ func processRequest(
 	headers map[string]string) ([]byte, error) {
 
 	reqId := uuid.New().String()
-	requestUrl.Path = strings.ReplaceAll(requestUrl.Path, "//", "/") // removes the extra /
+	requestUrl.Path = strings.ReplaceAll(requestUrl.Path, "//", "/")
 	origin := strings.ReplaceAll(requestUrl.String(), requestUrl.Path, "")
 	headers["Origin"] = strings.ReplaceAll(origin, requestUrl.RawQuery, "")
 	headers["X-Request-ID"] = reqId
@@ -229,21 +216,6 @@ func makePathForIdentity(baseUrl *url.URL, identity store.ObjectIdentity, params
 	return u
 }
 
-func extractResourceKind(response []byte) string {
-	resource := resource{}
-	err := json.Unmarshal(response, &resource)
-	if err != nil {
-		log.Printf("Error parsing %s: %s", string(response), err)
-		return ""
-	}
-
-	return extractKindFromResource(resource)
-}
-
-func extractKindFromResource(resource resource) string {
-	return resource.Metadata.(map[string]interface{})["kind"].(string)
-}
-
 func toBytes(obj interface{}) []byte {
 	if obj == nil {
 		return []byte{}
@@ -259,16 +231,16 @@ func listParameters(ropt restOptions) string {
 
 	q := url.Values{}
 	if len(opt.OrderBy) > 0 {
-		q.Add(orderByArg, opt.OrderBy)
-		q.Add(incrementalArg, strconv.FormatBool(opt.OrderIncremental))
+		q.Add(rest.OrderByArg, opt.OrderBy)
+		q.Add(rest.IncrementalArg, strconv.FormatBool(opt.OrderIncremental))
 	}
 
 	if opt.PageOffset > 0 {
-		q.Add(pageOffsetArg, fmt.Sprintf("%d", opt.PageOffset))
+		q.Add(rest.PageOffsetArg, fmt.Sprintf("%d", opt.PageOffset))
 	}
 
 	if opt.PageSize > 0 {
-		q.Add(pageSizeArg, fmt.Sprintf("%d", opt.PageSize))
+		q.Add(rest.PageSizeArg, fmt.Sprintf("%d", opt.PageSize))
 	}
 
 	if opt.Filter != nil {
@@ -279,7 +251,7 @@ func listParameters(ropt restOptions) string {
 		}
 
 		if len(content) > 0 {
-			q.Add(filterArg, string(content))
+			q.Add(rest.FilterArg, string(content))
 		}
 	}
 
@@ -408,13 +380,7 @@ func (d *restStore) Get(
 		return nil, err
 	}
 
-	resource := d.Schema.ObjectForKind(extractResourceKind(resp))
-	err = json.Unmarshal(resp, &resource)
-	if err != nil {
-		return nil, err
-	}
-
-	return resource, nil
+	return utils.UnmarshalObject(resp, d.Schema)
 }
 
 func (d *restStore) List(
@@ -444,9 +410,8 @@ func (d *restStore) List(
 		return nil, err
 	}
 
-	parsed := []resource{}
+	parsed := []*json.RawMessage{}
 	err = json.Unmarshal(res, &parsed)
-
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +421,7 @@ func (d *restStore) List(
 		return marshalledResult, nil
 	}
 
-	resource := d.Schema.ObjectForKind(extractKindFromResource(parsed[0]))
+	resource := d.Schema.ObjectForKind(utils.ObjeectKind(*parsed[0]))
 
 	for _, r := range parsed {
 		clone := resource.Clone()
@@ -466,16 +431,4 @@ func (d *restStore) List(
 	}
 
 	return marshalledResult, nil
-}
-
-func readAll(body io.ReadCloser) ([]byte, error) {
-	var b strings.Builder
-	var n int
-	var err error
-	data := make([]byte, 128)
-	for n, err = body.Read(data); err == nil; {
-		b.WriteString(string(data[:n]))
-	}
-
-	return []byte(b.String()), err
 }
