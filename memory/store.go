@@ -20,7 +20,7 @@ type memoryStore struct {
 
 func Factory() store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
-		client := memoryStore{
+		client := &memoryStore{
 			Schema:        schema,
 			IdentityIndex: make(map[string]*store.Object),
 			PrimaryIndex:  make(map[string]map[string]*store.Object),
@@ -30,7 +30,7 @@ func Factory() store.Factory {
 	}
 }
 
-func (d memoryStore) Create(
+func (d *memoryStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
@@ -71,7 +71,7 @@ func (d memoryStore) Create(
 	return clone, nil
 }
 
-func (d memoryStore) Update(
+func (d *memoryStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -109,7 +109,7 @@ func (d memoryStore) Update(
 	return clone, err
 }
 
-func (d memoryStore) Delete(
+func (d *memoryStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
@@ -137,7 +137,7 @@ func (d memoryStore) Delete(
 	return nil
 }
 
-func (d memoryStore) Get(
+func (d *memoryStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
@@ -176,7 +176,7 @@ func (d memoryStore) Get(
 	return nil, fmt.Errorf("object %s does not exist", identity)
 }
 
-func (d memoryStore) List(
+func (d *memoryStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {

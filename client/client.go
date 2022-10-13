@@ -1,4 +1,4 @@
-package memory
+package client
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -14,9 +14,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"golang.cisco.com/argo/pkg/core"
-	"golang.cisco.com/argo/pkg/gogen/src/stringutil"
-	"golang.cisco.com/cargo/store"
+	"github.com/wazofski/store"
 )
 
 const (
@@ -29,9 +27,9 @@ const (
 
 type restStore struct {
 	BaseURL     *url.URL
-	Schema      core.Schema
+	Schema      store.SchemaHolder
 	MakeRequest requestMaker
-	// Headers     []headerOption
+	Headers     []headerOption
 }
 
 type requestMaker func(path *url.URL, content []byte, method string, headers map[string]string) ([]byte, error)
@@ -47,7 +45,7 @@ type restOptions struct {
 	Headers map[string]string
 }
 
-func newRestOptions(d restStore) restOptions {
+func newRestOptions(d *restStore) restOptions {
 	res := restOptions{
 		CommonOptionHolder: store.CommonOptionHolder{},
 		Headers:            make(map[string]string),
@@ -65,13 +63,13 @@ func (d *restOptions) CommonOptions() *store.CommonOptionHolder {
 }
 
 func Factory(serviceUrl string, headers ...headerOption) store.Factory {
-	return func(schema core.Schema) (store.Store, error) {
+	return func(schema store.SchemaHolder) (store.Store, error) {
 		URL, err := url.Parse(serviceUrl)
 		if err != nil {
 			return nil, fmt.Errorf("%s; expected format: http(s)://address:port/argo/api", err)
 		}
 
-		client := restStore{
+		client := &restStore{
 			BaseURL:     URL,
 			Schema:      schema,
 			MakeRequest: makeHttpRequest,
@@ -104,7 +102,8 @@ func makeHttpRequest(path *url.URL, content []byte, requestType string, headers 
 		return nil, err
 	}
 
-	rd, err := ioutil.ReadAll(resp.Body)
+	rd, err := readAll(resp.Body)
+
 	defer resp.Body.Close()
 
 	if err != nil {
@@ -119,7 +118,7 @@ func makeHttpRequest(path *url.URL, content []byte, requestType string, headers 
 }
 
 func processRequest(
-	client restStore,
+	client *restStore,
 	requestUrl *url.URL,
 	content []byte,
 	method string,
@@ -155,17 +154,17 @@ func processRequest(
 		return nil, err
 	}
 
-	mol := core.MarshalledObjectList{}
+	mol := store.ObjectList{}
 	if err := json.Unmarshal(data, &mol); err != nil {
 		// ignore errors
 		// log.Printf("Unable to Unmarshal")
 		err = nil
 	}
 
-	if mol.Items != nil {
-		// This is a response of a GET on a collection, which is a list.
-		data = *mol.Items
-	}
+	// if mol.Items != nil {
+	// 	// This is a response of a GET on a collection, which is a list.
+	// 	data = *mol.Items
+	// }
 
 	return data, err
 }
@@ -203,39 +202,8 @@ func serialize(mo store.Object) ([]byte, error) {
 	return json.Marshal(mo)
 }
 
-func resourceNamespace(obj store.Object) string {
-	key := obj.Metadata().Kind()
-
-	ind := strings.Index(key, "/")
-	ret := key[:ind]
-
-	return ret
-}
-
-func resourceName(obj store.Object) string {
-	key := obj.Metadata().Kind()
-
-	ind := strings.LastIndex(key, ".")
-	ret := key[ind+1:]
-
-	return ret
-}
-
-func schemaVersion(obj store.Object) string {
-	key := obj.Metadata().Kind()
-
-	tok := strings.Split(key, "/")[1]
-	ret := strings.Split(tok, ".")[0]
-
-	return ret
-}
-
 func makePathForType(baseUrl *url.URL, obj store.Object) *url.URL {
-	u, _ := url.Parse(fmt.Sprintf("%s/%s/%s/%s",
-		baseUrl,
-		resourceNamespace(obj),
-		schemaVersion(obj),
-		stringutil.ToPlural(strings.ToLower(resourceName(obj)))))
+	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, obj.Metadata().Kind()))
 	return u
 }
 
@@ -318,7 +286,7 @@ func listParameters(ropt restOptions) string {
 	return q.Encode()
 }
 
-func (d restStore) Create(
+func (d *restStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
@@ -357,7 +325,7 @@ func (d restStore) Create(
 	return clone, err
 }
 
-func (d restStore) Update(
+func (d *restStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -393,7 +361,7 @@ func (d restStore) Update(
 	return clone, err
 }
 
-func (d restStore) Delete(
+func (d *restStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
@@ -416,7 +384,7 @@ func (d restStore) Delete(
 	return err
 }
 
-func (d restStore) Get(
+func (d *restStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
@@ -440,7 +408,7 @@ func (d restStore) Get(
 		return nil, err
 	}
 
-	resource := d.Schema.NewResourceByKey(extractResourceKind(resp))
+	resource := d.Schema.ObjectForKind(extractResourceKind(resp))
 	err = json.Unmarshal(resp, &resource)
 	if err != nil {
 		return nil, err
@@ -449,7 +417,7 @@ func (d restStore) Get(
 	return resource, nil
 }
 
-func (d restStore) List(
+func (d *restStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
@@ -488,10 +456,10 @@ func (d restStore) List(
 		return marshalledResult, nil
 	}
 
-	resource := d.Schema.NewResourceByKey(extractKindFromResource(parsed[0]))
+	resource := d.Schema.ObjectForKind(extractKindFromResource(parsed[0]))
 
 	for _, r := range parsed {
-		clone := resource.Clone().(store.Object)
+		clone := resource.Clone()
 		clone.UnmarshalJSON(toBytes(r))
 
 		marshalledResult = append(marshalledResult, clone)
@@ -500,33 +468,14 @@ func (d restStore) List(
 	return marshalledResult, nil
 }
 
-func (d restStore) Patch(
-	ctx context.Context,
-	identity store.ObjectIdentity,
-	patch []byte,
-	opt ...store.PatchOption) (store.Object, error) {
-
-	copt := newRestOptions(d)
+func readAll(body io.ReadCloser) ([]byte, error) {
+	var b strings.Builder
+	var n int
 	var err error
-	for _, o := range opt {
-		err = o.ApplyFunction()(&copt)
-		if err != nil {
-			return nil, err
-		}
+	data := make([]byte, 128)
+	for n, err = body.Read(data); err == nil; {
+		b.WriteString(string(data[:n]))
 	}
 
-	data, err := processRequest(d,
-		makePathForIdentity(d.BaseURL, identity, ""),
-		patch,
-		http.MethodPatch,
-		copt.Headers)
-
-	if err != nil {
-		return nil, err
-	}
-
-	resource := d.Schema.NewResourceByKey(extractResourceKind(data))
-	err = json.Unmarshal(data, &resource)
-
-	return resource, err
+	return []byte(b.String()), err
 }
