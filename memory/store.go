@@ -58,8 +58,8 @@ func (d memoryStore) Create(
 
 	clone := obj.Clone()
 
-	log.Printf("creating %s", obj.Metadata().Identity())
-	log.Printf("path %s", obj.Metadata().Identity().Path())
+	// log.Printf("creating %s", obj.Metadata().Identity())
+	// log.Printf("path %s", obj.Metadata().Identity().Path())
 
 	d.IdentityIndex[obj.Metadata().Identity().Path()] = &clone
 	if d.PrimaryIndex[lk] == nil {
@@ -77,7 +77,7 @@ func (d memoryStore) Update(
 	obj store.Object,
 	opt ...store.UpdateOption) (store.Object, error) {
 
-	log.Printf("updating %s", identity)
+	// log.Printf("updating %s", identity)
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -114,7 +114,7 @@ func (d memoryStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("deleting %s", identity)
+	// log.Printf("deleting %s", identity)
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -142,7 +142,7 @@ func (d memoryStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("getting %s", identity)
+	// log.Printf("getting %s", identity)
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -153,7 +153,7 @@ func (d memoryStore) Get(
 		}
 	}
 
-	log.Printf("...GET identity index size: %d", len(d.IdentityIndex))
+	// log.Printf("...GET identity index size: %d", len(d.IdentityIndex))
 
 	ret := d.IdentityIndex[identity.Path()]
 	if ret != nil {
@@ -165,7 +165,7 @@ func (d memoryStore) Get(
 		lk := strings.ToLower(tokens[0])
 		km := d.PrimaryIndex[lk]
 		if km != nil {
-			log.Printf("...GET type index exists with %d records", len(km))
+			// log.Printf("...GET type index exists with %d records", len(km))
 			ret = km[tokens[1]]
 			if ret != nil {
 				return *ret, nil
@@ -181,7 +181,7 @@ func (d memoryStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("listing %s", identity)
+	// log.Printf("listing %s", identity)
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -261,6 +261,6 @@ func objectPath(obj store.Object, path string) string {
 		return ""
 	}
 	ret := jsn.Path(path).String()
-	log.Printf("path %s val %s", path, ret)
+	// log.Printf("path %s val %s", path, ret)
 	return ret
 }
