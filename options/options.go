@@ -1,32 +1,32 @@
 package options
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 
 	"github.com/wazofski/store"
 )
 
-// func PropFilter(prop string, val string) store.ListOption {
-// 	return Filter(core.NewOperatorEqual(prop, val))
-// }
+func PropFilter(prop string, val string) store.ListOption {
+	return listOption{
+		Function: func(options store.OptionHolder) error {
+			commonOptions := options.CommonOptions()
+			if commonOptions.Filter != nil {
+				return errors.New("filter option has already been set")
+			}
 
-// func Filter(op core.MatcherOp) store.ListOption {
-// 	return listOption{
-// 		Function: func(options store.OptionHolder) error {
-// 			commonOptions := options.CommonOptions()
-// 			if commonOptions.Filter != nil {
-// 				return errors.New("filter option has already been set")
-// 			}
+			commonOptions.Filter = &store.Filter{
+				Key:   prop,
+				Value: val,
+			}
+			opstr, _ := json.Marshal(*commonOptions.Filter)
+			log.Printf("filter option %s", string(opstr))
 
-// 			commonOptions.Filter = op
-// 			opstr, _ := json.Marshal(op)
-// 			log.Printf("filter option %s", string(opstr))
-
-// 			return nil
-// 		},
-// 	}
-// }
+			return nil
+		},
+	}
+}
 
 func PageSize(ps int) store.ListOption {
 	return listOption{

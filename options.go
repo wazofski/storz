@@ -35,8 +35,13 @@ type OptionHolder interface {
 
 type OptionFunction func(OptionHolder) error
 
+type Filter struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type CommonOptionHolder struct {
-	// Filter           core.MatcherOp
+	Filter           *Filter
 	OrderBy          string
 	OrderIncremental bool
 	PageSize         int

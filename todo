@@ -11,7 +11,9 @@ Store:
     - add primary key @done
       - only string type suppor!! 
     - object identity @done
-    - MatcherOp + Selectors ?
+    - MatcherOp ?
+    - Selectors ?
+    - Handlers
   - repackage
     - mgen install
     - need a top level name
@@ -25,11 +27,18 @@ Store:
     - delete @done
     - list @done
       - options @done
-      - filtering
+      - filtering @done
+        - single prop @done
+        - complex queries ?
     - support both identity types @done
   - rest endpoint
-    - 
-  - parse list of objects
-  - rest store
+  - rest store (refactor)
   - mongodb store
   - sqlite store
+  - service
+    - generator
+    - transactor
+    - handler logic
+      - validation
+  - repackage modules
+  - 

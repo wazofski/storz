@@ -206,21 +206,43 @@ func (d memoryStore) List(
 		res = append(res, (*v).Clone())
 	}
 
-	// filter results
-	// res, err = listFilter(res, copt.Filter)
-	// sort results
-	res, err = listOrder(res, copt.OrderBy, copt.OrderIncremental)
-	if err != nil {
-		return nil, err
+	if len(res) > 0 && copt.Filter != nil {
+		p := objectPath(res[0], copt.Filter.Key)
+		if p == "" {
+			return nil, fmt.Errorf("invalid filter key %s", copt.Filter.Key)
+		}
 	}
 
+	// filter results
+	res = listFilter(res, copt.Filter)
+	// sort results
+	res = listOrder(res, copt.OrderBy, copt.OrderIncremental)
 	// paginate
 	return listPagination(res, copt.PageOffset, copt.PageSize), nil
 }
 
-func listOrder(list store.ObjectList, ob string, inc bool) (store.ObjectList, error) {
+func listFilter(list store.ObjectList, filter *store.Filter) store.ObjectList {
+	if filter == nil {
+		return list
+	}
+
+	res := store.ObjectList{}
+	for _, o := range list {
+		path := objectPath(o, filter.Key)
+
+		// log.Printf("%s %s", path, filter.Value)
+
+		if filter.Value == path {
+			res = append(res, o)
+		}
+	}
+
+	return res
+}
+
+func listOrder(list store.ObjectList, ob string, inc bool) store.ObjectList {
 	if len(ob) == 0 {
-		return list, nil
+		return list
 	}
 
 	sort.Slice(list, func(p, q int) bool {
@@ -230,7 +252,7 @@ func listOrder(list store.ObjectList, ob string, inc bool) (store.ObjectList, er
 		return objectPath(list[p], ob) > objectPath(list[q], ob)
 	})
 
-	return list, nil
+	return list
 }
 
 func listPagination(list store.ObjectList, offset int, size int) store.ObjectList {
@@ -260,7 +282,11 @@ func objectPath(obj store.Object, path string) string {
 		log.Panic(err)
 		return ""
 	}
-	ret := jsn.Path(path).String()
+	if !jsn.Exists(strings.Split(path, ".")...) {
+		// log.Printf("path %s does not exist", path)
+		return ""
+	}
+	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
 	// log.Printf("path %s val %s", path, ret)
 	return ret
 }

@@ -7,7 +7,7 @@ func (entity *_{{.Name}}) PrimaryKey() string {
 	return string(entity.{{.Pkey}})
 }
 
-func ObjectIdentityFor{{.Name}}(pkey string) store.ObjectIdentity {
+func {{.Name}}Identity(pkey string) store.ObjectIdentity {
 	return store.ObjectIdentity(
 		fmt.Sprintf("%s/%s", 
 			"{{ .IdentityPrefix }}",
