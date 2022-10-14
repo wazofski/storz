@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -141,31 +142,19 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 
 			pageSize, ok := vals[PageSizeArg]
 			if ok {
-				ps := 0
-				err := json.Unmarshal([]byte(pageSize[0]), &ps)
-				if err != nil {
-					reportError(w, err, http.StatusBadRequest)
-				}
+				ps, _ := strconv.Atoi(pageSize[0])
 				opts = append(opts, options.PageSize(ps))
 			}
 
 			pageOffset, ok := vals[PageOffsetArg]
 			if ok {
-				ps := 0
-				err := json.Unmarshal([]byte(pageOffset[0]), &ps)
-				if err != nil {
-					reportError(w, err, http.StatusBadRequest)
-				}
+				ps, _ := strconv.Atoi(pageOffset[0])
 				opts = append(opts, options.PageOffset(ps))
 			}
 
 			orderBy, ok := vals[OrderByArg]
 			if ok {
-				ob := ""
-				err := json.Unmarshal([]byte(orderBy[0]), &ob)
-				if err != nil {
-					reportError(w, err, http.StatusBadRequest)
-				}
+				ob := orderBy[0]
 				opts = append(opts, options.OrderBy(ob))
 			}
 

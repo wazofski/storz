@@ -208,11 +208,13 @@ func makePathForIdentity(baseUrl *url.URL, identity store.ObjectIdentity, params
 			removeTrailingSlash(identity.Path()),
 			params)
 
+		// log.Printf(`made path %s # %s # %s`, path, identity.Path(), string(identity))
+
 		u, _ := url.ParseRequestURI(path)
 		return u
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, identity))
+	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, identity.Path()))
 	return u
 }
 

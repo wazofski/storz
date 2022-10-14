@@ -79,7 +79,7 @@ func (d *memoryStore) Update(
 	obj store.Object,
 	opt ...store.UpdateOption) (store.Object, error) {
 
-	log.Printf("MEMORY update %s", identity)
+	log.Printf("MEMORY update %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -116,7 +116,7 @@ func (d *memoryStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("MEMORY delete %s", identity)
+	log.Printf("MEMORY delete %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -144,7 +144,7 @@ func (d *memoryStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("MEMORY get %s", identity)
+	log.Printf("MEMORY get %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -183,7 +183,7 @@ func (d *memoryStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("MEMORY list %s", identity)
+	log.Printf("MEMORY list %s", identity.Type())
 
 	var err error
 	copt := store.CommonOptionHolder{}
