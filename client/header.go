@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/wazofski/store"
@@ -33,7 +32,7 @@ func Header(key string, val string) headerOption {
 				return fmt.Errorf("invalid header name [%s]", key)
 			}
 			restOpts.Headers[key] = val
-			log.Printf("header option %s%s: [%s]", strings.ToUpper(key[:1]), key[1:], val)
+			// log.Printf("header option %s%s: [%s]", strings.ToUpper(key[:1]), key[1:], val)
 			return nil
 		},
 	}

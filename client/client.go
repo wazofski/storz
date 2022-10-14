@@ -136,13 +136,13 @@ func processRequest(
 			var js interface{}
 			if json.Unmarshal([]byte(content), &js) == nil {
 				r, _ := json.MarshalIndent(js, "", "    ")
-				log.Printf("request content %s", r)
+				log.Printf("CLIENT request content: %s", r)
 			} else {
-				log.Printf("request content %s", content)
+				log.Printf("CLIENT request content: %s", content)
 			}
 		}
 		if len(data) > 0 {
-			log.Printf("response content %s", string(data))
+			log.Printf("CLIENT response content: %s", string(data))
 		}
 		return nil, err
 	}
