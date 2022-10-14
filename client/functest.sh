@@ -3,7 +3,7 @@ trap "kill 0" EXIT
 go clean -cache
 
 cd ..
-go run cmd/server.go > sample.out &
+go run cmd/server.go &
 sleep 1
 
 ginkgo -r -focus "client" -v

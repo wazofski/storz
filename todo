@@ -8,6 +8,8 @@ Store:
     - templates implementation @done
     - generate schema @done
     - cloning @done
+    - error reporting
+      - missing class reference ?
     - add primary key @done
       - only string type suppor!! 
     - object identity @done
@@ -37,6 +39,11 @@ Store:
       - post
       - put
   - rest store (refactor) @done
+  - framework store
+    - strip meta and status
+      - create 
+      - update
+    - reactor logic?
   - mongodb store
   - sql store
     - connector interface
@@ -48,7 +55,7 @@ Store:
     - handler logic
       - validation
   - repackage modules
-  - add negative tests everywhere
+  - negative tests
     - pass nil
     - try non allowed actions
       - for id
