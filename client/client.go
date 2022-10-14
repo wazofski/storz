@@ -133,7 +133,13 @@ func processRequest(
 	if err != nil {
 		// log.Println(err)
 		if len(content) > 0 {
-			log.Printf("request content %s", content)
+			var js interface{}
+			if json.Unmarshal([]byte(content), &js) == nil {
+				r, _ := json.MarshalIndent(js, "", "    ")
+				log.Printf("request content %s", r)
+			} else {
+				log.Printf("request content %s", content)
+			}
 		}
 		if len(data) > 0 {
 			log.Printf("response content %s", string(data))
