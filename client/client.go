@@ -251,15 +251,25 @@ func listParameters(ropt restOptions) string {
 		q.Add(rest.PageSizeArg, fmt.Sprintf("%d", opt.PageSize))
 	}
 
-	if opt.Filter != nil {
-		content, err := json.Marshal(opt.Filter)
-
+	if opt.PropFilter != nil {
+		content, err := json.Marshal(opt.PropFilter)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		if len(content) > 0 {
-			q.Add(rest.FilterArg, string(content))
+			q.Add(rest.PropFilterArg, string(content))
+		}
+	}
+
+	if opt.KeyFilter != nil {
+		content, err := json.Marshal(opt.KeyFilter)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		if len(content) > 0 {
+			q.Add(rest.KeyFilterArg, string(content))
 		}
 	}
 

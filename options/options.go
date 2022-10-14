@@ -2,6 +2,7 @@ package options
 
 import (
 	"errors"
+	"log"
 
 	"github.com/wazofski/store"
 )
@@ -10,17 +11,39 @@ func PropFilter(prop string, val string) store.ListOption {
 	return listOption{
 		Function: func(options store.OptionHolder) error {
 			commonOptions := options.CommonOptions()
-			if commonOptions.Filter != nil {
-				return errors.New("filter option has already been set")
+			if commonOptions.PropFilter != nil {
+				return errors.New("prop filter option already set")
 			}
 
-			commonOptions.Filter = &store.Filter{
+			commonOptions.PropFilter = &store.PropFilter{
 				Key:   prop,
 				Value: val,
 			}
+
 			// opstr, _ := json.Marshal(*commonOptions.Filter)
 			// log.Printf("filter option %s", string(opstr))
+			return nil
+		},
+	}
+}
 
+func KeyFilter(keys ...string) store.ListOption {
+	return listOption{
+		Function: func(options store.OptionHolder) error {
+			if len(keys) == 0 {
+				log.Printf("ignoring empty key filter")
+				return nil
+			}
+
+			commonOptions := options.CommonOptions()
+			if commonOptions.KeyFilter != nil {
+				return errors.New("key filter option already set")
+			}
+
+			commonOptions.KeyFilter = (*store.KeyFilter)(&keys)
+
+			// opstr, _ := json.Marshal(*commonOptions.Filter)
+			// log.Printf("filter option %s", string(opstr))
 			return nil
 		},
 	}

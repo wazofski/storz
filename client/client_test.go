@@ -221,6 +221,37 @@ var _ = Describe("client", func() {
 		Expect(world.Spec().Name()).To(Equal(anotherWorldName))
 	})
 
+	It("can LIST and filter by primary key", func() {
+		ret, err := stc.List(
+			ctx, generated.WorldIdentity(""))
+
+		Expect(err).To(BeNil())
+
+		keys := []string{}
+		for _, o := range ret {
+			keys = append(keys, o.PrimaryKey())
+		}
+
+		Expect(len(keys)).To(Equal(2))
+
+		ret, err = stc.List(
+			ctx, generated.WorldIdentity(""),
+			options.KeyFilter(keys[0], keys[1]))
+
+		Expect(err).To(BeNil())
+		Expect(len(ret)).To(Equal(2))
+
+		for _, k := range keys {
+			ret, err = stc.List(
+				ctx, generated.WorldIdentity(""),
+				options.KeyFilter(k))
+
+			Expect(err).To(BeNil())
+			Expect(len(ret)).To(Equal(1))
+			Expect(ret[0].PrimaryKey()).To(Equal(k))
+		}
+	})
+
 	It("can LIST and FILTER", func() {
 		ret, err := stc.List(
 			ctx,

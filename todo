@@ -11,17 +11,9 @@ Store:
     - error reporting
       - missing class reference ?
     - add primary key @done
-      - only string type suppor!! 
+      - only string type suppored!! 
     - object identity @done
-    - MatcherOp ?
-    - Selectors ?
     - Handlers
-  - repackage
-    - mgen install
-    - need a top level name
-      - 
-    - go geneerate integration?
-      - mgen command in the target repo as gogenerate comment
   - RAM store @done
     - get @done
     - put @done
@@ -34,30 +26,38 @@ Store:
         - complex queries ?
     - support both identity types @done
   - rest endpoint @done
-    - partial object support - jsonpatch ?
-    - resetting status and meta
-      - post
-      - put
   - rest store (refactor) @done
+  - LIST PKey filter @done
   - framework store
+    - partial object PUT (only spec)
     - strip meta and status
       - create 
       - update
-    - reactor logic?
+    - react logic
+      - transactor
+      - validator
+      - handler
+    - 
+  - modules
+    - module name
+    - packages
+    - mgen install
+    - go geneerate integration
+    - service geenerator
   - mongodb store
   - sql store
     - connector interface
       - sqlite imp
-      - mysql imp ?
-  - service
-    - generator
-    - transactor
-    - handler logic
-      - validation
-  - repackage modules
-  - negative tests
-    - pass nil
-    - try non allowed actions
-      - for id
-      - for pkey
-    - pass partial obj?
+      - mysql imp
+  - tests
+    - negative checks
+      - pass nil
+      - non allowed actions
+        - for id
+        - for pkey
+      - pass partial obj?
+      - change status
+      - change meta
+    - change naming prop 
+    - action tests by ID
+      - put by ID for example

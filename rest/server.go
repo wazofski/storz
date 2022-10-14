@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"golang.org/x/exp/slices"
 
@@ -19,7 +18,8 @@ import (
 )
 
 const (
-	FilterArg      = "filter"
+	PropFilterArg  = "pf"
+	KeyFilterArg   = "kf"
 	IncrementalArg = "inc"
 	PageSizeArg    = "pageSize"
 	PageOffsetArg  = "pageOffset"
@@ -132,14 +132,24 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 			opts := []store.ListOption{}
 
 			vals := r.URL.Query()
-			filter, ok := vals[FilterArg]
+			filter, ok := vals[PropFilterArg]
 			if ok {
-				flt := store.Filter{}
+				flt := store.PropFilter{}
 				err := json.Unmarshal([]byte(filter[0]), &flt)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
 				}
 				opts = append(opts, options.PropFilter(flt.Key, flt.Value))
+			}
+
+			keyFilter, ok := vals[KeyFilterArg]
+			if ok {
+				flt := store.KeyFilter{}
+				err := json.Unmarshal([]byte(keyFilter[0]), &flt)
+				if err != nil {
+					reportError(w, err, http.StatusBadRequest)
+				}
+				opts = append(opts, options.KeyFilter(flt...))
 			}
 
 			pageSize, ok := vals[PageSizeArg]
@@ -238,7 +248,6 @@ func (d *_Server) handlePath(
 			reportError(w, err, http.StatusNotFound)
 		}
 	case http.MethodPost:
-		object.Metadata().SetIdentity(store.ObjectIdentity(uuid.New().String()))
 		ret, err = d.Store.Create(d.Context, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)

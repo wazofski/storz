@@ -35,13 +35,16 @@ type OptionHolder interface {
 
 type OptionFunction func(OptionHolder) error
 
-type Filter struct {
+type PropFilter struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+type KeyFilter []string
+
 type CommonOptionHolder struct {
-	Filter           *Filter
+	PropFilter       *PropFilter
+	KeyFilter        *KeyFilter
 	OrderBy          string
 	OrderIncremental bool
 	PageSize         int

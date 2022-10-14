@@ -208,22 +208,44 @@ func (d *memoryStore) List(
 		res = append(res, (*v).Clone())
 	}
 
-	if len(res) > 0 && copt.Filter != nil {
-		p := objectPath(res[0], copt.Filter.Key)
+	if len(res) > 0 && copt.PropFilter != nil {
+		p := objectPath(res[0], copt.PropFilter.Key)
 		if p == "" {
-			return nil, fmt.Errorf("invalid filter key %s", copt.Filter.Key)
+			return nil, fmt.Errorf("invalid filter key %s", copt.PropFilter.Key)
 		}
 	}
 
+	// key filter results
+	res = listPkeyFilter(res, copt.KeyFilter)
 	// filter results
-	res = listFilter(res, copt.Filter)
+	res = listFilter(res, copt.PropFilter)
 	// sort results
 	res = listOrder(res, copt.OrderBy, copt.OrderIncremental)
 	// paginate
 	return listPagination(res, copt.PageOffset, copt.PageSize), nil
 }
 
-func listFilter(list store.ObjectList, filter *store.Filter) store.ObjectList {
+func listPkeyFilter(list store.ObjectList, filter *store.KeyFilter) store.ObjectList {
+	if filter == nil {
+		return list
+	}
+
+	lookup := make(map[string]bool)
+	for _, f := range *filter {
+		lookup[f] = true
+	}
+
+	res := store.ObjectList{}
+	for _, o := range list {
+		if lookup[o.PrimaryKey()] {
+			res = append(res, o)
+		}
+	}
+
+	return res
+}
+
+func listFilter(list store.ObjectList, filter *store.PropFilter) store.ObjectList {
 	if filter == nil {
 		return list
 	}
@@ -231,8 +253,6 @@ func listFilter(list store.ObjectList, filter *store.Filter) store.ObjectList {
 	res := store.ObjectList{}
 	for _, o := range list {
 		path := objectPath(o, filter.Key)
-
-		// log.Printf("%s %s", path, filter.Value)
 
 		if filter.Value == path {
 			res = append(res, o)
@@ -285,10 +305,8 @@ func objectPath(obj store.Object, path string) string {
 		return ""
 	}
 	if !jsn.Exists(strings.Split(path, ".")...) {
-		// log.Printf("path %s does not exist", path)
 		return ""
 	}
 	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
-	// log.Printf("path %s val %s", path, ret)
 	return ret
 }
