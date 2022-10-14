@@ -1,5 +1,5 @@
 Store:
-  - mgen
+  - mgen @done
     - basic model generation @done
     - factory @done
     - add json tags for props @done
@@ -38,11 +38,19 @@ Store:
       - put
   - rest store (refactor) @done
   - mongodb store
-  - sqlite store
+  - sql store
+    - connector interface
+      - sqlite imp
+      - mysql imp ?
   - service
     - generator
     - transactor
     - handler logic
       - validation
   - repackage modules
-  - 
+  - add negative tests everywhere
+    - pass nil
+    - try non allowed actions
+      - for id
+      - for pkey
+    - pass partial obj?
