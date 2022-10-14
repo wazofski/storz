@@ -119,8 +119,8 @@ func processRequest(
 	headers["Content-Type"] = "application/json"
 	headers["X-Requested-With"] = "XMLHttpRequest"
 
-	log.Printf("%s request to %s", method, requestUrl)
-	log.Printf("X-Request-ID %s", reqId)
+	log.Printf("CLIENT %s %s", strings.ToLower(method), requestUrl)
+	// log.Printf("X-Request-ID %s", reqId)
 
 	data, err := client.MakeRequest(requestUrl, content, method, headers)
 	cerr := errorCheck(data)
@@ -131,7 +131,7 @@ func processRequest(
 	}
 
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		if len(content) > 0 {
 			log.Printf("request content %s", content)
 		}

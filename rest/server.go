@@ -218,7 +218,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 }
 
 func prepResponse(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s", r.Method, r.URL)
+	log.Printf("SERVER %s %s", strings.ToLower(r.Method), r.URL)
 
 	w.Header().Add("Content-Type", "application/json")
 }
