@@ -27,6 +27,7 @@ const (
 )
 
 type Endpoint interface {
+	Listen(int)
 }
 
 type _HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -35,33 +36,34 @@ type _Server struct {
 	Schema  store.SchemaHolder
 	Store   store.Store
 	Context context.Context
+	Router  *mux.Router
 }
 
-func Server(schema store.SchemaHolder, store store.Store, port int) Endpoint {
+func (d *_Server) Listen(port int) {
+	log.Println(http.ListenAndServe(
+		fmt.Sprintf(":%d", port), d.Router))
+}
+
+func Server(schema store.SchemaHolder, store store.Store) Endpoint {
 	server := &_Server{
 		Schema:  schema,
 		Store:   store,
 		Context: context.Background(),
+		Router:  mux.NewRouter(),
 	}
 
-	router := mux.NewRouter()
-	addHandler(router, "/id/{id}", makeIdHandler(server))
+	addHandler(server.Router, "/id/{id}", makeIdHandler(server))
 	for k, v := range schema.ObjectMethods() {
-		addHandler(router,
+		addHandler(server.Router,
 			fmt.Sprintf("/%s/{pkey}", strings.ToLower(k)),
 			makeObjectHandler(server, k, v))
-		addHandler(router,
+		addHandler(server.Router,
 			fmt.Sprintf("/%s", strings.ToLower(k)),
 			makeTypeHandler(server, k, v))
-		addHandler(router,
+		addHandler(server.Router,
 			fmt.Sprintf("/%s/", strings.ToLower(k)),
 			makeTypeHandler(server, k, v))
 	}
-
-	// go func() {
-	log.Println(http.ListenAndServe(
-		fmt.Sprintf(":%d", 8000), router))
-	// }()
 
 	return server
 }

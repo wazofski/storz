@@ -209,7 +209,7 @@ var _ = Describe("client", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(false),
+			options.OrderIncremental(true),
 			options.PageSize(1),
 			options.PageOffset(1))
 
@@ -219,7 +219,6 @@ var _ = Describe("client", func() {
 
 		world = ret[0].(generated.World)
 		Expect(world.Spec().Name()).To(Equal(anotherWorldName))
-
 	})
 
 	It("can LIST and FILTER", func() {

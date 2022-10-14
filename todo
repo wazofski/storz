@@ -31,12 +31,12 @@ Store:
         - single prop @done
         - complex queries ?
     - support both identity types @done
-  - rest endpoint
-    - partial object support
+  - rest endpoint @done
+    - partial object support - jsonpatch ?
     - resetting status and meta
       - post
       - put
-  - rest store (refactor)
+  - rest store (refactor) @done
   - mongodb store
   - sqlite store
   - service

@@ -141,12 +141,12 @@ func processRequest(
 		return nil, err
 	}
 
-	mol := store.ObjectList{}
-	if err := json.Unmarshal(data, &mol); err != nil {
-		// ignore errors
-		// log.Printf("Unable to Unmarshal")
-		err = nil
-	}
+	// mol := store.ObjectList{}
+	// if err := json.Unmarshal(data, &mol); err != nil {
+	// 	// ignore errors
+	// 	// log.Printf("Unable to Unmarshal")
+	// 	err = nil
+	// }
 
 	// if mol.Items != nil {
 	// 	// This is a response of a GET on a collection, which is a list.
@@ -382,7 +382,12 @@ func (d *restStore) Get(
 		return nil, err
 	}
 
-	return utils.UnmarshalObject(resp, d.Schema, identity.Type())
+	tp := identity.Type()
+	if tp == "id" {
+		tp = utils.ObjeectKind(resp)
+	}
+
+	return utils.UnmarshalObject(resp, d.Schema, tp)
 }
 
 func (d *restStore) List(

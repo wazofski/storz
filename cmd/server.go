@@ -11,5 +11,6 @@ func main() {
 	sch := generated.Schema()
 	mem := store.New(sch, memory.Factory())
 
-	rest.Server(sch, mem, 8000)
+	srv := rest.Server(sch, mem)
+	srv.Listen(8000)
 }

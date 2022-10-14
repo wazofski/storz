@@ -16,7 +16,7 @@ func Generate(model string) error {
 		// "errors",
 		// "log",
 		"fmt",
-		// "strings",
+		"strings",
 		"encoding/json",
 		"github.com/wazofski/store/utils",
 		"github.com/wazofski/store",
