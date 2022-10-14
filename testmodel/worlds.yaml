@@ -3,6 +3,7 @@ types:
     name: World
     spec: WorldSpec
     status: WorldStatus
+    pkey: spec.name
     apimethods:
       - apimethod: GET
       - apimethod: PUT

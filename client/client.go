@@ -63,7 +63,7 @@ func Factory(serviceUrl string, headers ...headerOption) store.Factory {
 			Headers:     headers,
 		}
 
-		log.Printf("cargo REST client initialized: %s", serviceUrl)
+		log.Printf("REST client initialized: %s", serviceUrl)
 		return client, nil
 	}
 }
@@ -183,14 +183,14 @@ func errorCheck(response []byte) error {
 
 func serialize(mo store.Object) ([]byte, error) {
 	if mo == nil {
-		return nil, errors.New("canot serialize nil store.Object")
+		return nil, errors.New("cannot serialize nil store.Object")
 	}
 
 	return json.Marshal(mo)
 }
 
 func makePathForType(baseUrl *url.URL, obj store.Object) *url.URL {
-	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, obj.Metadata().Kind()))
+	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, strings.ToLower(obj.Metadata().Kind())))
 	return u
 }
 
@@ -205,7 +205,7 @@ func makePathForIdentity(baseUrl *url.URL, identity store.ObjectIdentity, params
 	if len(params) > 0 {
 		path := fmt.Sprintf("%s/%s?%s",
 			baseUrl,
-			removeTrailingSlash(string(identity)),
+			removeTrailingSlash(identity.Path()),
 			params)
 
 		u, _ := url.ParseRequestURI(path)
@@ -380,7 +380,7 @@ func (d *restStore) Get(
 		return nil, err
 	}
 
-	return utils.UnmarshalObject(resp, d.Schema)
+	return utils.UnmarshalObject(resp, d.Schema, identity.Type())
 }
 
 func (d *restStore) List(

@@ -32,6 +32,10 @@ Store:
         - complex queries ?
     - support both identity types @done
   - rest endpoint
+    - partial object support
+    - resetting status and meta
+      - post
+      - put
   - rest store (refactor)
   - mongodb store
   - sqlite store

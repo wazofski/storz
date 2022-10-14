@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"strings"
 
 	"github.com/wazofski/store"
 )
@@ -28,20 +27,26 @@ func CloneObject(obj store.Object, schema store.SchemaHolder) store.Object {
 	return ret
 }
 
-func ReadStream(body io.ReadCloser) ([]byte, error) {
-	var b strings.Builder
-	var n int
-	var err error
-	data := make([]byte, 128)
-	for n, err = body.Read(data); err == nil; {
-		b.WriteString(string(data[:n]))
+func ReadStream(r io.ReadCloser) ([]byte, error) {
+	b := make([]byte, 0, 512)
+	for {
+		if len(b) == cap(b) {
+			// Add more capacity (let append pick how much).
+			b = append(b, 0)[:len(b)]
+		}
+		n, err := r.Read(b[len(b):cap(b)])
+		b = b[:len(b)+n]
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			return b, err
+		}
 	}
-
-	return []byte(b.String()), err
 }
 
-func UnmarshalObject(body []byte, schema store.SchemaHolder) (store.Object, error) {
-	resource := schema.ObjectForKind(ObjeectKind(body))
+func UnmarshalObject(body []byte, schema store.SchemaHolder, kind string) (store.Object, error) {
+	resource := schema.ObjectForKind(kind)
 	err := json.Unmarshal(body, &resource)
 
 	return resource, err
@@ -51,7 +56,10 @@ func ObjeectKind(response []byte) string {
 	resource := _Resource{}
 	err := json.Unmarshal(response, &resource)
 	if err != nil {
-		log.Printf("Error parsing %s: %s", string(response), err)
+		return ""
+	}
+
+	if resource.Metadata == nil {
 		return ""
 	}
 

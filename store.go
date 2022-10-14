@@ -19,7 +19,8 @@ type ObjectIdentity string
 
 func (o ObjectIdentity) Path() string {
 	if strings.Index(string(o), "/") > 0 {
-		return string(o)
+		tok := strings.Split(string(o), "/")
+		return fmt.Sprintf("%s/%s", strings.ToLower(tok[0]), tok[1])
 	}
 
 	return fmt.Sprintf("id/%s", o)

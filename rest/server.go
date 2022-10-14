@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"golang.org/x/exp/slices"
 
@@ -34,35 +36,49 @@ type _Server struct {
 	Context context.Context
 }
 
-func Server(schema store.SchemaHolder, store store.Store) Endpoint {
+func Server(schema store.SchemaHolder, store store.Store, port int) Endpoint {
 	server := &_Server{
 		Schema:  schema,
 		Store:   store,
 		Context: context.Background(),
 	}
 
-	http.HandleFunc("/id/{id}", makeIdHandler(server))
+	router := mux.NewRouter()
+	addHandler(router, "/id/{id}", makeIdHandler(server))
 	for k, v := range schema.ObjectMethods() {
-		http.HandleFunc(
-			fmt.Sprintf("/%s/{pkey}", k),
+		addHandler(router,
+			fmt.Sprintf("/%s/{pkey}", strings.ToLower(k)),
 			makeObjectHandler(server, k, v))
-		http.HandleFunc(
-			fmt.Sprintf("/%s", k),
-			makeTypeHandler(server, k))
+		addHandler(router,
+			fmt.Sprintf("/%s", strings.ToLower(k)),
+			makeTypeHandler(server, k, v))
+		addHandler(router,
+			fmt.Sprintf("/%s/", strings.ToLower(k)),
+			makeTypeHandler(server, k, v))
 	}
 
-	log.Println(http.ListenAndServe(":8000", nil))
+	// go func() {
+	log.Println(http.ListenAndServe(
+		fmt.Sprintf(":%d", 8000), router))
+	// }()
+
 	return server
+}
+
+func addHandler(router *mux.Router, pattern string, handler _HandlerFunc) {
+	log.Printf("SERVER serving %s", pattern)
+	router.HandleFunc(pattern, handler)
 }
 
 func makeIdHandler(server *_Server) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		prepResponse(w, r)
 		id := store.ObjectIdentity(mux.Vars(r)["id"])
 		existing, _ := server.Store.Get(server.Context, id)
 		var robject store.Object = nil
 		data, err := utils.ReadStream(r.Body)
 		if err != nil {
-			robject, _ = utils.UnmarshalObject(data, server.Schema)
+			robject, _ = utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
 		}
 
 		kind := ""
@@ -86,11 +102,12 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 
 func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := store.ObjectIdentity(mux.Vars(r)["pkey"])
+		prepResponse(w, r)
 		var robject store.Object = nil
+		id := store.ObjectIdentity(strings.ToLower(t) + "/" + mux.Vars(r)["pkey"])
 		data, err := utils.ReadStream(r.Body)
 		if err == nil {
-			robject, _ = utils.UnmarshalObject(data, server.Schema)
+			robject, _ = utils.UnmarshalObject(data, server.Schema, t)
 		}
 
 		// method validation
@@ -104,8 +121,9 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 	}
 }
 
-func makeTypeHandler(server *_Server, t string) _HandlerFunc {
+func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		prepResponse(w, r)
 		switch r.Method {
 		case http.MethodGet:
 			opts := []store.ListOption{}
@@ -163,8 +181,11 @@ func makeTypeHandler(server *_Server, t string) _HandlerFunc {
 
 			ret, err := server.Store.List(
 				server.Context,
-				store.ObjectIdentity(t),
+				store.ObjectIdentity(
+					fmt.Sprintf("%s/", strings.ToLower(t))),
 				opts...)
+
+			// log.Printf("size of list %d", len(ret))
 
 			if err != nil {
 				reportError(w, err, http.StatusBadRequest)
@@ -172,12 +193,43 @@ func makeTypeHandler(server *_Server, t string) _HandlerFunc {
 				resp, _ := json.Marshal(ret)
 				w.Write(resp)
 			}
+		case http.MethodPost:
+			// method validation
+			if !slices.Contains(methods, r.Method) {
+				reportError(w,
+					fmt.Errorf("method not allowed"),
+					http.StatusMethodNotAllowed)
+				return
+			}
+
+			data, err := utils.ReadStream(r.Body)
+			if err != nil {
+				reportError(w,
+					err,
+					http.StatusBadRequest)
+				return
+			}
+			robject, err := utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
+			if err != nil {
+				reportError(w,
+					err,
+					http.StatusBadRequest)
+				return
+			}
+
+			server.handlePath(w, r, store.ObjectIdentity(""), robject)
 		default:
 			reportError(w,
 				fmt.Errorf("method not allowed"),
 				http.StatusMethodNotAllowed)
 		}
 	}
+}
+
+func prepResponse(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s %s", r.Method, r.URL)
+
+	w.Header().Add("Content-Type", "application/json")
 }
 
 func (d *_Server) handlePath(
@@ -195,6 +247,7 @@ func (d *_Server) handlePath(
 			reportError(w, err, http.StatusNotFound)
 		}
 	case http.MethodPost:
+		object.Metadata().SetIdentity(store.ObjectIdentity(uuid.New().String()))
 		ret, err = d.Store.Create(d.Context, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)
@@ -218,6 +271,6 @@ func (d *_Server) handlePath(
 }
 
 func reportError(w http.ResponseWriter, err error, code int) {
-	str := fmt.Sprintf("{ \"error\": \"%s\" }", err)
-	http.Error(w, str, code)
+	// log.Panicf(err.Error())
+	http.Error(w, err.Error(), code)
 }
