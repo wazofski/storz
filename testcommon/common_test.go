@@ -1,10 +1,13 @@
 package common_test
 
 import (
+	"log"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/store"
 	"github.com/wazofski/store/generated"
+	"github.com/wazofski/store/utils"
 )
 
 var _ = Describe("common", func() {
@@ -68,9 +71,7 @@ var _ = Describe("common", func() {
 		w.Spec().SetName("def")
 
 		ret, err := clt.Update(ctx,
-			generated.WorldIdentity("abc"),
-			w)
-
+			generated.WorldIdentity("abc"), w)
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
 
@@ -80,7 +81,6 @@ var _ = Describe("common", func() {
 
 		ret, err = clt.Get(ctx,
 			generated.WorldIdentity("abc"))
-
 		Expect(err).ToNot(BeNil())
 		Expect(ret).To(BeNil())
 	})
@@ -93,16 +93,21 @@ var _ = Describe("common", func() {
 
 		world := ret.(generated.World)
 		Expect(world).ToNot(BeNil())
-		world.Spec().SetDescription("qqq")
+		world.Spec().SetDescription("zxc")
+
+		log.Println(utils.PP(world))
 
 		ret, err = clt.Update(ctx,
 			world.Metadata().Identity(), world)
+
+		log.Println(utils.PP(ret))
+
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
 
 		world = ret.(generated.World)
 		Expect(world).ToNot(BeNil())
-		Expect(world.Spec().Description()).To(Equal("qqq"))
+		Expect(world.Spec().Description()).To(Equal("zxc"))
 	})
 
 	It("cannot PUT non-existent objects", func() {

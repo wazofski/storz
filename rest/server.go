@@ -80,7 +80,7 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 		existing, _ := server.Store.Get(server.Context, id)
 		var robject store.Object = nil
 		data, err := utils.ReadStream(r.Body)
-		if err != nil {
+		if err == nil {
 			robject, _ = utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
 		}
 

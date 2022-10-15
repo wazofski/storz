@@ -70,4 +70,5 @@ COMMON TESTS:
       - try per pkey
 
 BUGS:
-  - 
+  - http: superfluous response.WriteHeader call from rest.reportError (server.go:273)
+  - can PUT objects BY ID @done
