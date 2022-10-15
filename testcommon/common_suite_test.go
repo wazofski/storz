@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/client"
 	"github.com/wazofski/store/generated"
 	"github.com/wazofski/store/memory"
 	"github.com/wazofski/store/react"
@@ -31,6 +32,10 @@ var stores []store.Store = []store.Store{
 			store.New(
 				generated.Schema(),
 				memory.Factory()))),
+
+	store.New(
+		generated.Schema(),
+		client.Factory("http://localhost:8000/")),
 }
 
 func TestNegative(t *testing.T) {
