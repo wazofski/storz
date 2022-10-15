@@ -210,7 +210,8 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 					http.StatusBadRequest)
 				return
 			}
-			robject, err := utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
+
+			robject, err := utils.UnmarshalObject(data, server.Schema, t)
 			if err != nil {
 				reportError(w,
 					err,

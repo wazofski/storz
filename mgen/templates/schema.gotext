@@ -12,7 +12,7 @@ func (o _Schema) ObjectForKind(kind string) store.Object {
 	{{ range . }}
 	case "{{.Name}}":
 		return {{.Name}}Factory()
-	case strings.ToLower("{{.Name}}"):
+	case "{{.IdentityPrefix }}":
 		return {{.Name}}Factory()
 	{{ end }}
 	}

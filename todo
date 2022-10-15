@@ -24,7 +24,7 @@
       - single prop @done
   - support both identity types @done
 - rest endpoint @done
-  - spec only POST and PUT
+  - spec only POST and PUT @done
 - rest store (refactor) @done
 - LIST PKey filter @done
 - react store

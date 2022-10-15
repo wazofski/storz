@@ -15,8 +15,8 @@ func Generate(model string) error {
 	imports := []string{
 		// "errors",
 		// "log",
+		// "strings",
 		"fmt",
-		"strings",
 		"encoding/json",
 		"github.com/wazofski/store/utils",
 		"github.com/wazofski/store",

@@ -4,5 +4,5 @@ ginkgo -r -focus "memory"
 ginkgo -r -focus "react"
 
 cd client
-./run_test.sh
+./run_tests.sh
 cd ..

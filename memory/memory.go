@@ -207,6 +207,9 @@ func (d *memoryStore) List(
 	}
 
 	for _, v := range everything {
+		if v == nil {
+			continue
+		}
 		res = append(res, (*v).Clone())
 	}
 
