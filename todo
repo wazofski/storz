@@ -1,63 +1,59 @@
-Store:
-  - mgen @done
-    - basic model generation @done
-    - factory @done
-    - add json tags for props @done
-    - list of generated type deserialization @done
-    - deserialize map structures with custom struct @done
-    - templates implementation @done
-    - generate schema @done
-    - cloning @done
-    - error reporting
-      - missing class reference ?
-    - add primary key @done
-      - only string type suppored!! 
-    - object identity @done
-    - Handlers
-  - RAM store @done
-    - get @done
-    - put @done
-    - post @done
-    - delete @done
-    - list @done
-      - options @done
-      - filtering @done
-        - single prop @done
-        - complex queries ?
-    - support both identity types @done
-  - rest endpoint @done
-  - rest store (refactor) @done
-  - LIST PKey filter @done
-  - framework store
-    - partial object PUT (only spec)
-    - strip meta and status
-      - create 
-      - update
-    - react logic
-      - transactor
-      - validator
-      - handler
-    - 
-  - modules
-    - module name
-    - packages
-    - mgen install
-    - go geneerate integration
-    - service geenerator
-  - mongodb store
-  - sql store
-    - connector interface
-      - sqlite imp
-      - mysql imp
-  - tests
-    - negative checks
-      - pass nil
-      - non allowed actions
-        - for id
-        - for pkey
-      - pass partial obj?
-      - change status
-      - change meta
-    - change naming prop 
-    - action tests by ID
-      - put by ID for example
+- mgen @done
+  - basic model generation @done
+  - factory @done
+  - add json tags for props @done
+  - list of generated type deserialization @done
+  - deserialize map structures with custom struct @done
+  - templates implementation @done
+  - generate schema @done
+  - cloning @done
+  - error reporting
+    - missing class reference ?
+  - add primary key @done
+    - only string type suppored!! 
+  - object identity @done
+  - Handlers
+- RAM store @done
+  - get @done
+  - put @done
+  - post @done
+  - delete @done
+  - list @done
+    - options @done
+    - filtering @done
+      - single prop @done
+  - support both identity types @done
+- rest endpoint @done
+  - spec only POST and PUT
+- rest store (refactor) @done
+- LIST PKey filter @done
+- react store
+  - strip meta and status @done
+    - create @done
+    - update @done
+  - handler logic
+    - model
+    - callbacks
+  - transactor
+- modules
+  - module name
+  - packages
+  - mgen install
+  - go geneerate integration
+  - service geenerator
+- mongo store
+- sql store
+  - connector interface
+    - sqlite imp
+    - mysql imp
+- tests
+  - change naming prop
+  - action tests by ID
+  - negative checks
+    - pass nil
+    - non allowed actions
+      - for id
+      - for pkey
+    - pass partial obj ?
+    - change status
+    - change meta
