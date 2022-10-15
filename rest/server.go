@@ -97,6 +97,7 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 			reportError(w,
 				fmt.Errorf("method not allowed"),
 				http.StatusMethodNotAllowed)
+			return
 		}
 
 		server.handlePath(w, r, id, robject)
@@ -118,6 +119,7 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 			reportError(w,
 				fmt.Errorf("method not allowed"),
 				http.StatusMethodNotAllowed)
+			return
 		}
 
 		server.handlePath(w, r, id, robject)
@@ -138,6 +140,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 				err := json.Unmarshal([]byte(filter[0]), &flt)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
+					return
 				}
 				opts = append(opts, options.PropFilter(flt.Key, flt.Value))
 			}
@@ -148,6 +151,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 				err := json.Unmarshal([]byte(keyFilter[0]), &flt)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
+					return
 				}
 				opts = append(opts, options.KeyFilter(flt...))
 			}
@@ -176,6 +180,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 				err := json.Unmarshal([]byte(orderInc[0]), &ob)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
+					return
 				}
 				opts = append(opts, options.OrderIncremental(ob))
 			}
@@ -190,6 +195,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 
 			if err != nil {
 				reportError(w, err, http.StatusBadRequest)
+				return
 			} else if ret != nil {
 				resp, _ := json.Marshal(ret)
 				writeResponse(w, resp)
@@ -241,21 +247,25 @@ func (d *_Server) handlePath(
 		ret, err = d.Store.Get(d.Context, identity)
 		if err != nil {
 			reportError(w, err, http.StatusNotFound)
+			return
 		}
 	case http.MethodPost:
 		ret, err = d.Store.Create(d.Context, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)
+			return
 		}
 	case http.MethodPut:
 		ret, err = d.Store.Update(d.Context, identity, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)
+			return
 		}
 	case http.MethodDelete:
 		err = d.Store.Delete(d.Context, identity)
 		if err != nil {
 			reportError(w, err, http.StatusNotFound)
+			return
 		}
 	}
 
@@ -265,34 +275,15 @@ func (d *_Server) handlePath(
 	}
 }
 
-var writtenResp map[*http.ResponseWriter]bool = make(map[*http.ResponseWriter]bool)
-
 func reportError(w http.ResponseWriter, err error, code int) {
-	// log.Panicf(err.Error())
-	if !isWritten(w) {
-		http.Error(w, err.Error(), code)
-	}
-}
-
-func isWritten(w http.ResponseWriter) bool {
-	ret, ok := writtenResp[&w]
-	if !ok {
-		return false
-	}
-	return ret
+	http.Error(w, err.Error(), code)
 }
 
 func writeResponse(w http.ResponseWriter, data []byte) {
-	if !isWritten(w) {
-		w.Write(data)
-		writtenResp[&w] = true
-	}
+	w.Write(data)
 }
 
 func prepResponse(w http.ResponseWriter, r *http.Request) {
 	log.Printf("SERVER %s %s", strings.ToLower(r.Method), r.URL)
-
-	if !isWritten(w) {
-		w.Header().Add("Content-Type", "application/json")
-	}
+	w.Header().Add("Content-Type", "application/json")
 }

@@ -17,6 +17,10 @@ types:
       - apimethod: GET
       - apimethod: POST
       - apimethod: DELETE
+  - kind: Resource
+    name: ThirdWorld
+    spec: WorldSpec
+    pkey: spec.name
   - kind: Struct
     name: WorldSpec
     props:
