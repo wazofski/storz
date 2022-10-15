@@ -65,3 +65,14 @@ func ObjeectKind(response []byte) string {
 
 	return resource.Metadata.(map[string]interface{})["kind"].(string)
 }
+
+func PP(obj store.Object) string {
+	jsn, err := json.MarshalIndent(obj, "", "    ")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// log.Println(obj)
+
+	return string(jsn)
+}

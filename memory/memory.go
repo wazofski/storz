@@ -36,6 +36,7 @@ func (d *memoryStore) Create(
 	opt ...store.CreateOption) (store.Object, error) {
 
 	log.Printf("MEMORY create %s", obj.PrimaryKey())
+	// log.Println(utils.PP(obj))
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -59,6 +60,7 @@ func (d *memoryStore) Create(
 	}
 
 	clone := obj.Clone()
+	// log.Println(utils.PP(clone))
 
 	// log.Printf("creating %s", obj.Metadata().Identity())
 	// log.Printf("path %s", obj.Metadata().Identity().Path())
@@ -159,7 +161,7 @@ func (d *memoryStore) Get(
 
 	ret := d.IdentityIndex[identity.Path()]
 	if ret != nil {
-		return *ret, nil
+		return (*ret).Clone(), nil
 	}
 
 	tokens := strings.Split(identity.Path(), "/")
@@ -170,7 +172,7 @@ func (d *memoryStore) Get(
 			// log.Printf("...GET type index exists with %d records", len(km))
 			ret = km[tokens[1]]
 			if ret != nil {
-				return *ret, nil
+				return (*ret).Clone(), nil
 			}
 		}
 	}

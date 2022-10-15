@@ -86,7 +86,7 @@ func compileResources(resources []_Resource) string {
 
 		b.WriteString(compileStruct(s))
 		b.WriteString(render("mgen/templates/meta.gotext", r))
-		b.WriteString(render("mgen/templates/clonable.gotext", s))
+		b.WriteString(render("mgen/templates/clone.gotext", s))
 	}
 
 	b.WriteString(render("mgen/templates/schema.gotext", resources))
@@ -104,6 +104,11 @@ func compileStructs(structs []_Struct) string {
 	return b.String()
 }
 
+type _Tuple struct {
+	A string
+	B string
+}
+
 func compileStruct(s _Struct) string {
 	var b strings.Builder
 	methods := []string{}
@@ -116,9 +121,15 @@ func compileStruct(s _Struct) string {
 				fmt.Sprintf("%s() %s", p.Prop, p.Type))
 		}
 
-		if p.Prop != "Meta" && p.Prop != "Status" {
+		if p.Prop != "Meta" && p.Prop != "Spec" && p.Prop != "Status" {
 			methods = append(methods,
 				fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
+		}
+
+		if p.Prop == "Spec" {
+			b.WriteString(
+				render("mgen/templates/specinternal.gotext",
+					_Tuple{A: s.Name, B: p.Type}))
 		}
 	}
 

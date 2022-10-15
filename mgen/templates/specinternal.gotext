@@ -1,0 +1,9 @@
+
+func (entity *_{{ .A }}) SpecInternalSet(val interface{}) {
+	converted := val.({{ .B }})
+	entity.Spec_ = &converted
+}
+
+func (entity *_{{ .A }}) SpecInternal() interface{} {
+	return entity.Spec()
+}

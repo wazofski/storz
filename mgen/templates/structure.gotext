@@ -7,9 +7,12 @@ type _{{ $name }} struct {
 }
 
 {{ range .Props }}
+
+{{ if not (eq .Prop "Spec") }}
 func (entity *_{{$name}}) Set{{ .Prop }}(val {{.Type}}) {
 	entity.{{.Prop}}_ = &val
 }
+{{ end }}
 
 func (entity *_{{$name}}) {{ .Prop }}() {{.Type}}{
 	return *entity.{{.Prop}}_

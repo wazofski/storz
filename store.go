@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Object interface {
@@ -14,8 +16,21 @@ type Object interface {
 	PrimaryKey() string
 }
 
+type SpecHolder interface {
+	SpecInternalSet(interface{})
+	SpecInternal() interface{}
+}
+
 type ObjectList []Object
 type ObjectIdentity string
+
+func ObjectIdentityFactory() ObjectIdentity {
+	id := uuid.New().String()
+	id = strings.ReplaceAll(id, "-", "")
+	id = id[5:25]
+
+	return ObjectIdentity(id)
+}
 
 func (o ObjectIdentity) Path() string {
 	if strings.Index(string(o), "/") > 0 {

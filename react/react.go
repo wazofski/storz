@@ -1,10 +1,11 @@
-package memory
+package react
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
-	"github.com/google/uuid"
 	"github.com/wazofski/store"
 )
 
@@ -32,11 +33,26 @@ func (d *reactStore) Create(
 	log.Printf("REACT create %s", obj.PrimaryKey())
 
 	// initialize metadata
-	obj.Metadata().SetIdentity(store.ObjectIdentity(uuid.New().String()))
+	original := d.Schema.ObjectForKind(obj.Metadata().Kind())
+	if original == nil {
+		return nil, fmt.Errorf("unknown kind %s", obj.Metadata().Kind())
+	}
 
-	// reset status to nothing
+	ms := original.Metadata().(store.MetaSetter)
 
-	return d.Store.Create(ctx, obj, opt...)
+	ms.SetIdentity(store.ObjectIdentityFactory())
+	ms.SetCreated(timestamp())
+
+	// oms := original.(store.MetadataSetter)
+	// oms.SetMetadata(ms.(store.Meta))
+
+	// update spec
+	specHolder := original.(store.SpecHolder)
+	if specHolder != nil {
+		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
+	}
+
+	return d.Store.Create(ctx, original, opt...)
 }
 
 func (d *reactStore) Update(
@@ -47,14 +63,30 @@ func (d *reactStore) Update(
 
 	log.Printf("REACT update %s", identity.Path())
 	// read the real object
+	original, err := d.Store.Get(ctx, identity)
 
 	// if doesn't exist return error
+	if err != nil {
+		return nil, err
+	}
+	if original == nil {
+		return nil, fmt.Errorf("object %s does not exist", identity)
+	}
 
-	// reset and update metadata
+	// update metadata
+	ms := original.Metadata().(store.MetaSetter)
+	ms.SetUpdated(timestamp())
 
-	// reset status
+	// oms := original.(store.MetadataSetter)
+	// oms.SetMetadata(ms.(store.Meta))
 
-	return d.Store.Update(ctx, identity, obj, opt...)
+	// update spec
+	specHolder := original.(store.SpecHolder)
+	if specHolder != nil {
+		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
+	}
+
+	return d.Store.Update(ctx, identity, original, opt...)
 }
 
 func (d *reactStore) Delete(
@@ -85,4 +117,8 @@ func (d *reactStore) List(
 	log.Printf("REACT list %s", identity.Type())
 
 	return d.Store.List(ctx, identity, opt...)
+}
+
+func timestamp() string {
+	return time.Now().Format(time.RFC3339)
 }
