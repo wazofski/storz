@@ -1,3 +1,5 @@
+echo ">>>>>>>>> CLIENT TESTS"
+
 trap "kill 0" EXIT
 
 go clean -cache

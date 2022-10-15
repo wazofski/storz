@@ -35,6 +35,10 @@ func (d *memoryStore) Create(
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
 
+	if obj == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+
 	log.Printf("MEMORY create %s", obj.PrimaryKey())
 	// log.Println(utils.PP(obj))
 
@@ -72,7 +76,7 @@ func (d *memoryStore) Create(
 
 	d.PrimaryIndex[lk][obj.PrimaryKey()] = &clone
 
-	return clone, nil
+	return clone.Clone(), nil
 }
 
 func (d *memoryStore) Update(
@@ -110,7 +114,7 @@ func (d *memoryStore) Update(
 	lk = strings.ToLower(obj.Metadata().Kind())
 	d.PrimaryIndex[lk][obj.PrimaryKey()] = &clone
 
-	return clone, err
+	return clone.Clone(), err
 }
 
 func (d *memoryStore) Delete(

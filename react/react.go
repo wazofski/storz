@@ -30,6 +30,10 @@ func (d *reactStore) Create(
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
 
+	if obj == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+
 	log.Printf("REACT create %s", obj.PrimaryKey())
 
 	// initialize metadata
@@ -77,13 +81,14 @@ func (d *reactStore) Update(
 	ms := original.Metadata().(store.MetaSetter)
 	ms.SetUpdated(timestamp())
 
-	// oms := original.(store.MetadataSetter)
-	// oms.SetMetadata(ms.(store.Meta))
-
 	// update spec
 	specHolder := original.(store.SpecHolder)
-	if specHolder != nil {
-		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
+	if specHolder != nil && obj != nil {
+		objSpecHolder := obj.(store.SpecHolder)
+		if objSpecHolder != nil {
+			specHolder.SpecInternalSet(
+				objSpecHolder.SpecInternal())
+		}
 	}
 
 	return d.Store.Update(ctx, identity, original, opt...)

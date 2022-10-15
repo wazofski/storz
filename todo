@@ -58,14 +58,16 @@ SQL STORE:
     - sqlite imp
     - mysql imp
 
-TESTS:
-  - change naming prop
-  - action tests by ID
+COMMON TESTS:
+  - change naming prop @done
+  - action tests by ID @done
   - negative checks
-    - pass nil
-    - non allowed actions
-      - for id
-      - for pkey
-    - pass partial obj ?
-    - change status
-    - change meta
+    - pass nil @done
+    - weird options
+  	- not-allowed actions
+  	  -	new resource needed for this
+      - try per id
+      - try per pkey
+
+BUGS:
+  - 

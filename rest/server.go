@@ -192,7 +192,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 				reportError(w, err, http.StatusBadRequest)
 			} else if ret != nil {
 				resp, _ := json.Marshal(ret)
-				w.Write(resp)
+				writeResponse(w, resp)
 			}
 		case http.MethodPost:
 			// method validation
@@ -228,12 +228,6 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 	}
 }
 
-func prepResponse(w http.ResponseWriter, r *http.Request) {
-	log.Printf("SERVER %s %s", strings.ToLower(r.Method), r.URL)
-
-	w.Header().Add("Content-Type", "application/json")
-}
-
 func (d *_Server) handlePath(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -267,11 +261,38 @@ func (d *_Server) handlePath(
 
 	if err == nil && ret != nil {
 		resp, _ := json.Marshal(ret)
-		w.Write(resp)
+		writeResponse(w, resp)
 	}
 }
 
+var writtenResp map[*http.ResponseWriter]bool = make(map[*http.ResponseWriter]bool)
+
 func reportError(w http.ResponseWriter, err error, code int) {
 	// log.Panicf(err.Error())
-	http.Error(w, err.Error(), code)
+	if !isWritten(w) {
+		http.Error(w, err.Error(), code)
+	}
+}
+
+func isWritten(w http.ResponseWriter) bool {
+	ret, ok := writtenResp[&w]
+	if !ok {
+		return false
+	}
+	return ret
+}
+
+func writeResponse(w http.ResponseWriter, data []byte) {
+	if !isWritten(w) {
+		w.Write(data)
+		writtenResp[&w] = true
+	}
+}
+
+func prepResponse(w http.ResponseWriter, r *http.Request) {
+	log.Printf("SERVER %s %s", strings.ToLower(r.Method), r.URL)
+
+	if !isWritten(w) {
+		w.Header().Add("Content-Type", "application/json")
+	}
 }
