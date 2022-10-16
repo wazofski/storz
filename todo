@@ -60,6 +60,10 @@ SQL STORE:
     - sqlite imp
     - mysql imp
 
+GRAPH STORE:
+  - relation model
+  - ?
+
 COMMON TESTS:
   - change naming prop @done
   - action tests by ID @done

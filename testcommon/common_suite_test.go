@@ -36,6 +36,10 @@ var stores []store.Store = []store.Store{
 	store.New(
 		generated.Schema(),
 		client.Factory("http://localhost:8000/")),
+
+	// store.New(
+	// 	generated.Schema(),
+	// 	sql.Factory("test.db")),
 }
 
 func TestNegative(t *testing.T) {

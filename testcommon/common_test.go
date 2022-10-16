@@ -2,15 +2,24 @@ package common_test
 
 import (
 	"log"
+	"sort"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/store"
 	"github.com/wazofski/store/generated"
+	"github.com/wazofski/store/options"
 	"github.com/wazofski/store/utils"
 )
 
 var _ = Describe("common", func() {
+
+	// It("can try to remove test.db", func() {
+	// 	err := os.Remove("test.db")
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// })
 
 	It("can POST objects", func() {
 		w := generated.WorldFactory()
@@ -253,6 +262,167 @@ var _ = Describe("common", func() {
 	It("cannot DELETE nil identity", func() {
 		err := clt.Delete(ctx, "")
 		Expect(err).ToNot(BeNil())
+	})
+
+	worldName := "c137zxczx"
+	anotherWorldName := "j19zeta7 qweqw"
+	worldDescription := "zxkjhajkshdas world of argo"
+	newWorldDescription := "is only beoaoqwiewioqu"
+
+	It("can CREATE multiple objects", func() {
+		ret, err := clt.List(ctx, generated.WorldIdentity(""))
+		Expect(err).To(BeNil())
+		for _, r := range ret {
+			err = clt.Delete(ctx, r.Metadata().Identity())
+			Expect(err).To(BeNil())
+		}
+
+		world := generated.WorldFactory()
+		world.Spec().SetName(worldName)
+		world.Spec().SetDescription(worldDescription)
+
+		world2 := generated.WorldFactory()
+		world2.Spec().SetName(anotherWorldName)
+		world2.Spec().SetDescription(newWorldDescription)
+
+		_, err = clt.Create(ctx, world)
+		Expect(err).To(BeNil())
+		_, err = clt.Create(ctx, world2)
+		Expect(err).To(BeNil())
+	})
+
+	It("can LIST multiple objects", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(""))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(2))
+
+		sort.Slice(ret, func(i, j int) bool {
+			return ret[i].(generated.World).Spec().Name() < ret[j].(generated.World).Spec().Name()
+		})
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world.Spec().Description()).To(Equal(worldDescription))
+
+		world2 := ret[1].(generated.World)
+		Expect(world2.Spec().Name()).To(Equal(anotherWorldName))
+		Expect(world2.Spec().Description()).To(Equal(newWorldDescription))
+	})
+
+	It("can LIST and sort multiple objects", func() {
+		ret, err := clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.OrderBy("spec.name"),
+			options.OrderIncremental(true))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(2))
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world.Spec().Description()).To(Equal(worldDescription))
+
+		world2 := ret[1].(generated.World)
+		Expect(world2.Spec().Name()).To(Equal(anotherWorldName))
+		Expect(world2.Spec().Description()).To(Equal(newWorldDescription))
+
+		ret, err = clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.OrderBy("spec.name"),
+			options.OrderIncremental(false))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(2))
+
+		world = ret[1].(generated.World)
+		world2 = ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world2.Spec().Name()).To(Equal(anotherWorldName))
+	})
+
+	It("can LIST and paginate multiple objects", func() {
+		ret, err := clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.OrderBy("spec.name"),
+			options.OrderIncremental(true),
+			options.PageSize(1))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world.Spec().Description()).To(Equal(worldDescription))
+
+		ret, err = clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.OrderBy("spec.name"),
+			options.OrderIncremental(true),
+			options.PageSize(1),
+			options.PageOffset(1))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world = ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(anotherWorldName))
+	})
+
+	It("can LIST and filter by primary key", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(""))
+
+		Expect(err).To(BeNil())
+
+		keys := []string{}
+		for _, o := range ret {
+			keys = append(keys, o.PrimaryKey())
+		}
+
+		Expect(len(keys)).To(Equal(2))
+
+		ret, err = clt.List(
+			ctx, generated.WorldIdentity(""),
+			options.KeyFilter(keys[0], keys[1]))
+
+		Expect(err).To(BeNil())
+		Expect(len(ret)).To(Equal(2))
+
+		for _, k := range keys {
+			ret, err = clt.List(
+				ctx, generated.WorldIdentity(""),
+				options.KeyFilter(k))
+
+			Expect(err).To(BeNil())
+			Expect(len(ret)).To(Equal(1))
+			Expect(ret[0].PrimaryKey()).To(Equal(k))
+		}
+	})
+
+	It("can LIST and FILTER", func() {
+		ret, err := clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.PropFilter("spec.name", worldName))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world.Spec().Description()).To(Equal(worldDescription))
 	})
 
 })
