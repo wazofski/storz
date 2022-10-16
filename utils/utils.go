@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 )
 
 type _Resource struct {
@@ -80,4 +81,12 @@ func PP(obj store.Object) string {
 
 func Timestamp() string {
 	return time.Now().Format(time.RFC3339)
+}
+
+func Serialize(mo store.Object) ([]byte, error) {
+	if mo == nil {
+		return nil, constants.ErrObjectNil
+	}
+
+	return json.Marshal(mo)
 }
