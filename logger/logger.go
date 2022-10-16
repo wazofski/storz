@@ -10,6 +10,7 @@ import (
 
 type Logger interface {
 	Printf(string, ...interface{})
+	Object(string, interface{})
 	Fatalln(error)
 }
 
@@ -24,16 +25,17 @@ func New(module string) Logger {
 }
 
 type _Msg struct {
-	Module    string
-	Message   string
-	Timestamp string
+	Who  *string      `json:"who,omitempty"`
+	What *interface{} `json:"what,omitempty"`
+	When *string      `json:"when,omitempty"`
 }
 
-func jsonify(module, msg string) string {
+func jsonify(module string, msg interface{}) string {
+	ts := utils.Timestamp()
 	_msg := _Msg{
-		Module:    module,
-		Message:   msg,
-		Timestamp: utils.Timestamp(),
+		Who:  &module,
+		What: &msg,
+		When: &ts,
 	}
 
 	data, _ := json.MarshalIndent(_msg, "", " ")
@@ -43,6 +45,14 @@ func jsonify(module, msg string) string {
 
 func (l *_Logger) Printf(msg string, params ...interface{}) {
 	fmt.Println(jsonify(l.Module, fmt.Sprintf(msg, params...)))
+}
+
+func (l *_Logger) Object(title string, obj interface{}) {
+	fmt.Println(jsonify(l.Module,
+		_Msg{
+			Who:  &title,
+			What: &obj,
+		}))
 }
 
 func (l *_Logger) Fatalln(msg error) {
