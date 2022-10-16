@@ -28,7 +28,7 @@ var stores []store.Store = []store.Store{
 
 	store.New(
 		generated.Schema(),
-		react.Factory(
+		react.ReactFactory(
 			store.New(
 				generated.Schema(),
 				memory.Factory()))),

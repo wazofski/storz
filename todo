@@ -64,10 +64,10 @@ COMMON TESTS:
   - negative checks
     - pass nil @done
     - weird options
-  	- not-allowed actions
-  	  -	new resource needed for this
-      - try per id
-      - try per pkey
+  	- not-allowed actions (client suite) @done
+  	  -	new resource needed for this @done
+      - try per id @done
+      - try per pkey @done
 
 BUGS:
   - http: superfluous response.WriteHeader call from rest.reportError (server.go:273) @done

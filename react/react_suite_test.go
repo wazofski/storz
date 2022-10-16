@@ -18,10 +18,9 @@ var ctx context.Context
 var _ = BeforeSuite(func() {
 	sch := generated.Schema()
 	mem := store.New(sch, memory.Factory())
-
-	mh := store.New(sch, react.MetaHHandlerFactory(mem))
-	r := store.New(sch, react.Factory(mh))
-	stc = store.New(sch, react.StatusStripperFactory(r))
+	mhr := store.New(sch, react.MetaHHandlerFactory(mem))
+	rct := store.New(sch, react.ReactFactory(mhr))
+	stc = store.New(sch, react.StatusStripperFactory(rct))
 })
 
 func TestReact(t *testing.T) {

@@ -129,6 +129,15 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
+
+		// method validation
+		if !slices.Contains(methods, r.Method) {
+			reportError(w,
+				fmt.Errorf("method not allowed"),
+				http.StatusMethodNotAllowed)
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
 			opts := []store.ListOption{}
@@ -201,14 +210,6 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 				writeResponse(w, resp)
 			}
 		case http.MethodPost:
-			// method validation
-			if !slices.Contains(methods, r.Method) {
-				reportError(w,
-					fmt.Errorf("method not allowed"),
-					http.StatusMethodNotAllowed)
-				return
-			}
-
 			data, err := utils.ReadStream(r.Body)
 			if err != nil {
 				reportError(w,

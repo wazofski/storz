@@ -13,7 +13,7 @@ type reactStore struct {
 	Store  store.Store
 }
 
-func Factory(data store.Store) store.Factory {
+func ReactFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &reactStore{
 			Schema: schema,

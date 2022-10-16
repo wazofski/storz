@@ -362,4 +362,72 @@ var _ = Describe("client", func() {
 		Expect(err).ToNot(BeNil())
 	})
 
+	It("cannot GET non-allowed", func() {
+		ret, err := stc.Get(
+			ctx, generated.ThirdWorldIdentity(worldName))
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+
+		ret, err = stc.Get(
+			ctx,
+			store.ObjectIdentity("id/aliksjdlsakjdaslkjdaslkj"))
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+	})
+
+	It("cannot CREATE non-allowed", func() {
+		w := generated.ThirdWorldFactory()
+		ret, err := stc.Create(ctx, w)
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+	})
+
+	It("cannot UPDATE non-allowed", func() {
+		w := generated.ThirdWorldFactory()
+		ret, err := stc.Update(ctx,
+			generated.ThirdWorldIdentity(worldName), w)
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+
+		ret, err = stc.Update(ctx,
+			store.ObjectIdentity("id/aliksjdlsakjdaslkjdaslkj"), w)
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+	})
+
+	It("cannot DELETE non-allowed", func() {
+		err := stc.Delete(
+			ctx, generated.ThirdWorldIdentity(worldName))
+
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+
+		err = stc.Delete(
+			ctx,
+			store.ObjectIdentity("id/aliksjdlsakjdaslkjdaslkj"))
+
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+	})
+
+	It("cannot LIST non-allowed", func() {
+		ret, err := stc.List(
+			ctx, generated.ThirdWorldIdentity(""))
+
+		Expect(err).ToNot(BeNil())
+		Expect(err.Error()).To(Equal("http 405"))
+
+		Expect(len(ret)).To(Equal(0))
+	})
+
 })
