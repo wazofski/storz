@@ -177,14 +177,6 @@ func errorCheck(response []byte) error {
 	return nil
 }
 
-func serialize(mo store.Object) ([]byte, error) {
-	if mo == nil {
-		return nil, errors.New("cannot serialize nil store.Object")
-	}
-
-	return json.Marshal(mo)
-}
-
 func makePathForType(baseUrl *url.URL, obj store.Object) *url.URL {
 	u, _ := url.Parse(fmt.Sprintf("%s/%s", baseUrl, strings.ToLower(obj.Metadata().Kind())))
 	return u
@@ -286,7 +278,7 @@ func (d *restStore) Create(
 		}
 	}
 
-	data, err := serialize(obj)
+	data, err := utils.Serialize(obj)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +324,7 @@ func (d *restStore) Update(
 		}
 	}
 
-	data, err := serialize(obj)
+	data, err := utils.Serialize(obj)
 	if err != nil {
 		return nil, err
 	}

@@ -122,24 +122,15 @@ func (d *sqlStore) Create(
 	lk := strings.ToLower(obj.Metadata().Kind())
 	path := fmt.Sprintf("%s/%s", lk, obj.PrimaryKey())
 	existing, _ := d.Get(ctx, store.ObjectIdentity(path))
-
 	if existing != nil {
 		return nil, constants.ErrObjectExists
 	}
 
-	clone := obj.Clone()
+	// db := prepareTables(d)
+	// db.IdentityIndex.Insert(obj.Metadata().Identity().Path(), path)
+	// db.ObjectsIndex.Insert(path, utils.Serialize(obj))
 
-	// log.Printf("creating %s", obj.Metadata().Identity())
-	// log.Printf("path %s", obj.Metadata().Identity().Path())
-
-	// d.IdentityIndex[obj.Metadata().Identity().Path()] = &clone
-	// if d.PrimaryIndex[lk] == nil {
-	// 	d.PrimaryIndex[lk] = make(map[string]*store.Object)
-	// }
-
-	// d.PrimaryIndex[lk][obj.PrimaryKey()] = &clone
-
-	return clone.Clone(), nil
+	return obj.Clone(), nil
 }
 
 func (d *sqlStore) Update(
@@ -168,16 +159,15 @@ func (d *sqlStore) Update(
 		return nil, constants.ErrNoSuchObject
 	}
 
-	clone := obj.Clone()
-
-	// d.IdentityIndex[obj.Metadata().Identity().Path()] = &clone
 	// lk := strings.ToLower(existing.Metadata().Kind())
-	// d.PrimaryIndex[lk][existing.PrimaryKey()] = nil
+	// newPath := fmt.Sprintf("%s/%s", lk, obj.PrimaryKey())
+	// oldPath := fmt.Sprintf("%s/%s", lk, existing.PrimaryKey())
 
-	// lk = strings.ToLower(obj.Metadata().Kind())
-	// d.PrimaryIndex[lk][obj.PrimaryKey()] = &clone
+	// db.IdentityIndex.Update(obj.Metadata().Identity().Path(), path)
+	// db.ObjectsTable.Delete(oldPath)
+	// db.ObjectsTable.InsertUpdate(newPath, utils.Serialize(obj))
 
-	return clone.Clone(), err
+	return d.Get(ctx, identity)
 }
 
 func (d *sqlStore) Delete(
@@ -201,9 +191,11 @@ func (d *sqlStore) Delete(
 		return constants.ErrNoSuchObject
 	}
 
-	// d.IdentityIndex[identity.Path()] = nil
 	// lk := strings.ToLower(existing.Metadata().Kind())
-	// d.PrimaryIndex[lk][existing.PrimaryKey()] = nil
+	// path := fmt.Sprintf("%s/%s", lk, existing.PrimaryKey())
+
+	// db.IdentityIndex.Delete(existing.Metadata().Identity().Path())
+	// db.ObjectsTable.Delete(path)
 
 	return nil
 }
@@ -223,8 +215,6 @@ func (d *sqlStore) Get(
 			return nil, err
 		}
 	}
-
-	// log.Printf("...GET identity index size: %d", len(d.IdentityIndex))
 
 	// ret := d.IdentityIndex[identity.Path()]
 	// if ret != nil {
