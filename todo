@@ -52,8 +52,10 @@ MODULE REFACTOR:
   - service geenerator
 
 MONGO STORE:
+  - basic implementation
 
 SQL STORE:
+  - basic implementation
   - connector interface
     - sqlite imp
     - mysql imp
