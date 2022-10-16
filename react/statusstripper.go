@@ -3,14 +3,15 @@ package react
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 )
 
 type statusStripperStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
+	Log    logger.Logger
 }
 
 func StatusStripperFactory(data store.Store) store.Factory {
@@ -18,6 +19,7 @@ func StatusStripperFactory(data store.Store) store.Factory {
 		client := &statusStripperStore{
 			Schema: schema,
 			Store:  data,
+			Log:    logger.New("status stripper"),
 		}
 
 		return client, nil
@@ -33,7 +35,7 @@ func (d *statusStripperStore) Create(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("STATUS STRIPPER create %s", obj.PrimaryKey())
+	d.Log.Printf("create %s", obj.PrimaryKey())
 
 	// initialize metadata
 	original := d.Schema.ObjectForKind(obj.Metadata().Kind())
@@ -60,7 +62,7 @@ func (d *statusStripperStore) Update(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("STATUS STRIPPER update %s", identity.Path())
+	d.Log.Printf("update %s", identity.Path())
 	// read the real object
 	original, err := d.Store.Get(ctx, identity)
 
@@ -90,7 +92,7 @@ func (d *statusStripperStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("STATUS STRIPPER delete %s", identity.Path())
+	d.Log.Printf("delete %s", identity.Path())
 
 	return d.Store.Delete(ctx, identity, opt...)
 }
@@ -100,7 +102,7 @@ func (d *statusStripperStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("STATUS STRIPPER get %s", identity.Path())
+	d.Log.Printf("get %s", identity.Path())
 
 	return d.Store.Get(ctx, identity, opt...)
 }
@@ -110,7 +112,7 @@ func (d *statusStripperStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("STATUS STRIPPER list %s", identity.Type())
+	d.Log.Printf("list %s", identity.Type())
 
 	return d.Store.List(ctx, identity, opt...)
 }

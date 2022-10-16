@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
 	"github.com/Jeffail/gabs"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 )
+
+var log = logger.New("memory")
 
 type memoryStore struct {
 	Schema        store.SchemaHolder
@@ -39,7 +41,7 @@ func (d *memoryStore) Create(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("MEMORY create %s", obj.PrimaryKey())
+	log.Printf("create %s", obj.PrimaryKey())
 	// log.Println(utils.PP(obj))
 
 	var err error
@@ -85,7 +87,7 @@ func (d *memoryStore) Update(
 	obj store.Object,
 	opt ...store.UpdateOption) (store.Object, error) {
 
-	log.Printf("MEMORY update %s", identity.Path())
+	log.Printf("update %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -122,7 +124,7 @@ func (d *memoryStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("MEMORY delete %s", identity.Path())
+	log.Printf("delete %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -150,7 +152,7 @@ func (d *memoryStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("MEMORY get %s", identity.Path())
+	log.Printf("get %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -189,7 +191,7 @@ func (d *memoryStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("MEMORY list %s", identity.Type())
+	log.Printf("list %s", identity.Type())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -310,7 +312,7 @@ func objectPath(obj store.Object, path string) string {
 	data, _ := json.Marshal(obj)
 	jsn, err := gabs.ParseJSON(data)
 	if err != nil {
-		log.Panic(err)
+		log.Fatalln(err)
 		return ""
 	}
 	if !jsn.Exists(strings.Split(path, ".")...) {

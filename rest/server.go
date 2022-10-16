@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,9 +12,12 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/options"
 	"github.com/wazofski/store/utils"
 )
+
+var log = logger.New("rest server")
 
 const (
 	PropFilterArg  = "pf"
@@ -40,7 +42,7 @@ type _Server struct {
 }
 
 func (d *_Server) Listen(port int) {
-	log.Println(http.ListenAndServe(
+	log.Fatalln(http.ListenAndServe(
 		fmt.Sprintf(":%d", port), d.Router))
 }
 
@@ -69,7 +71,7 @@ func Server(schema store.SchemaHolder, store store.Store) Endpoint {
 }
 
 func addHandler(router *mux.Router, pattern string, handler _HandlerFunc) {
-	log.Printf("SERVER serving %s", pattern)
+	log.Printf("serving %s", pattern)
 	router.HandleFunc(pattern, handler)
 }
 
@@ -285,6 +287,6 @@ func writeResponse(w http.ResponseWriter, data []byte) {
 }
 
 func prepResponse(w http.ResponseWriter, r *http.Request) {
-	log.Printf("SERVER %s %s", strings.ToLower(r.Method), r.URL)
+	log.Printf("%s %s", strings.ToLower(r.Method), r.URL)
 	w.Header().Add("Content-Type", "application/json")
 }

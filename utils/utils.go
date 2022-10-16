@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"time"
 
 	"github.com/wazofski/store"
 )
@@ -75,4 +76,8 @@ func PP(obj store.Object) string {
 	// log.Println(obj)
 
 	return string(jsn)
+}
+
+func Timestamp() string {
+	return time.Now().Format(time.RFC3339)
 }

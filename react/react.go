@@ -3,14 +3,15 @@ package react
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 )
 
 type reactStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
+	Log    logger.Logger
 }
 
 func ReactFactory(data store.Store) store.Factory {
@@ -18,6 +19,7 @@ func ReactFactory(data store.Store) store.Factory {
 		client := &reactStore{
 			Schema: schema,
 			Store:  data,
+			Log:    logger.New("react"),
 		}
 
 		return client, nil
@@ -33,7 +35,7 @@ func (d *reactStore) Create(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("REACT create %s", obj.PrimaryKey())
+	d.Log.Printf("create %s", obj.PrimaryKey())
 
 	return d.Store.Create(ctx, obj, opt...)
 }
@@ -48,7 +50,7 @@ func (d *reactStore) Update(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("REACT update %s", identity.Path())
+	d.Log.Printf("update %s", identity.Path())
 
 	return d.Store.Update(ctx, identity, obj, opt...)
 }
@@ -58,7 +60,7 @@ func (d *reactStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("REACT delete %s", identity.Path())
+	d.Log.Printf("delete %s", identity.Path())
 
 	return d.Store.Delete(ctx, identity, opt...)
 }
@@ -68,7 +70,7 @@ func (d *reactStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("REACT get %s", identity.Path())
+	d.Log.Printf("get %s", identity.Path())
 
 	return d.Store.Get(ctx, identity, opt...)
 }
@@ -78,7 +80,7 @@ func (d *reactStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("REACT list %s", identity.Type())
+	d.Log.Printf("list %s", identity.Type())
 
 	return d.Store.List(ctx, identity, opt...)
 }

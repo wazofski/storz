@@ -5,15 +5,17 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
 	"github.com/Jeffail/gabs"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+var log = logger.New("sql")
 
 type sqliteStore struct {
 	Schema store.SchemaHolder
@@ -317,8 +319,7 @@ func objectPath(obj store.Object, path string) string {
 	data, _ := json.Marshal(obj)
 	jsn, err := gabs.ParseJSON(data)
 	if err != nil {
-		log.Panic(err)
-		return ""
+		log.Fatalln(err)
 	}
 	if !jsn.Exists(strings.Split(path, ".")...) {
 		return ""

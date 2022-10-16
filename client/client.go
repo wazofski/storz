@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,9 +13,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/rest"
 	"github.com/wazofski/store/utils"
 )
+
+var log = logger.New("client")
 
 type restStore struct {
 	BaseURL     *url.URL
@@ -63,7 +65,7 @@ func Factory(serviceUrl string, headers ...headerOption) store.Factory {
 			Headers:     headers,
 		}
 
-		log.Printf("REST client initialized: %s", serviceUrl)
+		log.Printf("initialized: %s", serviceUrl)
 		return client, nil
 	}
 }
@@ -119,7 +121,7 @@ func processRequest(
 	headers["Content-Type"] = "application/json"
 	headers["X-Requested-With"] = "XMLHttpRequest"
 
-	log.Printf("CLIENT %s %s", strings.ToLower(method), requestUrl)
+	log.Printf("%s %s", strings.ToLower(method), requestUrl)
 	// log.Printf("X-Request-ID %s", reqId)
 
 	data, err := client.MakeRequest(requestUrl, content, method, headers)
@@ -136,28 +138,16 @@ func processRequest(
 			var js interface{}
 			if json.Unmarshal([]byte(content), &js) == nil {
 				r, _ := json.MarshalIndent(js, "", "    ")
-				log.Printf("CLIENT request content: %s", r)
+				log.Printf("request content: %s", r)
 			} else {
-				log.Printf("CLIENT request content: %s", content)
+				log.Printf("request content: %s", content)
 			}
 		}
 		if len(data) > 0 {
-			log.Printf("CLIENT response content: %s", string(data))
+			log.Printf("response content: %s", string(data))
 		}
 		return nil, err
 	}
-
-	// mol := store.ObjectList{}
-	// if err := json.Unmarshal(data, &mol); err != nil {
-	// 	// ignore errors
-	// 	// log.Printf("Unable to Unmarshal")
-	// 	err = nil
-	// }
-
-	// if mol.Items != nil {
-	// 	// This is a response of a GET on a collection, which is a list.
-	// 	data = *mol.Items
-	// }
 
 	return data, err
 }
@@ -281,6 +271,12 @@ func (d *restStore) Create(
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
 
+	if obj == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+
+	log.Printf("get %s", obj.Metadata().Identity().Path())
+
 	copt := newRestOptions(d)
 	var err error
 	for _, o := range opt {
@@ -308,7 +304,7 @@ func (d *restStore) Create(
 	clone := obj.Clone()
 	err = json.Unmarshal(data, &clone)
 	if err != nil {
-		log.Println(string(data))
+		log.Printf(string(data))
 		clone = nil
 	}
 
@@ -320,6 +316,12 @@ func (d *restStore) Update(
 	identity store.ObjectIdentity,
 	obj store.Object,
 	opt ...store.UpdateOption) (store.Object, error) {
+
+	if obj == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+
+	log.Printf("update %s", identity.Path())
 
 	copt := newRestOptions(d)
 	var err error
@@ -356,6 +358,8 @@ func (d *restStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
+	log.Printf("delete %s", identity.Path())
+
 	var err error
 	copt := newRestOptions(d)
 	for _, o := range opt {
@@ -378,6 +382,8 @@ func (d *restStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
+
+	log.Printf("get %s", identity.Path())
 
 	var err error
 	copt := newRestOptions(d)
@@ -410,6 +416,8 @@ func (d *restStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
+
+	log.Printf("list %s", identity)
 
 	var err error
 	copt := newRestOptions(d)

@@ -3,15 +3,16 @@ package react
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/logger"
+	"github.com/wazofski/store/utils"
 )
 
 type metaHandlerStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
+	Log    logger.Logger
 }
 
 func MetaHHandlerFactory(data store.Store) store.Factory {
@@ -19,6 +20,7 @@ func MetaHHandlerFactory(data store.Store) store.Factory {
 		client := &metaHandlerStore{
 			Schema: schema,
 			Store:  data,
+			Log:    logger.New("meta handler"),
 		}
 
 		return client, nil
@@ -34,12 +36,12 @@ func (d *metaHandlerStore) Create(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("META HANDLER create %s", obj.PrimaryKey())
+	d.Log.Printf("create %s", obj.PrimaryKey())
 
 	ms := obj.Metadata().(store.MetaSetter)
 
 	ms.SetIdentity(store.ObjectIdentityFactory())
-	ms.SetCreated(timestamp())
+	ms.SetCreated(utils.Timestamp())
 
 	return d.Store.Create(ctx, obj, opt...)
 }
@@ -54,11 +56,11 @@ func (d *metaHandlerStore) Update(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("META HANDLER update %s", identity.Path())
+	d.Log.Printf("update %s", identity.Path())
 
 	// update metadata
 	ms := obj.Metadata().(store.MetaSetter)
-	ms.SetUpdated(timestamp())
+	ms.SetUpdated(utils.Timestamp())
 
 	return d.Store.Update(ctx, identity, obj, opt...)
 }
@@ -68,7 +70,7 @@ func (d *metaHandlerStore) Delete(
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("META HANDLER delete %s", identity.Path())
+	d.Log.Printf("delete %s", identity.Path())
 
 	return d.Store.Delete(ctx, identity, opt...)
 }
@@ -78,7 +80,7 @@ func (d *metaHandlerStore) Get(
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("META HANDLER get %s", identity.Path())
+	d.Log.Printf("get %s", identity.Path())
 
 	return d.Store.Get(ctx, identity, opt...)
 }
@@ -88,11 +90,7 @@ func (d *metaHandlerStore) List(
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("META HANDLER list %s", identity.Type())
+	d.Log.Printf("list %s", identity.Type())
 
 	return d.Store.List(ctx, identity, opt...)
-}
-
-func timestamp() string {
-	return time.Now().Format(time.RFC3339)
 }
