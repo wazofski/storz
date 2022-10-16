@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/rest"
 	"github.com/wazofski/store/utils"
@@ -55,7 +56,7 @@ func Factory(serviceUrl string, headers ...headerOption) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		URL, err := url.Parse(serviceUrl)
 		if err != nil {
-			return nil, fmt.Errorf("%s; expected format: http(s)://address:port/argo/api", err)
+			return nil, fmt.Errorf("invalid URL: %s", err)
 		}
 
 		client := &restStore{
@@ -271,7 +272,7 @@ func (d *restStore) Create(
 	opt ...store.CreateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	log.Printf("get %s", obj.Metadata().Identity().Path())
@@ -317,7 +318,7 @@ func (d *restStore) Update(
 	opt ...store.UpdateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	log.Printf("update %s", identity.Path())

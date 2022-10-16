@@ -2,9 +2,9 @@ package react
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/utils"
 )
@@ -33,7 +33,7 @@ func (d *metaHandlerStore) Create(
 	opt ...store.CreateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	d.Log.Printf("create %s", obj.PrimaryKey())
@@ -53,7 +53,7 @@ func (d *metaHandlerStore) Update(
 	opt ...store.UpdateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	d.Log.Printf("update %s", identity.Path())

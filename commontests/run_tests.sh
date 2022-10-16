@@ -9,7 +9,7 @@ trap "kill 0" EXIT
 
 cd ..
 go run cmd/server.go &
-cd testcommon
+cd commontests
 
 sleep 1
 

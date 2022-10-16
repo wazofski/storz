@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 )
 
@@ -32,7 +33,7 @@ func (d *statusStripperStore) Create(
 	opt ...store.CreateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	d.Log.Printf("create %s", obj.PrimaryKey())
@@ -59,7 +60,7 @@ func (d *statusStripperStore) Update(
 	opt ...store.UpdateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	d.Log.Printf("update %s", identity.Path())
@@ -71,7 +72,7 @@ func (d *statusStripperStore) Update(
 		return nil, err
 	}
 	if original == nil {
-		return nil, fmt.Errorf("object %s does not exist", identity)
+		return nil, constants.ErrNoSuchObject
 	}
 
 	// update spec

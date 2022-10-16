@@ -12,6 +12,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/options"
 	"github.com/wazofski/store/utils"
@@ -97,7 +98,7 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 		objMethods := server.Schema.ObjectMethods()[kind]
 		if objMethods == nil || !slices.Contains(objMethods, r.Method) {
 			reportError(w,
-				fmt.Errorf("method not allowed"),
+				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
 			return
 		}
@@ -119,7 +120,7 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 		// method validation
 		if !slices.Contains(methods, r.Method) {
 			reportError(w,
-				fmt.Errorf("method not allowed"),
+				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
 			return
 		}
@@ -135,7 +136,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 		// method validation
 		if !slices.Contains(methods, r.Method) {
 			reportError(w,
-				fmt.Errorf("method not allowed"),
+				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
 			return
 		}
@@ -231,7 +232,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 			server.handlePath(w, r, store.ObjectIdentity(""), robject)
 		default:
 			reportError(w,
-				fmt.Errorf("method not allowed"),
+				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
 		}
 	}

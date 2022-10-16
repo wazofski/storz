@@ -10,6 +10,7 @@ import (
 
 	"github.com/Jeffail/gabs"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -17,7 +18,7 @@ import (
 
 var log = logger.New("sql")
 
-type sqliteStore struct {
+type sqlStore struct {
 	Schema store.SchemaHolder
 	Path   string
 }
@@ -30,7 +31,7 @@ func Factory(path string) store.Factory {
 			return nil, err
 		}
 
-		client := &sqliteStore{
+		client := &sqlStore{
 			Schema: schema,
 			Path:   path,
 		}
@@ -39,17 +40,75 @@ func Factory(path string) store.Factory {
 	}
 }
 
-func (d *sqliteStore) Create(
+/*
+
+// how to create tables
+const create string = `
+  CREATE TABLE IF NOT EXISTS activities (
+  id INTEGER NOT NULL PRIMARY KEY,
+  time DATETIME NOT NULL,
+  description TEXT
+  );`
+
+ if _, err := db.Exec(create); err != nil {
+
+ // inserts
+ res, err := c.db.Exec("INSERT INTO activities VALUES(NULL,?,?);", activity.Time, activity.Description)
+ if err != nil {
+  return 0, err
+ }
+
+ var id int64
+ if id, err = res.LastInsertId(); err != nil {
+  return 0, err
+ }
+
+ // selects
+ row, err := c.db.Query("SELECT * FROM activities WHERE id=?", id)
+
+ row := c.db.QueryRow("SELECT id, time, description FROM activities WHERE id=?", id)
+
+
+
+  // Parse row into Activity struct
+ activity := api.Activity{}
+ var err error
+ if err = row.Scan(&activity.ID, &activity.Time, &activity.Description); err == sql.ErrNoRows {
+  log.Printf("Id not found")
+  return api.Activity{}, ErrIDNotFound
+ }
+ return activity, err
+
+
+// multiple rows
+  rows, err := c.db.Query("SELECT * FROM activities WHERE ID > ? ORDER BY id DESC LIMIT 100", offset)
+ if err != nil {
+  return nil, err
+ }
+ defer rows.Close()
+
+ data := []api.Activity{}
+ for rows.Next() {
+  i := api.Activity{}
+  err = rows.Scan(&i.ID, &i.Time, &i.Description)
+  if err != nil {
+   return nil, err
+  }
+  data = append(data, i)
+ }
+
+*/
+
+func (d *sqlStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
-	log.Printf("MEMORY create %s", obj.PrimaryKey())
-	// log.Println(utils.PP(obj))
+	log.Printf("create %s", obj.PrimaryKey())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -60,20 +119,15 @@ func (d *sqliteStore) Create(
 		}
 	}
 
-	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
-	}
-
 	lk := strings.ToLower(obj.Metadata().Kind())
 	path := fmt.Sprintf("%s/%s", lk, obj.PrimaryKey())
 	existing, _ := d.Get(ctx, store.ObjectIdentity(path))
 
 	if existing != nil {
-		return nil, fmt.Errorf("object already exists")
+		return nil, constants.ErrObjectExists
 	}
 
 	clone := obj.Clone()
-	// log.Println(utils.PP(clone))
 
 	// log.Printf("creating %s", obj.Metadata().Identity())
 	// log.Printf("path %s", obj.Metadata().Identity().Path())
@@ -88,13 +142,13 @@ func (d *sqliteStore) Create(
 	return clone.Clone(), nil
 }
 
-func (d *sqliteStore) Update(
+func (d *sqlStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
 	opt ...store.UpdateOption) (store.Object, error) {
 
-	log.Printf("MEMORY update %s", identity.Path())
+	log.Printf("update %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -106,12 +160,12 @@ func (d *sqliteStore) Update(
 	}
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	existing, _ := d.Get(ctx, identity)
 	if existing == nil {
-		return nil, fmt.Errorf("object %s does not exist", identity)
+		return nil, constants.ErrNoSuchObject
 	}
 
 	clone := obj.Clone()
@@ -126,12 +180,12 @@ func (d *sqliteStore) Update(
 	return clone.Clone(), err
 }
 
-func (d *sqliteStore) Delete(
+func (d *sqlStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("MEMORY delete %s", identity.Path())
+	log.Printf("delete %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -144,7 +198,7 @@ func (d *sqliteStore) Delete(
 
 	existing, _ := d.Get(ctx, identity)
 	if existing == nil {
-		return fmt.Errorf("object %s does not exist", identity)
+		return constants.ErrNoSuchObject
 	}
 
 	// d.IdentityIndex[identity.Path()] = nil
@@ -154,12 +208,12 @@ func (d *sqliteStore) Delete(
 	return nil
 }
 
-func (d *sqliteStore) Get(
+func (d *sqlStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("MEMORY get %s", identity.Path())
+	log.Printf("get %s", identity.Path())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -190,15 +244,15 @@ func (d *sqliteStore) Get(
 	// 	}
 	// }
 
-	return nil, fmt.Errorf("object %s does not exist", identity)
+	return nil, constants.ErrNoSuchObject
 }
 
-func (d *sqliteStore) List(
+func (d *sqlStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("MEMORY list %s", identity.Type())
+	log.Printf("list %s", identity.Type())
 
 	var err error
 	copt := store.CommonOptionHolder{}
@@ -216,7 +270,7 @@ func (d *sqliteStore) List(
 	// }
 
 	// if len(identity.Key()) > 0 {
-	// 	return nil, fmt.Errorf("cannot list specific identity")
+	// 	return nil, constants.ErrInvalidPath
 	// }
 
 	// for _, v := range everything {
@@ -229,7 +283,7 @@ func (d *sqliteStore) List(
 	if len(res) > 0 && copt.PropFilter != nil {
 		p := objectPath(res[0], copt.PropFilter.Key)
 		if p == "" {
-			return nil, fmt.Errorf("invalid filter key %s", copt.PropFilter.Key)
+			return nil, constants.ErrInvalidFilter
 		}
 	}
 

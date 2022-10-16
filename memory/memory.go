@@ -9,6 +9,7 @@ import (
 
 	"github.com/Jeffail/gabs"
 	"github.com/wazofski/store"
+	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
 )
 
@@ -38,7 +39,7 @@ func (d *memoryStore) Create(
 	opt ...store.CreateOption) (store.Object, error) {
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	log.Printf("create %s", obj.PrimaryKey())
@@ -54,7 +55,7 @@ func (d *memoryStore) Create(
 	}
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	lk := strings.ToLower(obj.Metadata().Kind())
@@ -62,7 +63,7 @@ func (d *memoryStore) Create(
 	existing, _ := d.Get(ctx, store.ObjectIdentity(path))
 
 	if existing != nil {
-		return nil, fmt.Errorf("object already exists")
+		return nil, constants.ErrObjectExists
 	}
 
 	clone := obj.Clone()
@@ -99,12 +100,12 @@ func (d *memoryStore) Update(
 	}
 
 	if obj == nil {
-		return nil, fmt.Errorf("object is nil")
+		return nil, constants.ErrObjectNil
 	}
 
 	existing, _ := d.Get(ctx, identity)
 	if existing == nil {
-		return nil, fmt.Errorf("object %s does not exist", identity)
+		return nil, constants.ErrNoSuchObject
 	}
 
 	clone := obj.Clone()
@@ -137,7 +138,7 @@ func (d *memoryStore) Delete(
 
 	existing, _ := d.Get(ctx, identity)
 	if existing == nil {
-		return fmt.Errorf("object %s does not exist", identity)
+		return constants.ErrNoSuchObject
 	}
 
 	d.IdentityIndex[identity.Path()] = nil
@@ -183,7 +184,7 @@ func (d *memoryStore) Get(
 		}
 	}
 
-	return nil, fmt.Errorf("object %s does not exist", identity)
+	return nil, constants.ErrNoSuchObject
 }
 
 func (d *memoryStore) List(
@@ -209,7 +210,7 @@ func (d *memoryStore) List(
 	}
 
 	if len(identity.Key()) > 0 {
-		return nil, fmt.Errorf("cannot list specific identity")
+		return nil, constants.ErrInvalidPath
 	}
 
 	for _, v := range everything {
@@ -222,7 +223,7 @@ func (d *memoryStore) List(
 	if len(res) > 0 && copt.PropFilter != nil {
 		p := objectPath(res[0], copt.PropFilter.Key)
 		if p == "" {
-			return nil, fmt.Errorf("invalid filter key %s", copt.PropFilter.Key)
+			return nil, constants.ErrInvalidFilter
 		}
 	}
 

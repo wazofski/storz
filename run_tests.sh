@@ -7,7 +7,7 @@ cd client
 ./run_tests.sh
 cd ..
 
-# cd testcommon
+# cd commontests
 # ./run_tests.sh
 # cd ..
 
