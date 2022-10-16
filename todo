@@ -30,10 +30,10 @@ RAM STORE:
 - LIST PKey filter @done
 
 META STORE:
-  - move the meta update functionality here
+  - move the meta update functionality here @done
 
 STATUS STRIPPER STORE:
-  - move the status stripping functionality here
+  - move the status stripping functionality here @done
 
 REACT STORE:
   - strip meta and status @done

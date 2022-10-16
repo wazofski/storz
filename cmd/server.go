@@ -11,8 +11,10 @@ import (
 func main() {
 	sch := generated.Schema()
 	mem := store.New(sch, memory.Factory())
-	reactor := store.New(sch, react.Factory(mem))
+	mh := store.New(sch, react.MetaHHandlerFactory(mem))
+	r := store.New(sch, react.Factory(mh))
+	ss := store.New(sch, react.StatusStripperFactory(r))
 
-	srv := rest.Server(sch, reactor)
+	srv := rest.Server(sch, ss)
 	srv.Listen(8000)
 }

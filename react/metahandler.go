@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/wazofski/store"
 )
 
-type reactStore struct {
+type metaHandlerStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
 }
 
-func Factory(data store.Store) store.Factory {
+func MetaHHandlerFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
-		client := &reactStore{
+		client := &metaHandlerStore{
 			Schema: schema,
 			Store:  data,
 		}
@@ -24,7 +25,7 @@ func Factory(data store.Store) store.Factory {
 	}
 }
 
-func (d *reactStore) Create(
+func (d *metaHandlerStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...store.CreateOption) (store.Object, error) {
@@ -33,12 +34,17 @@ func (d *reactStore) Create(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("REACT create %s", obj.PrimaryKey())
+	log.Printf("META HANDLER create %s", obj.PrimaryKey())
+
+	ms := obj.Metadata().(store.MetaSetter)
+
+	ms.SetIdentity(store.ObjectIdentityFactory())
+	ms.SetCreated(timestamp())
 
 	return d.Store.Create(ctx, obj, opt...)
 }
 
-func (d *reactStore) Update(
+func (d *metaHandlerStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -48,37 +54,45 @@ func (d *reactStore) Update(
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	log.Printf("REACT update %s", identity.Path())
+	log.Printf("META HANDLER update %s", identity.Path())
+
+	// update metadata
+	ms := obj.Metadata().(store.MetaSetter)
+	ms.SetUpdated(timestamp())
 
 	return d.Store.Update(ctx, identity, obj, opt...)
 }
 
-func (d *reactStore) Delete(
+func (d *metaHandlerStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.DeleteOption) error {
 
-	log.Printf("REACT delete %s", identity.Path())
+	log.Printf("META HANDLER delete %s", identity.Path())
 
 	return d.Store.Delete(ctx, identity, opt...)
 }
 
-func (d *reactStore) Get(
+func (d *metaHandlerStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.GetOption) (store.Object, error) {
 
-	log.Printf("REACT get %s", identity.Path())
+	log.Printf("META HANDLER get %s", identity.Path())
 
 	return d.Store.Get(ctx, identity, opt...)
 }
 
-func (d *reactStore) List(
+func (d *metaHandlerStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...store.ListOption) (store.ObjectList, error) {
 
-	log.Printf("REACT list %s", identity.Type())
+	log.Printf("META HANDLER list %s", identity.Type())
 
 	return d.Store.List(ctx, identity, opt...)
+}
+
+func timestamp() string {
+	return time.Now().Format(time.RFC3339)
 }
