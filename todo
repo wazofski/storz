@@ -36,7 +36,7 @@ STATUS STRIPPER STORE:
   - move the status stripping functionality here @done
 
 CACHED STORE:
-  - simple caching mechanism using an internal memory store
+  - simple caching mechanism using an internal memory store @done
 
 REACT STORE:
   - strip meta and status @done
@@ -60,9 +60,7 @@ MONGO STORE:
 SQL STORE:
   - basic working implementation @done
   - sqlite @done
-  - mysql?
-  - 
-
+  - test with mysql (may need a different json_extract function)
 
 
 
