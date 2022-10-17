@@ -316,8 +316,7 @@ var _ = Describe("common", func() {
 		ret, err := clt.List(
 			ctx,
 			generated.WorldIdentity(""),
-			options.OrderBy("spec.name"),
-			options.OrderIncremental(true))
+			options.OrderBy("spec.name"))
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -352,7 +351,6 @@ var _ = Describe("common", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1))
 
 		Expect(err).To(BeNil())
@@ -367,7 +365,6 @@ var _ = Describe("common", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1),
 			options.PageOffset(1))
 

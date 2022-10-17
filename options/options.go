@@ -95,9 +95,6 @@ func OrderIncremental(val bool) store.ListOption {
 	return listOption{
 		Function: func(options store.OptionHolder) error {
 			commonOptions := options.CommonOptions()
-			if commonOptions.OrderIncremental {
-				return errors.New("order incremental option has already been set")
-			}
 			commonOptions.OrderIncremental = val
 			// log.Printf("order incremental option %v", val)
 			return nil

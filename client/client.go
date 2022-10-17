@@ -37,7 +37,7 @@ type restOptions struct {
 
 func newRestOptions(d *restStore) restOptions {
 	res := restOptions{
-		CommonOptionHolder: store.CommonOptionHolder{},
+		CommonOptionHolder: store.CommonOptionHolderFactory(),
 		Headers:            make(map[string]string),
 	}
 

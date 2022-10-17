@@ -46,7 +46,7 @@ func (d *memoryStore) Create(
 	// log.Println(utils.PP(obj))
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -91,7 +91,7 @@ func (d *memoryStore) Update(
 	log.Printf("update %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -128,7 +128,7 @@ func (d *memoryStore) Delete(
 	log.Printf("delete %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -156,7 +156,7 @@ func (d *memoryStore) Get(
 	log.Printf("get %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -195,7 +195,7 @@ func (d *memoryStore) List(
 	log.Printf("list %s", identity.Type())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {

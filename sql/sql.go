@@ -40,7 +40,7 @@ func (d *sqlStore) TestConnection() error {
 		return err
 	}
 
-	return nil
+	return d.prepareTables()
 }
 
 func SqliteFactory(path string) store.Factory {
@@ -68,7 +68,7 @@ func (d *sqlStore) Create(
 	log.Printf("create %s", obj.PrimaryKey())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -113,7 +113,7 @@ func (d *sqlStore) Update(
 	log.Printf("update %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -170,7 +170,7 @@ func (d *sqlStore) Delete(
 	log.Printf("delete %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -204,7 +204,7 @@ func (d *sqlStore) Get(
 	log.Printf("get %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -213,11 +213,6 @@ func (d *sqlStore) Get(
 	}
 
 	err = d.TestConnection()
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.prepareTables()
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +238,7 @@ func (d *sqlStore) List(
 	log.Printf("list %s", identity.Type())
 
 	var err error
-	copt := store.CommonOptionHolder{}
+	copt := store.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -256,64 +251,53 @@ func (d *sqlStore) List(
 		return nil, err
 	}
 
-	err = d.prepareTables()
+	query := `SELECT Object as O FROM Objects
+		WHERE Type = @typ`
+
+	// pkey filter
+	if copt.KeyFilter != nil {
+		query = query + fmt.Sprintf(
+			" AND Pkey IN ('%s')",
+			strings.Join(*copt.KeyFilter, "', '"))
+	}
+
+	// prop filter
+	if copt.PropFilter != nil {
+		query = query + fmt.Sprintf(
+			" AND json_extract(O, '$.%s') = '%s'",
+			copt.PropFilter.Key, copt.PropFilter.Value)
+	}
+
+	if len(copt.OrderBy) > 0 {
+		query = fmt.Sprintf(`SELECT Object as O
+			FROM Objects
+			WHERE Type = @typ
+			ORDER BY json_extract(O, '$.%s')`, copt.OrderBy)
+
+		if copt.OrderIncremental {
+			query = query + " ASC"
+		} else {
+			query = query + " DESC"
+		}
+	}
+
+	if copt.PageSize > 0 {
+		query = query + fmt.Sprintf(" LIMIT %d", copt.PageSize)
+	}
+
+	if copt.PageOffset > 0 {
+		query = query + fmt.Sprintf(" OFFSET %d", copt.PageOffset)
+	}
+
+	// log.Printf(query)
+
+	rows, err := d.DB.Query(query, sql.Named("typ", identity.Type()))
 	if err != nil {
 		return nil, err
 	}
 
-	res := store.ObjectList{}
-
-	// selects
-	// row, err := c.db.Query("SELECT * FROM activities WHERE id=?", id)
-
-	// everything := d.PrimaryIndex[identity.Type()]
-	// if everything == nil {
-	// 	return res, nil
-	// }
-
-	// if len(identity.Key()) > 0 {
-	// 	return nil, constants.ErrInvalidPath
-	// }
-
-	// for _, v := range everything {
-	// 	if v == nil {
-	// 		continue
-	// 	}
-	// 	res = append(res, (*v).Clone())
-	// }
-
-	// multiple rows
-	// rows, err := c.db.Query("SELECT * FROM activities WHERE ID > ? ORDER BY id DESC LIMIT 100", offset)
-	// if err != nil {
-	//  return nil, err
-	// }
-	// defer rows.Close()
-
-	// data := []api.Activity{}
-	// for rows.Next() {
-	//  i := api.Activity{}
-	//  err = rows.Scan(&i.ID, &i.Time, &i.Description)
-	//  if err != nil {
-	//   return nil, err
-	//  }
-	//  data = append(data, i)
-	// }
-
-	// if len(res) > 0 && copt.PropFilter != nil {
-	// 	p := objectPath(res[0], copt.PropFilter.Key)
-	// 	if p == "" {
-	// 		return nil, constants.ErrInvalidFilter
-	// 	}
-	// }
-
-	// key filter results
-	// res = listPkeyFilter(res, copt.KeyFilter)
-	// // filter results
-	// res = listFilter(res, copt.PropFilter)
-	// // sort results
-	// res = listOrder(res, copt.OrderBy, copt.OrderIncremental)
-	// // paginate
-	// return listPagination(res, copt.PageOffset, copt.PageSize), nil
+	res := d.parseObjectRows(rows, identity.Type())
+	rows.Close()
 
 	return res, nil
 }
@@ -358,7 +342,7 @@ func (d *sqlStore) getIdentity(path string) (string, string, error) {
 }
 
 func (d *sqlStore) setIdentity(path string, pkey string, typ string) error {
-	log.Printf("setting identity %s %s %s", path, pkey, typ)
+	// log.Printf("setting identity %s %s %s", path, pkey, typ)
 
 	query := ""
 	_, _, err := d.getIdentity(path)
@@ -388,8 +372,8 @@ func (d *sqlStore) getObject(pkey string, typ string) (store.Object, error) {
 	// log.Printf("getting %s %s", pkey, typ)
 
 	return d.parseObjectRow(
-		d.DB.QueryRow("SELECT Object, Type FROM Objects WHERE Pkey=? AND Type=?",
-			pkey, strings.ToLower(typ)))
+		d.DB.QueryRow("SELECT Object FROM Objects WHERE Pkey=? AND Type=?",
+			pkey, strings.ToLower(typ)), typ)
 }
 
 func (d *sqlStore) setObject(pkey string, typ string, obj store.Object) error {
@@ -425,11 +409,10 @@ func (d *sqlStore) removeObject(pkey string, typ string) error {
 	return err
 }
 
-func (d *sqlStore) parseObjectRow(row *sql.Row) (store.Object, error) {
-	var typ string = ""
+func (d *sqlStore) parseObjectRow(row *sql.Row, typ string) (store.Object, error) {
 	var data string = ""
 
-	err := row.Scan(&data, &typ)
+	err := row.Scan(&data)
 
 	if err != nil {
 		// log.Fatalln(err)
@@ -437,4 +420,27 @@ func (d *sqlStore) parseObjectRow(row *sql.Row) (store.Object, error) {
 	}
 
 	return utils.UnmarshalObject([]byte(data), d.Schema, typ)
+}
+
+func (d *sqlStore) parseObjectRows(rows *sql.Rows, typ string) store.ObjectList {
+	res := store.ObjectList{}
+	for rows.Next() {
+		var data string = ""
+		err := rows.Scan(&data)
+
+		if err != nil {
+			log.Fatalln(err)
+			return nil
+		}
+
+		ret, err := utils.UnmarshalObject([]byte(data), d.Schema, typ)
+		if err != nil {
+			log.Fatalln(err)
+			return nil
+		}
+
+		res = append(res, ret)
+	}
+
+	return res
 }

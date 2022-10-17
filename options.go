@@ -54,3 +54,14 @@ type CommonOptionHolder struct {
 func (d *CommonOptionHolder) CommonOptions() *CommonOptionHolder {
 	return d
 }
+
+func CommonOptionHolderFactory() CommonOptionHolder {
+	return CommonOptionHolder{
+		PropFilter:       nil,
+		KeyFilter:        nil,
+		OrderBy:          "",
+		OrderIncremental: true,
+		PageSize:         0,
+		PageOffset:       0,
+	}
+}
