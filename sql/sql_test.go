@@ -12,6 +12,7 @@ var _ = Describe("sql", func() {
 		Expect(stc).ToNot(BeNil())
 
 		ret, err := stc.List(ctx, generated.SecondWorldIdentity(""))
+
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
 	})

@@ -2,6 +2,7 @@ package sql_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -21,6 +22,11 @@ var ctx context.Context
 
 var _ = BeforeSuite(func() {
 	sch := generated.Schema()
-	const path = "test.db"
-	stc = store.New(sch, sql.Factory(path))
+	const path = "test.sqlite"
+	stc = store.New(sch, sql.SqliteFactory(path))
+})
+
+var _ = AfterSuite(func() {
+	const path = "test.sqlite"
+	os.Remove(path)
 })

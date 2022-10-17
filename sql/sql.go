@@ -3,15 +3,13 @@ package sql
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
-	"github.com/Jeffail/gabs"
 	"github.com/wazofski/store"
 	"github.com/wazofski/store/constants"
 	"github.com/wazofski/store/logger"
+	"github.com/wazofski/store/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -21,83 +19,42 @@ var log = logger.New("sql")
 type sqlStore struct {
 	Schema store.SchemaHolder
 	Path   string
+	DB     *sql.DB
 }
 
-func Factory(path string) store.Factory {
-	return func(schema store.SchemaHolder) (store.Store, error) {
-		_, err := sql.Open("sqlite3", path)
-
-		if err != nil {
-			return nil, err
+func (d *sqlStore) TestConnection() error {
+	if d.DB != nil {
+		if d.DB.Ping() == nil {
+			return nil
 		}
+	}
 
+	var err error
+	d.DB, err = sql.Open("sqlite3", d.Path)
+	if err != nil {
+		return err
+	}
+
+	err = d.DB.Ping()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SqliteFactory(path string) store.Factory {
+	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &sqlStore{
 			Schema: schema,
 			Path:   path,
+			DB:     nil,
 		}
 
+		log.Printf("initialized %s", path)
 		return client, nil
 	}
 }
-
-/*
-
-// how to create tables
-const create string = `
-  CREATE TABLE IF NOT EXISTS activities (
-  id INTEGER NOT NULL PRIMARY KEY,
-  time DATETIME NOT NULL,
-  description TEXT
-  );`
-
- if _, err := db.Exec(create); err != nil {
-
- // inserts
- res, err := c.db.Exec("INSERT INTO activities VALUES(NULL,?,?);", activity.Time, activity.Description)
- if err != nil {
-  return 0, err
- }
-
- var id int64
- if id, err = res.LastInsertId(); err != nil {
-  return 0, err
- }
-
- // selects
- row, err := c.db.Query("SELECT * FROM activities WHERE id=?", id)
-
- row := c.db.QueryRow("SELECT id, time, description FROM activities WHERE id=?", id)
-
-
-
-  // Parse row into Activity struct
- activity := api.Activity{}
- var err error
- if err = row.Scan(&activity.ID, &activity.Time, &activity.Description); err == sql.ErrNoRows {
-  log.Printf("Id not found")
-  return api.Activity{}, ErrIDNotFound
- }
- return activity, err
-
-
-// multiple rows
-  rows, err := c.db.Query("SELECT * FROM activities WHERE ID > ? ORDER BY id DESC LIMIT 100", offset)
- if err != nil {
-  return nil, err
- }
- defer rows.Close()
-
- data := []api.Activity{}
- for rows.Next() {
-  i := api.Activity{}
-  err = rows.Scan(&i.ID, &i.Time, &i.Description)
-  if err != nil {
-   return nil, err
-  }
-  data = append(data, i)
- }
-
-*/
 
 func (d *sqlStore) Create(
 	ctx context.Context,
@@ -126,9 +83,23 @@ func (d *sqlStore) Create(
 		return nil, constants.ErrObjectExists
 	}
 
-	// db := prepareTables(d)
-	// db.IdentityIndex.Insert(obj.Metadata().Identity().Path(), path)
-	// db.ObjectsIndex.Insert(path, utils.Serialize(obj))
+	err = d.TestConnection()
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.setIdentity(
+		obj.Metadata().Identity().Path(),
+		obj.PrimaryKey(),
+		obj.Metadata().Kind())
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.setObject(obj.PrimaryKey(), obj.Metadata().Kind(), obj)
+	if err != nil {
+		return nil, err
+	}
 
 	return obj.Clone(), nil
 }
@@ -159,15 +130,29 @@ func (d *sqlStore) Update(
 		return nil, constants.ErrNoSuchObject
 	}
 
-	// lk := strings.ToLower(existing.Metadata().Kind())
-	// newPath := fmt.Sprintf("%s/%s", lk, obj.PrimaryKey())
-	// oldPath := fmt.Sprintf("%s/%s", lk, existing.PrimaryKey())
+	err = d.TestConnection()
+	if err != nil {
+		return nil, err
+	}
 
-	// db.IdentityIndex.Update(obj.Metadata().Identity().Path(), path)
-	// db.ObjectsTable.Delete(oldPath)
-	// db.ObjectsTable.InsertUpdate(newPath, utils.Serialize(obj))
+	err = d.setIdentity(existing.Metadata().Identity().Path(),
+		obj.PrimaryKey(), obj.Metadata().Kind())
 
-	return d.Get(ctx, identity)
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.removeObject(existing.PrimaryKey(), existing.Metadata().Kind())
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.setObject(obj.PrimaryKey(), obj.Metadata().Kind(), obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.Get(ctx, existing.Metadata().Identity())
 }
 
 func (d *sqlStore) Delete(
@@ -191,13 +176,17 @@ func (d *sqlStore) Delete(
 		return constants.ErrNoSuchObject
 	}
 
-	// lk := strings.ToLower(existing.Metadata().Kind())
-	// path := fmt.Sprintf("%s/%s", lk, existing.PrimaryKey())
+	err = d.TestConnection()
+	if err != nil {
+		return err
+	}
 
-	// db.IdentityIndex.Delete(existing.Metadata().Identity().Path())
-	// db.ObjectsTable.Delete(path)
+	err = d.removeIdentity(existing.Metadata().Identity().Path())
+	if err != nil {
+		return err
+	}
 
-	return nil
+	return d.removeObject(existing.PrimaryKey(), existing.Metadata().Kind())
 }
 
 func (d *sqlStore) Get(
@@ -216,23 +205,25 @@ func (d *sqlStore) Get(
 		}
 	}
 
-	// ret := d.IdentityIndex[identity.Path()]
-	// if ret != nil {
-	// 	return (*ret).Clone(), nil
-	// }
+	err = d.TestConnection()
+	if err != nil {
+		return nil, err
+	}
 
-	// tokens := strings.Split(identity.Path(), "/")
-	// if len(tokens) == 2 {
-	// 	lk := strings.ToLower(tokens[0])
-	// 	km := d.PrimaryIndex[lk]
-	// 	if km != nil {
-	// 		// log.Printf("...GET type index exists with %d records", len(km))
-	// 		ret = km[tokens[1]]
-	// 		if ret != nil {
-	// 			return (*ret).Clone(), nil
-	// 		}
-	// 	}
-	// }
+	err = d.prepareTables()
+	if err != nil {
+		return nil, err
+	}
+
+	pkey, typ, err := d.getIdentity(identity.Path())
+	if err == nil {
+		return d.getObject(pkey, typ)
+	}
+
+	tokens := strings.Split(identity.Path(), "/")
+	if len(tokens) == 2 {
+		return d.getObject(tokens[1], tokens[0])
+	}
 
 	return nil, constants.ErrNoSuchObject
 }
@@ -253,7 +244,21 @@ func (d *sqlStore) List(
 		}
 	}
 
+	err = d.TestConnection()
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.prepareTables()
+	if err != nil {
+		return nil, err
+	}
+
 	res := store.ObjectList{}
+
+	// selects
+	// row, err := c.db.Query("SELECT * FROM activities WHERE id=?", id)
+
 	// everything := d.PrimaryIndex[identity.Type()]
 	// if everything == nil {
 	// 	return res, nil
@@ -270,104 +275,155 @@ func (d *sqlStore) List(
 	// 	res = append(res, (*v).Clone())
 	// }
 
-	if len(res) > 0 && copt.PropFilter != nil {
-		p := objectPath(res[0], copt.PropFilter.Key)
-		if p == "" {
-			return nil, constants.ErrInvalidFilter
-		}
-	}
+	// multiple rows
+	// rows, err := c.db.Query("SELECT * FROM activities WHERE ID > ? ORDER BY id DESC LIMIT 100", offset)
+	// if err != nil {
+	//  return nil, err
+	// }
+	// defer rows.Close()
+
+	// data := []api.Activity{}
+	// for rows.Next() {
+	//  i := api.Activity{}
+	//  err = rows.Scan(&i.ID, &i.Time, &i.Description)
+	//  if err != nil {
+	//   return nil, err
+	//  }
+	//  data = append(data, i)
+	// }
+
+	// if len(res) > 0 && copt.PropFilter != nil {
+	// 	p := objectPath(res[0], copt.PropFilter.Key)
+	// 	if p == "" {
+	// 		return nil, constants.ErrInvalidFilter
+	// 	}
+	// }
 
 	// key filter results
-	res = listPkeyFilter(res, copt.KeyFilter)
-	// filter results
-	res = listFilter(res, copt.PropFilter)
-	// sort results
-	res = listOrder(res, copt.OrderBy, copt.OrderIncremental)
-	// paginate
-	return listPagination(res, copt.PageOffset, copt.PageSize), nil
+	// res = listPkeyFilter(res, copt.KeyFilter)
+	// // filter results
+	// res = listFilter(res, copt.PropFilter)
+	// // sort results
+	// res = listOrder(res, copt.OrderBy, copt.OrderIncremental)
+	// // paginate
+	// return listPagination(res, copt.PageOffset, copt.PageSize), nil
+
+	return res, nil
 }
 
-func listPkeyFilter(list store.ObjectList, filter *store.KeyFilter) store.ObjectList {
-	if filter == nil {
-		return list
-	}
+func (d *sqlStore) prepareTables() error {
+	// log.Printf("preparing tables")
 
-	lookup := make(map[string]bool)
-	for _, f := range *filter {
-		lookup[f] = true
-	}
+	create := `
+		CREATE TABLE IF NOT EXISTS IdIndex (
+		Path VARCHAR(25) NOT NULL PRIMARY KEY,
+		Pkey NVARCHAR(50) NOT NULL,
+		Type VARCHAR(25) NOT NULL);`
 
-	res := store.ObjectList{}
-	for _, o := range list {
-		if lookup[o.PrimaryKey()] {
-			res = append(res, o)
-		}
-	}
-
-	return res
-}
-
-func listFilter(list store.ObjectList, filter *store.PropFilter) store.ObjectList {
-	if filter == nil {
-		return list
-	}
-
-	res := store.ObjectList{}
-	for _, o := range list {
-		path := objectPath(o, filter.Key)
-
-		if filter.Value == path {
-			res = append(res, o)
-		}
-	}
-
-	return res
-}
-
-func listOrder(list store.ObjectList, ob string, inc bool) store.ObjectList {
-	if len(ob) == 0 {
-		return list
-	}
-
-	sort.Slice(list, func(p, q int) bool {
-		if inc {
-			return objectPath(list[p], ob) < objectPath(list[q], ob)
-		}
-		return objectPath(list[p], ob) > objectPath(list[q], ob)
-	})
-
-	return list
-}
-
-func listPagination(list store.ObjectList, offset int, size int) store.ObjectList {
-	lr := len(list)
-
-	if size == 0 {
-		size = lr
-	}
-
-	tl := offset
-	tr := offset + size
-	if lr < tr {
-		tr = lr
-	}
-
-	if tr <= tl {
-		return store.ObjectList{}
-	}
-
-	return list[tl:tr]
-}
-
-func objectPath(obj store.Object, path string) string {
-	data, _ := json.Marshal(obj)
-	jsn, err := gabs.ParseJSON(data)
+	_, err := d.DB.Exec(create)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
-	if !jsn.Exists(strings.Split(path, ".")...) {
-		return ""
+
+	create = `
+		CREATE TABLE IF NOT EXISTS Objects (
+		Pkey NVARCHAR(50) NOT NULL,
+		Type VARCHAR(25) NOT NULL,
+		Object JSON,
+		PRIMARY KEY (Pkey,Type));`
+
+	_, err = d.DB.Exec(create)
+	if err != nil {
+		return err
 	}
-	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
-	return ret
+
+	return nil
+}
+
+func (d *sqlStore) getIdentity(path string) (string, string, error) {
+	row := d.DB.QueryRow("SELECT Pkey, Type FROM IdIndex WHERE Path=?", path)
+
+	var pkey string = ""
+	var typ string = ""
+
+	err := row.Scan(&pkey, &typ)
+	return pkey, typ, err
+}
+
+func (d *sqlStore) setIdentity(path string, pkey string, typ string) error {
+	query := ""
+	_, _, err := d.getIdentity(path)
+	if err == nil {
+		query = `update IdIndex set Pkey=@pkey, Type=@typ where Path = @path`
+	} else {
+		query = `insert into IdIndex (Path, Pkey, Type) values (@path, @pkey, @typ)`
+	}
+
+	_, err = d.DB.Exec(query,
+		sql.Named("path", path),
+		sql.Named("pkey", pkey),
+		sql.Named("typ", strings.ToLower(typ)))
+	return err
+}
+
+func (d *sqlStore) removeIdentity(path string) error {
+	query := "DELETE FROM IdIndex WHERE Path = @path"
+
+	_, err := d.DB.Exec(query, sql.Named("path", path))
+	return err
+}
+
+func (d *sqlStore) getObject(pkey string, typ string) (store.Object, error) {
+	// log.Printf("getting %s %s", pkey, typ)
+
+	return d.parseObjectRow(
+		d.DB.QueryRow("SELECT Object, Type FROM Objects WHERE Pkey=? AND Type=?",
+			pkey, strings.ToLower(typ)))
+}
+
+func (d *sqlStore) setObject(pkey string, typ string, obj store.Object) error {
+	query := ""
+	_, err := d.getObject(pkey, typ)
+	if err == nil {
+		query = `update Objects set Object=@obj where Pkey = @pkey AND Type = @typ`
+	} else {
+		query = `insert into Objects (Pkey, Type, Object) values (@pkey, @typ, @obj)`
+	}
+
+	data, err := utils.Serialize(obj)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = d.DB.Exec(query,
+		sql.Named("pkey", pkey),
+		sql.Named("typ", strings.ToLower(typ)),
+		sql.Named("obj", string(data)))
+
+	return err
+}
+
+func (d *sqlStore) removeObject(pkey string, typ string) error {
+	query := "DELETE FROM Objects WHERE Pkey = @pkey AND Type = @typ"
+
+	_, err := d.DB.Exec(query,
+		sql.Named("pkey", pkey),
+		sql.Named("typ", strings.ToLower(typ)))
+
+	return err
+}
+
+func (d *sqlStore) parseObjectRow(row *sql.Row) (store.Object, error) {
+	var typ string = ""
+	var data string = ""
+
+	err := row.Scan(&data, &typ)
+
+	if err != nil {
+		// log.Fatalln(err)
+		return nil, err
+	}
+
+	return utils.UnmarshalObject([]byte(data), d.Schema, typ)
 }

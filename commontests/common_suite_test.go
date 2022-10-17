@@ -16,10 +16,13 @@ import (
 	"github.com/wazofski/store/generated"
 	"github.com/wazofski/store/memory"
 	"github.com/wazofski/store/react"
+	"github.com/wazofski/store/sql"
 )
 
 var clt store.Store
 var ctx context.Context
+
+// os.Remove("test.sqlite")
 
 var stores []store.Store = []store.Store{
 	store.New(
@@ -37,9 +40,9 @@ var stores []store.Store = []store.Store{
 		generated.Schema(),
 		client.Factory("http://localhost:8000/")),
 
-	// store.New(
-	// 	generated.Schema(),
-	// 	sql.Factory("test.db")),
+	store.New(
+		generated.Schema(),
+		sql.SqliteFactory("test.sqlite")),
 }
 
 func TestNegative(t *testing.T) {
