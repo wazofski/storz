@@ -334,7 +334,7 @@ var _ = Describe("common", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(false))
+			options.OrderDescending())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())

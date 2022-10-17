@@ -141,8 +141,7 @@ var _ = Describe("memory", func() {
 	It("can LIST and sort multiple objects", func() {
 		ret, err := client.List(
 			ctx, generated.WorldIdentity(""),
-			options.OrderBy("spec.name"),
-			options.OrderIncremental(true))
+			options.OrderBy("spec.name"))
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -159,7 +158,7 @@ var _ = Describe("memory", func() {
 		ret, err = client.List(
 			ctx, generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(false))
+			options.OrderDescending())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -180,7 +179,6 @@ var _ = Describe("memory", func() {
 		ret, err := client.List(
 			ctx, generated.SecondWorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1))
 
 		Expect(err).To(BeNil())
@@ -194,7 +192,6 @@ var _ = Describe("memory", func() {
 		ret, err = client.List(
 			ctx, generated.SecondWorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1),
 			options.PageOffset(1))
 

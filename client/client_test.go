@@ -158,8 +158,7 @@ var _ = Describe("client", func() {
 		ret, err := stc.List(
 			ctx,
 			generated.WorldIdentity(""),
-			options.OrderBy("spec.name"),
-			options.OrderIncremental(true))
+			options.OrderBy("spec.name"))
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -177,7 +176,7 @@ var _ = Describe("client", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(false))
+			options.OrderDescending())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -194,7 +193,6 @@ var _ = Describe("client", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1))
 
 		Expect(err).To(BeNil())
@@ -209,7 +207,6 @@ var _ = Describe("client", func() {
 			ctx,
 			generated.WorldIdentity(""),
 			options.OrderBy("spec.name"),
-			options.OrderIncremental(true),
 			options.PageSize(1),
 			options.PageOffset(1))
 

@@ -188,13 +188,15 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 
 			orderInc, ok := vals[IncrementalArg]
 			if ok {
-				ob := false
+				ob := true
 				err := json.Unmarshal([]byte(orderInc[0]), &ob)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
 					return
 				}
-				opts = append(opts, options.OrderIncremental(ob))
+				if !ob {
+					opts = append(opts, options.OrderDescending())
+				}
 			}
 
 			ret, err := server.Store.List(

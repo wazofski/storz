@@ -36,7 +36,7 @@ STATUS STRIPPER STORE:
   - move the status stripping functionality here @done
 
 CACHED STORE:
-  
+  - simple caching mechanism using an internal memory store
 
 REACT STORE:
   - strip meta and status @done
@@ -58,31 +58,28 @@ MONGO STORE:
   - basic implementation
 
 SQL STORE:
-  - basic implementation
-  - connector interface
-    - sqlite imp
-    - mysql imp
+  - basic working implementation @done
+  - sqlite @done
+  - mysql?
+  - 
+
+
+
 
 COMMON TESTS:
   - change naming prop @done
   - action tests by ID @done
   - negative checks
     - pass nil @done
-    - weird options
+    - weird options ?
   	- not-allowed actions (client suite) @done
   	  -	new resource needed for this @done
       - try per id @done
       - try per pkey @done
 
+
+
 BUGS:
   - http: superfluous response.WriteHeader call from rest.reportError (server.go:273) @done
   - can PUT objects BY ID @done
 
-
-... future features
-GRAPH STORE:
-  - relation model
-  - ?
-
-GRAPHQL SERVER:
-  -

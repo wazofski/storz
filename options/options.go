@@ -91,11 +91,14 @@ func OrderBy(field string) store.ListOption {
 	}
 }
 
-func OrderIncremental(val bool) store.ListOption {
+func OrderDescending() store.ListOption {
 	return listOption{
 		Function: func(options store.OptionHolder) error {
 			commonOptions := options.CommonOptions()
-			commonOptions.OrderIncremental = val
+			if !commonOptions.OrderIncremental {
+				return errors.New("order incremental option has already been set")
+			}
+			commonOptions.OrderIncremental = false
 			// log.Printf("order incremental option %v", val)
 			return nil
 		},
