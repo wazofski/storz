@@ -18,7 +18,7 @@ import (
 	"github.com/wazofski/store/utils"
 )
 
-var log = logger.New("rest server")
+var log = logger.Factory("rest server")
 
 const (
 	PropFilterArg  = "pf"

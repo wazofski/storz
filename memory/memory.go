@@ -13,7 +13,7 @@ import (
 	"github.com/wazofski/store/logger"
 )
 
-var log = logger.New("memory")
+var log = logger.Factory("memory")
 
 type memoryStore struct {
 	Schema        store.SchemaHolder

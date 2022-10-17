@@ -20,7 +20,7 @@ func StatusStripperFactory(data store.Store) store.Factory {
 		client := &statusStripperStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.New("status stripper"),
+			Log:    logger.Factory("status stripper"),
 		}
 
 		return client, nil

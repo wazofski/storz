@@ -20,7 +20,7 @@ func MetaHHandlerFactory(data store.Store) store.Factory {
 		client := &metaHandlerStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.New("meta handler"),
+			Log:    logger.Factory("meta handler"),
 		}
 
 		return client, nil

@@ -19,7 +19,7 @@ func ReactFactory(data store.Store) store.Factory {
 		client := &reactStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.New("react"),
+			Log:    logger.Factory("react"),
 		}
 
 		return client, nil

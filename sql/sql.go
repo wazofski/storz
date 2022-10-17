@@ -14,7 +14,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var log = logger.New("sql")
+var log = logger.Factory("sql")
 
 type sqlStore struct {
 	Schema store.SchemaHolder
@@ -135,7 +135,14 @@ func (d *sqlStore) Update(
 		return nil, err
 	}
 
-	err = d.setIdentity(existing.Metadata().Identity().Path(),
+	log.Object("existing", existing)
+
+	err = d.removeIdentity(existing.Metadata().Identity().Path())
+	if err != nil {
+		log.Printf("%s", err)
+	}
+
+	err = d.setIdentity(obj.Metadata().Identity().Path(),
 		obj.PrimaryKey(), obj.Metadata().Kind())
 
 	if err != nil {
@@ -152,7 +159,7 @@ func (d *sqlStore) Update(
 		return nil, err
 	}
 
-	return d.Get(ctx, existing.Metadata().Identity())
+	return obj.Clone(), nil
 }
 
 func (d *sqlStore) Delete(
@@ -351,8 +358,11 @@ func (d *sqlStore) getIdentity(path string) (string, string, error) {
 }
 
 func (d *sqlStore) setIdentity(path string, pkey string, typ string) error {
+	log.Printf("setting identity %s %s %s", path, pkey, typ)
+
 	query := ""
 	_, _, err := d.getIdentity(path)
+
 	if err == nil {
 		query = `update IdIndex set Pkey=@pkey, Type=@typ where Path = @path`
 	} else {
@@ -363,6 +373,7 @@ func (d *sqlStore) setIdentity(path string, pkey string, typ string) error {
 		sql.Named("path", path),
 		sql.Named("pkey", pkey),
 		sql.Named("typ", strings.ToLower(typ)))
+
 	return err
 }
 

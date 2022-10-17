@@ -18,7 +18,7 @@ type _Logger struct {
 	Module string
 }
 
-func New(module string) Logger {
+func Factory(module string) Logger {
 	return &_Logger{
 		Module: module,
 	}

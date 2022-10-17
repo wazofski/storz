@@ -19,7 +19,7 @@ import (
 	"github.com/wazofski/store/utils"
 )
 
-var log = logger.New("client")
+var log = logger.Factory("client")
 
 type restStore struct {
 	BaseURL     *url.URL
