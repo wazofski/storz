@@ -6,10 +6,10 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/generated"
-	"github.com/wazofski/store/options"
-	"github.com/wazofski/store/utils"
+	"github.com/wazofski/storz/generated"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
 var _ = Describe("common", func() {

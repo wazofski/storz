@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
-	"github.com/wazofski/store/logger"
-	"github.com/wazofski/store/utils"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
@@ -76,7 +77,7 @@ func Factory(connector _ConnectionMaker) store.Factory {
 func (d *sqlStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -85,7 +86,7 @@ func (d *sqlStore) Create(
 	log.Printf("create %s", obj.PrimaryKey())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -125,12 +126,12 @@ func (d *sqlStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	log.Printf("update %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -182,12 +183,12 @@ func (d *sqlStore) Update(
 func (d *sqlStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	log.Printf("delete %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -216,12 +217,12 @@ func (d *sqlStore) Delete(
 func (d *sqlStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	log.Printf("get %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -250,12 +251,12 @@ func (d *sqlStore) Get(
 func (d *sqlStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	log.Printf("list %s", identity.Type())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {

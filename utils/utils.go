@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/store"
 )
 
 type _Resource struct {

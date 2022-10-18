@@ -18,8 +18,8 @@ func Generate(model string) error {
 		// "strings",
 		"fmt",
 		"encoding/json",
-		"github.com/wazofski/store/utils",
-		"github.com/wazofski/store",
+		"github.com/wazofski/storz/utils",
+		"github.com/wazofski/storz/store",
 	}
 
 	var b strings.Builder

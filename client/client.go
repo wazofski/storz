@@ -12,11 +12,12 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
-	"github.com/wazofski/store/logger"
-	"github.com/wazofski/store/rest"
-	"github.com/wazofski/store/utils"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/rest"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
 var log = logger.Factory("client")
@@ -31,13 +32,13 @@ type restStore struct {
 type requestMaker func(path *url.URL, content []byte, method string, headers map[string]string) ([]byte, error)
 
 type restOptions struct {
-	store.CommonOptionHolder
+	options.CommonOptionHolder
 	Headers map[string]string
 }
 
 func newRestOptions(d *restStore) restOptions {
 	res := restOptions{
-		CommonOptionHolder: store.CommonOptionHolderFactory(),
+		CommonOptionHolder: options.CommonOptionHolderFactory(),
 		Headers:            make(map[string]string),
 	}
 
@@ -48,7 +49,7 @@ func newRestOptions(d *restStore) restOptions {
 	return res
 }
 
-func (d *restOptions) CommonOptions() *store.CommonOptionHolder {
+func (d *restOptions) CommonOptions() *options.CommonOptionHolder {
 	return &d.CommonOptionHolder
 }
 
@@ -261,7 +262,7 @@ func listParameters(ropt restOptions) string {
 func (d *restStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -307,7 +308,7 @@ func (d *restStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -348,7 +349,7 @@ func (d *restStore) Update(
 func (d *restStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	log.Printf("delete %s", identity.Path())
 
@@ -373,7 +374,7 @@ func (d *restStore) Delete(
 func (d *restStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	log.Printf("get %s", identity.Path())
 
@@ -407,7 +408,7 @@ func (d *restStore) Get(
 func (d *restStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	log.Printf("list %s", identity)
 

@@ -3,7 +3,8 @@ package logger
 import (
 	"context"
 
-	"github.com/wazofski/store"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
 )
 
 type loggerStore struct {
@@ -27,7 +28,7 @@ func StoreFactory(module string, st store.Store) store.Factory {
 func (d *loggerStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	ret, err := d.Store.Create(ctx, obj, opt...)
 	d.Logger.Object("ret", ret)
@@ -41,7 +42,7 @@ func (d *loggerStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	ret, err := d.Store.Update(ctx, identity, obj, opt...)
 	d.Logger.Object("ret", ret)
@@ -54,7 +55,7 @@ func (d *loggerStore) Update(
 func (d *loggerStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	err := d.Store.Delete(ctx, identity, opt...)
 	if err != nil {
@@ -66,7 +67,7 @@ func (d *loggerStore) Delete(
 func (d *loggerStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	ret, err := d.Store.Get(ctx, identity, opt...)
 	d.Logger.Object("ret", ret)
@@ -79,7 +80,7 @@ func (d *loggerStore) Get(
 func (d *loggerStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	ret, err := d.Store.List(ctx, identity, opt...)
 	d.Logger.Object("ret", ret)

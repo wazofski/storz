@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/generated"
-	"github.com/wazofski/store/memory"
-	"github.com/wazofski/store/react"
-	"github.com/wazofski/store/rest"
+	"github.com/wazofski/storz/generated"
+	"github.com/wazofski/storz/memory"
+	"github.com/wazofski/storz/react"
+	"github.com/wazofski/storz/rest"
+	"github.com/wazofski/storz/store"
 )
 
 func main() {

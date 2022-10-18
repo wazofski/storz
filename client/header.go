@@ -5,25 +5,25 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wazofski/store"
+	"github.com/wazofski/storz/store/options"
 )
 
 type restHeaderOption struct {
-	Function store.OptionFunction
+	Function options.OptionFunction
 }
 
 type headerOption interface {
-	store.Option
-	store.GetOption
-	store.CreateOption
-	store.UpdateOption
-	store.DeleteOption
-	store.ListOption
+	options.Option
+	options.GetOption
+	options.CreateOption
+	options.UpdateOption
+	options.DeleteOption
+	options.ListOption
 }
 
 func Header(key string, val string) headerOption {
 	return restHeaderOption{
-		Function: func(options store.OptionHolder) error {
+		Function: func(options options.OptionHolder) error {
 			restOpts, ok := options.(*restOptions)
 			if !ok {
 				return errors.New("cannot apply REST specific header option")
@@ -38,27 +38,27 @@ func Header(key string, val string) headerOption {
 	}
 }
 
-func (d restHeaderOption) ApplyFunction() store.OptionFunction {
+func (d restHeaderOption) ApplyFunction() options.OptionFunction {
 	return d.Function
 }
-func (d restHeaderOption) GetCreateOption() store.Option {
+func (d restHeaderOption) GetCreateOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetDeleteOption() store.Option {
+func (d restHeaderOption) GetDeleteOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetGetOption() store.Option {
+func (d restHeaderOption) GetGetOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetPatchOption() store.Option {
+func (d restHeaderOption) GetPatchOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetUpdateOption() store.Option {
+func (d restHeaderOption) GetUpdateOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetListOption() store.Option {
+func (d restHeaderOption) GetListOption() options.Option {
 	return d
 }
-func (d restHeaderOption) GetHeaderOption() store.Option {
+func (d restHeaderOption) GetHeaderOption() options.Option {
 	return d
 }

@@ -11,7 +11,7 @@ trap "kill 0" EXIT
 
 cd ..
 go run cmd/server.go &
-cd commontests
+cd common
 
 sleep 1
 

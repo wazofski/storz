@@ -8,9 +8,10 @@ import (
 	"strings"
 
 	"github.com/Jeffail/gabs"
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
-	"github.com/wazofski/store/logger"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
 )
 
 var log = logger.Factory("memory")
@@ -36,7 +37,7 @@ func Factory() store.Factory {
 func (d *memoryStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -46,7 +47,7 @@ func (d *memoryStore) Create(
 	// log.Println(utils.PP(obj))
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -86,12 +87,12 @@ func (d *memoryStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	log.Printf("update %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -123,12 +124,12 @@ func (d *memoryStore) Update(
 func (d *memoryStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	log.Printf("delete %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -151,12 +152,12 @@ func (d *memoryStore) Delete(
 func (d *memoryStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	log.Printf("get %s", identity.Path())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -190,12 +191,12 @@ func (d *memoryStore) Get(
 func (d *memoryStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	log.Printf("list %s", identity.Type())
 
 	var err error
-	copt := store.CommonOptionHolderFactory()
+	copt := options.CommonOptionHolderFactory()
 	for _, o := range opt {
 		err = o.ApplyFunction()(&copt)
 		if err != nil {
@@ -237,7 +238,7 @@ func (d *memoryStore) List(
 	return listPagination(res, copt.PageOffset, copt.PageSize), nil
 }
 
-func listPkeyFilter(list store.ObjectList, filter *store.KeyFilter) store.ObjectList {
+func listPkeyFilter(list store.ObjectList, filter *options.KeyFilterSetting) store.ObjectList {
 	if filter == nil {
 		return list
 	}
@@ -257,7 +258,7 @@ func listPkeyFilter(list store.ObjectList, filter *store.KeyFilter) store.Object
 	return res
 }
 
-func listFilter(list store.ObjectList, filter *store.PropFilter) store.ObjectList {
+func listFilter(list store.ObjectList, filter *options.PropFilterSetting) store.ObjectList {
 	if filter == nil {
 		return list
 	}

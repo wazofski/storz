@@ -49,20 +49,23 @@ REACT STORE:
   - test various callback types
 
 MODULE REFACTOR:
-  - module name
-  - packages
-  - mgen install
-  - go geneerate integration
-  - service geenerator
-
-MONGO STORE:
-  - basic implementation
+  - module name @done
+  - packages @done
+  - mgen install ?
+    - go geneerate integration
+  - service geenerator ?
 
 SQL STORE:
   - basic working implementation @done
   - sqlite @done
   - test with mysql @done
 
+MONGO STORE:
+  - basic implementation
+
+
+VISORE:
+  - 
 
 COMMON TESTS:
   - change naming prop @done

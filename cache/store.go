@@ -3,8 +3,9 @@ package cache
 import (
 	"context"
 
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/memory"
+	"github.com/wazofski/storz/memory"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
 )
 
 type cachedStore struct {
@@ -28,7 +29,7 @@ func StoreFactory(module string, st store.Store) store.Factory {
 func (d *cachedStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	d.Cache.Create(ctx, obj, opt...)
 
@@ -39,7 +40,7 @@ func (d *cachedStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	d.Cache.Update(ctx, identity, obj, opt...)
 
@@ -49,7 +50,7 @@ func (d *cachedStore) Update(
 func (d *cachedStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	d.Cache.Delete(ctx, identity, opt...)
 
@@ -59,7 +60,7 @@ func (d *cachedStore) Delete(
 func (d *cachedStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	ret, _ := d.Cache.Get(ctx, identity, opt...)
 	if ret != nil {
@@ -72,7 +73,7 @@ func (d *cachedStore) Get(
 func (d *cachedStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	return d.Store.List(ctx, identity, opt...)
 }

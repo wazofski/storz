@@ -3,10 +3,11 @@ package react
 import (
 	"context"
 
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
-	"github.com/wazofski/store/logger"
-	"github.com/wazofski/store/utils"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
 type metaHandlerStore struct {
@@ -30,7 +31,7 @@ func MetaHHandlerFactory(data store.Store) store.Factory {
 func (d *metaHandlerStore) Create(
 	ctx context.Context,
 	obj store.Object,
-	opt ...store.CreateOption) (store.Object, error) {
+	opt ...options.CreateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -50,7 +51,7 @@ func (d *metaHandlerStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
-	opt ...store.UpdateOption) (store.Object, error) {
+	opt ...options.UpdateOption) (store.Object, error) {
 
 	if obj == nil {
 		return nil, constants.ErrObjectNil
@@ -68,7 +69,7 @@ func (d *metaHandlerStore) Update(
 func (d *metaHandlerStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.DeleteOption) error {
+	opt ...options.DeleteOption) error {
 
 	d.Log.Printf("delete %s", identity.Path())
 
@@ -78,7 +79,7 @@ func (d *metaHandlerStore) Delete(
 func (d *metaHandlerStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.GetOption) (store.Object, error) {
+	opt ...options.GetOption) (store.Object, error) {
 
 	d.Log.Printf("get %s", identity.Path())
 
@@ -88,7 +89,7 @@ func (d *metaHandlerStore) Get(
 func (d *metaHandlerStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
-	opt ...store.ListOption) (store.ObjectList, error) {
+	opt ...options.ListOption) (store.ObjectList, error) {
 
 	d.Log.Printf("list %s", identity.Type())
 

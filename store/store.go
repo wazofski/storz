@@ -7,7 +7,12 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/wazofski/storz/store/options"
 )
+
+type Endpoint interface {
+	Listen(int)
+}
 
 type Object interface {
 	MetaHolder
@@ -55,11 +60,11 @@ func (o ObjectIdentity) Key() string {
 }
 
 type Store interface {
-	Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)
-	List(context.Context, ObjectIdentity, ...ListOption) (ObjectList, error)
-	Create(context.Context, Object, ...CreateOption) (Object, error)
-	Delete(context.Context, ObjectIdentity, ...DeleteOption) error
-	Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
+	Get(context.Context, ObjectIdentity, ...options.GetOption) (Object, error)
+	List(context.Context, ObjectIdentity, ...options.ListOption) (ObjectList, error)
+	Create(context.Context, Object, ...options.CreateOption) (Object, error)
+	Delete(context.Context, ObjectIdentity, ...options.DeleteOption) error
+	Update(context.Context, ObjectIdentity, Object, ...options.UpdateOption) (Object, error)
 }
 
 type SchemaHolder interface {

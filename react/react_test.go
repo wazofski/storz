@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/wazofski/store/generated"
+	"github.com/wazofski/storz/generated"
 )
 
 var _ = Describe("react", func() {

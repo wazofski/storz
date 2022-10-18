@@ -11,11 +11,11 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/exp/slices"
 
-	"github.com/wazofski/store"
-	"github.com/wazofski/store/constants"
-	"github.com/wazofski/store/logger"
-	"github.com/wazofski/store/options"
-	"github.com/wazofski/store/utils"
+	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/store"
+	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
 var log = logger.Factory("rest server")
@@ -28,10 +28,6 @@ const (
 	PageOffsetArg  = "pageOffset"
 	OrderByArg     = "orderBy"
 )
-
-type Endpoint interface {
-	Listen(int)
-}
 
 type _HandlerFunc func(http.ResponseWriter, *http.Request)
 
@@ -47,7 +43,7 @@ func (d *_Server) Listen(port int) {
 		fmt.Sprintf(":%d", port), d.Router))
 }
 
-func Server(schema store.SchemaHolder, store store.Store) Endpoint {
+func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
 	server := &_Server{
 		Schema:  schema,
 		Store:   store,
@@ -143,12 +139,12 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 
 		switch r.Method {
 		case http.MethodGet:
-			opts := []store.ListOption{}
+			opts := []options.ListOption{}
 
 			vals := r.URL.Query()
 			filter, ok := vals[PropFilterArg]
 			if ok {
-				flt := store.PropFilter{}
+				flt := options.PropFilterSetting{}
 				err := json.Unmarshal([]byte(filter[0]), &flt)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
@@ -159,7 +155,7 @@ func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
 
 			keyFilter, ok := vals[KeyFilterArg]
 			if ok {
-				flt := store.KeyFilter{}
+				flt := options.KeyFilterSetting{}
 				err := json.Unmarshal([]byte(keyFilter[0]), &flt)
 				if err != nil {
 					reportError(w, err, http.StatusBadRequest)
