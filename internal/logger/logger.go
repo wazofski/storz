@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/wazofski/storz/utils"
+	"github.com/wazofski/storz/internal/utils"
 )
 
 type Logger interface {
 	Printf(string, ...interface{})
 	Object(string, interface{})
-	Fatalln(error)
+	Fatal(error)
 }
 
 type _Logger struct {
@@ -55,6 +55,6 @@ func (l *_Logger) Object(title string, obj interface{}) {
 		}))
 }
 
-func (l *_Logger) Fatalln(msg error) {
+func (l *_Logger) Fatal(msg error) {
 	log.Panicf(jsonify(l.Module, msg.Error()))
 }

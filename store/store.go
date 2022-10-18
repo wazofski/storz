@@ -77,7 +77,7 @@ type Factory func(schema SchemaHolder) (Store, error)
 func New(schema SchemaHolder, factory Factory) Store {
 	store, err := factory(schema)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 	return store
 }

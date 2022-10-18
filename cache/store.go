@@ -75,5 +75,7 @@ func (d *cachedStore) List(
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {
 
+	// TODO add the cached results on top
+
 	return d.Store.List(ctx, identity, opt...)
 }

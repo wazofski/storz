@@ -8,7 +8,7 @@ import (
 
 var _ = Describe("storz", func() {
 	It("mgen can generate", func() {
-		err := mgen.Generate("testmodel")
+		err := mgen.Generate("test/model")
 		Expect(err).To(BeNil())
 	})
 })

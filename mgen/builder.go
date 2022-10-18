@@ -18,7 +18,7 @@ func Generate(model string) error {
 		// "strings",
 		"fmt",
 		"encoding/json",
-		"github.com/wazofski/storz/utils",
+		"github.com/wazofski/storz/internal/utils",
 		"github.com/wazofski/storz/store",
 	}
 
@@ -150,14 +150,14 @@ func compileStruct(s _Struct) string {
 func render(path string, data interface{}) string {
 	t, err := template.ParseFiles(path)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
 	buf := bytes.NewBufferString("")
 	err = t.Execute(buf, data)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
 	return buf.String()

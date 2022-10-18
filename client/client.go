@@ -12,12 +12,12 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/wazofski/storz/constants"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/constants"
+	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/rest"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
-	"github.com/wazofski/storz/utils"
 )
 
 var log = logger.Factory("client")
@@ -237,7 +237,7 @@ func listParameters(ropt restOptions) string {
 	if opt.PropFilter != nil {
 		content, err := json.Marshal(opt.PropFilter)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 		}
 
 		if len(content) > 0 {
@@ -248,7 +248,7 @@ func listParameters(ropt restOptions) string {
 	if opt.KeyFilter != nil {
 		content, err := json.Marshal(opt.KeyFilter)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 		}
 
 		if len(content) > 0 {

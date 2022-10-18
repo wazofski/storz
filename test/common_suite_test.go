@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/storz/client"
 	"github.com/wazofski/storz/generated"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/logger"
 	"github.com/wazofski/storz/memory"
 	"github.com/wazofski/storz/react"
 	"github.com/wazofski/storz/sql"

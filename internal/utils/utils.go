@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/wazofski/storz/constants"
+	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/store"
 )
 

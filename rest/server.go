@@ -11,11 +11,11 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/exp/slices"
 
-	"github.com/wazofski/storz/constants"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/constants"
+	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
-	"github.com/wazofski/storz/utils"
 )
 
 var log = logger.Factory("rest server")
@@ -39,7 +39,7 @@ type _Server struct {
 }
 
 func (d *_Server) Listen(port int) {
-	log.Fatalln(http.ListenAndServe(
+	log.Fatal(http.ListenAndServe(
 		fmt.Sprintf(":%d", port), d.Router))
 }
 

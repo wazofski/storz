@@ -6,8 +6,3 @@ ginkgo -r -focus "react"
 cd client
 ./run_tests.sh
 cd ..
-
-# cd common
-# ./run_tests.sh
-# cd ..
-

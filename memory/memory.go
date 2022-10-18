@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/Jeffail/gabs"
-	"github.com/wazofski/storz/constants"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/constants"
+	"github.com/wazofski/storz/internal/logger"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
 )
@@ -314,7 +314,7 @@ func objectPath(obj store.Object, path string) string {
 	data, _ := json.Marshal(obj)
 	jsn, err := gabs.ParseJSON(data)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 		return ""
 	}
 	if !jsn.Exists(strings.Split(path, ".")...) {

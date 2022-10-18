@@ -3,11 +3,11 @@ package react
 import (
 	"context"
 
-	"github.com/wazofski/storz/constants"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/constants"
+	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
-	"github.com/wazofski/storz/utils"
 )
 
 type metaHandlerStore struct {

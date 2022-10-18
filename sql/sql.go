@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wazofski/storz/constants"
-	"github.com/wazofski/storz/logger"
+	"github.com/wazofski/storz/internal/constants"
+	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
-	"github.com/wazofski/storz/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
@@ -424,7 +424,7 @@ func (d *sqlStore) parseObjectRow(row *sql.Row, typ string) (store.Object, error
 	err := row.Scan(&data)
 
 	if err != nil {
-		// log.Fatalln(err)
+		// log.Fatal(err)
 		return nil, err
 	}
 
@@ -438,13 +438,13 @@ func (d *sqlStore) parseObjectRows(rows *sql.Rows, typ string) store.ObjectList 
 		err := rows.Scan(&data)
 
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 			return nil
 		}
 
 		ret, err := utils.UnmarshalObject([]byte(data), d.Schema, typ)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 			return nil
 		}
 

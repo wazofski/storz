@@ -63,7 +63,7 @@ func exportFile(targetDir string, name string, content string) error {
 func readFile(path string) []byte {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
 	return bytes

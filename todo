@@ -64,10 +64,11 @@ MONGO STORE:
   - basic implementation
 
 
-VISORE:
+STORE BROWSER:
   - 
 
-COMMON TESTS:
+
+TESTS:
   - change naming prop @done
   - action tests by ID @done
   - negative checks
