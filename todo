@@ -46,6 +46,7 @@ REACT STORE:
     - update @done
   - simple callback mechanism @done
   - transactor ?
+  - test various callback types
 
 MODULE REFACTOR:
   - module name
