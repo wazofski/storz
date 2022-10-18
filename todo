@@ -8,9 +8,11 @@ MGEN:
   - generate schema @done
   - cloning @done
   - error reporting
-    - missing class reference ?
-  - add primary key @done
-    - only string type suppored!! 
+    - Invalid yaml
+    - Invalid model
+    - Missing class
+    - 
+  - add primary key @done  < only string type suppored
   - object identity @done
   - handlers
 
@@ -58,8 +60,7 @@ MONGO STORE:
 SQL STORE:
   - basic working implementation @done
   - sqlite @done
-  - test with mysql (may need a different json_extract function)
-
+  - test with mysql @done
 
 
 COMMON TESTS:
@@ -72,7 +73,6 @@ COMMON TESTS:
   	  -	new resource needed for this @done
       - try per id @done
       - try per pkey @done
-
 
 
 BUGS:

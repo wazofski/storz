@@ -23,7 +23,7 @@ var ctx context.Context
 var _ = BeforeSuite(func() {
 	sch := generated.Schema()
 	const path = "test.sqlite"
-	stc = store.New(sch, sql.SqliteFactory(path))
+	stc = store.New(sch, sql.Factory(sql.SqliteConnection(path)))
 })
 
 var _ = AfterSuite(func() {

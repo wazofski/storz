@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect

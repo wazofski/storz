@@ -11,15 +11,33 @@ import (
 	"github.com/wazofski/store/logger"
 	"github.com/wazofski/store/utils"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var log = logger.Factory("sql")
 
+type _ConnectionMaker func(*sqlStore) (*sql.DB, error)
+
 type sqlStore struct {
-	Schema store.SchemaHolder
-	Path   string
-	DB     *sql.DB
+	Schema         store.SchemaHolder
+	DB             *sql.DB
+	MakeConnection _ConnectionMaker
+}
+
+func SqliteConnection(path string) _ConnectionMaker {
+	return func(d *sqlStore) (*sql.DB, error) {
+		return sql.Open("sqlite3", path)
+	}
+}
+
+func MySqlConnection(path string) _ConnectionMaker {
+	return func(d *sqlStore) (*sql.DB, error) {
+		log.Printf("mysql connection %s", path)
+		// username:password@tcp(127.0.0.1:3306)/test
+
+		return sql.Open("mysql", path)
+	}
 }
 
 func (d *sqlStore) TestConnection() error {
@@ -30,7 +48,7 @@ func (d *sqlStore) TestConnection() error {
 	}
 
 	var err error
-	d.DB, err = sql.Open("sqlite3", d.Path)
+	d.DB, err = d.MakeConnection(d)
 	if err != nil {
 		return err
 	}
@@ -43,15 +61,14 @@ func (d *sqlStore) TestConnection() error {
 	return d.prepareTables()
 }
 
-func SqliteFactory(path string) store.Factory {
+func Factory(connector _ConnectionMaker) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &sqlStore{
-			Schema: schema,
-			Path:   path,
-			DB:     nil,
+			Schema:         schema,
+			MakeConnection: connector,
+			DB:             nil,
 		}
 
-		log.Printf("initialized %s", path)
 		return client, nil
 	}
 }
@@ -251,8 +268,8 @@ func (d *sqlStore) List(
 		return nil, err
 	}
 
-	query := `SELECT Object as O FROM Objects
-		WHERE Type = @typ`
+	query := `SELECT Object FROM Objects
+		WHERE Type = ?`
 
 	// pkey filter
 	if copt.KeyFilter != nil {
@@ -264,15 +281,15 @@ func (d *sqlStore) List(
 	// prop filter
 	if copt.PropFilter != nil {
 		query = query + fmt.Sprintf(
-			" AND json_extract(O, '$.%s') = '%s'",
+			" AND json_extract(Object, '$.%s') = '%s'",
 			copt.PropFilter.Key, copt.PropFilter.Value)
 	}
 
 	if len(copt.OrderBy) > 0 {
-		query = fmt.Sprintf(`SELECT Object as O
+		query = fmt.Sprintf(`SELECT Object
 			FROM Objects
-			WHERE Type = @typ
-			ORDER BY json_extract(O, '$.%s')`, copt.OrderBy)
+			WHERE Type = ?
+			ORDER BY json_extract(Object, '$.%s')`, copt.OrderBy)
 
 		if copt.OrderIncremental {
 			query = query + " ASC"
@@ -289,9 +306,9 @@ func (d *sqlStore) List(
 		query = query + fmt.Sprintf(" OFFSET %d", copt.PageOffset)
 	}
 
-	// log.Printf(query)
+	log.Printf(query)
 
-	rows, err := d.DB.Query(query, sql.Named("typ", identity.Type()))
+	rows, err := d.DB.Query(query, identity.Type())
 	if err != nil {
 		return nil, err
 	}
@@ -348,23 +365,20 @@ func (d *sqlStore) setIdentity(path string, pkey string, typ string) error {
 	_, _, err := d.getIdentity(path)
 
 	if err == nil {
-		query = `update IdIndex set Pkey=@pkey, Type=@typ where Path = @path`
+		query = `update IdIndex set Pkey=?, Type=? where Path = ?`
 	} else {
-		query = `insert into IdIndex (Path, Pkey, Type) values (@path, @pkey, @typ)`
+		query = `insert into IdIndex (Pkey, Type, Path) values (?, ?, ?)`
 	}
 
-	_, err = d.DB.Exec(query,
-		sql.Named("path", path),
-		sql.Named("pkey", pkey),
-		sql.Named("typ", strings.ToLower(typ)))
+	_, err = d.DB.Exec(query, pkey, strings.ToLower(typ), path)
 
 	return err
 }
 
 func (d *sqlStore) removeIdentity(path string) error {
-	query := "DELETE FROM IdIndex WHERE Path = @path"
+	query := "DELETE FROM IdIndex WHERE Path = ?"
 
-	_, err := d.DB.Exec(query, sql.Named("path", path))
+	_, err := d.DB.Exec(query, path)
 	return err
 }
 
@@ -382,7 +396,7 @@ func (d *sqlStore) setObject(pkey string, typ string, obj store.Object) error {
 	if err == nil {
 		query = `update Objects set Object=@obj where Pkey = @pkey AND Type = @typ`
 	} else {
-		query = `insert into Objects (Pkey, Type, Object) values (@pkey, @typ, @obj)`
+		query = `insert into Objects (Object, Pkey, Type) values (?, ?, ?)`
 	}
 
 	data, err := utils.Serialize(obj)
@@ -391,20 +405,14 @@ func (d *sqlStore) setObject(pkey string, typ string, obj store.Object) error {
 		return err
 	}
 
-	_, err = d.DB.Exec(query,
-		sql.Named("pkey", pkey),
-		sql.Named("typ", strings.ToLower(typ)),
-		sql.Named("obj", string(data)))
-
+	_, err = d.DB.Exec(query, string(data), pkey, strings.ToLower(typ))
 	return err
 }
 
 func (d *sqlStore) removeObject(pkey string, typ string) error {
-	query := "DELETE FROM Objects WHERE Pkey = @pkey AND Type = @typ"
+	query := "DELETE FROM Objects WHERE Pkey = ? AND Type = ?"
 
-	_, err := d.DB.Exec(query,
-		sql.Named("pkey", pkey),
-		sql.Named("typ", strings.ToLower(typ)))
+	_, err := d.DB.Exec(query, pkey, strings.ToLower(typ))
 
 	return err
 }

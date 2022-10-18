@@ -46,7 +46,15 @@ var stores []store.Store = []store.Store{
 		logger.StoreFactory("SQL",
 			store.New(
 				generated.Schema(),
-				sql.SqliteFactory("test.sqlite")))),
+				sql.Factory(sql.SqliteConnection("test.sqlite"))))),
+
+	store.New(
+		generated.Schema(),
+		logger.StoreFactory("SQL",
+			store.New(
+				generated.Schema(),
+				sql.Factory(sql.MySqlConnection(
+					"root:qwerasdf@tcp(127.0.0.1:3306)/test"))))),
 }
 
 func TestNegative(t *testing.T) {

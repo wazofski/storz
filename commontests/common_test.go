@@ -21,6 +21,29 @@ var _ = Describe("common", func() {
 	// 	}
 	// })
 
+	It("can CLEANUP everything", func() {
+		ret, err := clt.List(ctx, generated.WorldIdentity(""))
+		Expect(err).To(BeNil())
+		for _, r := range ret {
+			err = clt.Delete(ctx, r.Metadata().Identity())
+			Expect(err).To(BeNil())
+		}
+
+		ret, err = clt.List(ctx, generated.SecondWorldIdentity(""))
+		Expect(err).To(BeNil())
+		for _, r := range ret {
+			err = clt.Delete(ctx, r.Metadata().Identity())
+			Expect(err).To(BeNil())
+		}
+
+		// ret, err = clt.List(ctx, generated.ThirdWorldIdentity(""))
+		// Expect(err).To(BeNil())
+		// for _, r := range ret {
+		// 	err = clt.Delete(ctx, r.Metadata().Identity())
+		// 	Expect(err).To(BeNil())
+		// }
+	})
+
 	It("can POST objects", func() {
 		w := generated.WorldFactory()
 
