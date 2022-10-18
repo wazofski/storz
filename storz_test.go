@@ -6,7 +6,7 @@ import (
 	"github.com/wazofski/storz/mgen"
 )
 
-var _ = Describe("store", func() {
+var _ = Describe("storz", func() {
 	It("mgen can generate", func() {
 		err := mgen.Generate("testmodel")
 		Expect(err).To(BeNil())
