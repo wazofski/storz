@@ -1,7 +1,9 @@
 package common_test
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"sort"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -13,13 +15,6 @@ import (
 )
 
 var _ = Describe("common", func() {
-
-	// It("can try to remove test.db", func() {
-	// 	err := os.Remove("test.db")
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 	}
-	// })
 
 	It("can CLEANUP everything", func() {
 		ret, err := clt.List(ctx, generated.WorldIdentity(""))
@@ -443,6 +438,13 @@ var _ = Describe("common", func() {
 		world := ret[0].(generated.World)
 		Expect(world.Spec().Name()).To(Equal(worldName))
 		Expect(world.Spec().Description()).To(Equal(worldDescription))
+	})
+
+	It("can try to remove test.sqlite", func() {
+		err := os.Remove("test.sqlite")
+		if err != nil {
+			fmt.Println(err)
+		}
 	})
 
 })
