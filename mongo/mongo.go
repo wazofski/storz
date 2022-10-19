@@ -32,6 +32,7 @@ type mongoStore struct {
 type _Record struct {
 	IdPath string      `json:"idpath" bson:"idpath"`
 	PkPath string      `json:"pkpath" bson:"pkpath"`
+	Pkey   string      `json:"pkey" bson:"pkey"`
 	Type   string      `json:"type" bson:"type"`
 	Obj    interface{} `json:"object" bson:"object"`
 }
@@ -154,6 +155,7 @@ func (d *mongoStore) Create(
 		_Record{
 			IdPath: obj.Metadata().Identity().Path(),
 			PkPath: fmt.Sprintf("%s/%s", typ, obj.PrimaryKey()),
+			Pkey:   obj.PrimaryKey(),
 			Type:   typ,
 			Obj:    toBSON(obj),
 		})
@@ -313,42 +315,42 @@ func (d *mongoStore) List(
 		"type": identity.Type(),
 	}
 
-	// // pkey filter
-	// if copt.KeyFilter != nil {
-	// 	// query = query + fmt.Sprintf(
-	// 	// 	" AND Pkey IN ('%s')",
-	// 	// 	strings.Join(*copt.KeyFilter, "', '"))
-	// }
+	opts := mopt.Find()
+	if len(copt.OrderBy) > 0 {
+		order := 1
+		if !copt.OrderIncremental {
+			order = -1
+		}
 
-	// // prop filter
-	// if copt.PropFilter != nil {
-	// 	// query = query + fmt.Sprintf(
-	// 	// 	" AND json_extract(Object, '$.%s') = '%s'",
-	// 	// 	copt.PropFilter.Key, copt.PropFilter.Value)
-	// }
+		opts = opts.SetSort(
+			bson.D{{Key: fmt.Sprintf("object.%s", copt.OrderBy), Value: order}})
+	}
 
-	// if len(copt.OrderBy) > 0 {
-	// 	// query = fmt.Sprintf(`SELECT Object
-	// 	// 	FROM Objects
-	// 	// 	WHERE Type = ?
-	// 	// 	ORDER BY json_extract(Object, '$.%s')`, copt.OrderBy)
+	// pkey filter
+	if copt.KeyFilter != nil {
+		a := bson.A{}
+		for _, ff := range *copt.KeyFilter {
+			a = append(a, ff)
+		}
 
-	// 	// if copt.OrderIncremental {
-	// 	// 	query = query + " ASC"
-	// 	// } else {
-	// 	// 	query = query + " DESC"
-	// 	// }
-	// }
+		filter["object.pkey"] = bson.M{"$in": a}
+		log.Object("filter", filter)
+	}
 
-	// if copt.PageSize > 0 {
-	// 	// query = query + fmt.Sprintf(" LIMIT %d", copt.PageSize)
-	// }
+	// prop filter
+	if copt.PropFilter != nil {
+		filter[fmt.Sprintf("object.%s", copt.PropFilter.Key)] = copt.PropFilter.Value
+	}
 
-	// if copt.PageOffset > 0 {
-	// 	// query = query + fmt.Sprintf(" OFFSET %d", copt.PageOffset)
-	// }
+	if copt.PageSize > 0 {
+		opts = opts.SetLimit(int64(copt.PageSize))
+	}
 
-	cur, err := collection.Find(ctx, filter)
+	if copt.PageOffset > 0 {
+		opts = opts.SetSkip(int64(copt.PageSize))
+	}
+
+	cur, err := collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -63,10 +63,8 @@ SQL STORE:
 MONGO STORE:
   - basic implementation
 
-
-STORE BROWSER:
+OBJECT BROWSER:
   - 
-
 
 TESTS:
   - change naming prop @done
@@ -84,4 +82,3 @@ TESTS:
 BUGS:
   - http: superfluous response.WriteHeader call from rest.reportError (server.go:273) @done
   - can PUT objects BY ID @done
-
