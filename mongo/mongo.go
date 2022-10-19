@@ -333,7 +333,7 @@ func (d *mongoStore) List(
 			a = append(a, ff)
 		}
 
-		filter["object.pkey"] = bson.M{"$in": a}
+		filter["pkey"] = bson.M{"$in": a}
 		log.Object("filter", filter)
 	}
 
