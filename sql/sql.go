@@ -153,7 +153,7 @@ func (d *sqlStore) Update(
 		return nil, err
 	}
 
-	log.Object("existing", existing)
+	// log.Object("existing", existing)
 
 	err = d.removeIdentity(existing.Metadata().Identity().Path())
 	if err != nil {

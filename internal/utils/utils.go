@@ -10,10 +10,10 @@ import (
 	"github.com/wazofski/storz/store"
 )
 
-type _Resource struct {
+type _MetaHolder struct {
 	Metadata interface{} `json:"metadata,omitempty"`
-	Spec     interface{} `json:"spec,omitempty"`
-	Status   interface{} `json:"status,omitempty"`
+	// Spec     interface{} `json:"spec,omitempty"`
+	// Status   interface{} `json:"status,omitempty"`
 }
 
 func CloneObject(obj store.Object, schema store.SchemaHolder) store.Object {
@@ -55,17 +55,17 @@ func UnmarshalObject(body []byte, schema store.SchemaHolder, kind string) (store
 }
 
 func ObjeectKind(response []byte) string {
-	resource := _Resource{}
-	err := json.Unmarshal(response, &resource)
+	obj := _MetaHolder{}
+	err := json.Unmarshal(response, &obj)
 	if err != nil {
 		return ""
 	}
 
-	if resource.Metadata == nil {
+	if obj.Metadata == nil {
 		return ""
 	}
 
-	return resource.Metadata.(map[string]interface{})["kind"].(string)
+	return obj.Metadata.(map[string]interface{})["kind"].(string)
 }
 
 func PP(obj store.Object) string {

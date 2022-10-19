@@ -43,14 +43,14 @@ var stores []store.Store = []store.Store{
 
 	store.New(
 		generated.Schema(),
-		logger.StoreFactory("SQL",
+		logger.StoreFactory("SQLite",
 			store.New(
 				generated.Schema(),
 				sql.Factory(sql.SqliteConnection("test.sqlite"))))),
 
 	store.New(
 		generated.Schema(),
-		logger.StoreFactory("SQL",
+		logger.StoreFactory("mySQL",
 			store.New(
 				generated.Schema(),
 				sql.Factory(sql.MySqlConnection(

@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -19,15 +19,27 @@ import (
 
 var log = logger.Factory("mongo")
 
+const collectionName = "objects"
+const timeout = 10 * time.Second
+
 type mongoStore struct {
 	Schema store.SchemaHolder
 	Client *mongo.Client
 	Path   string
+	DB     string
+}
+
+type _Record struct {
+	IdPath string      `json:"idpath" bson:"idpath"`
+	PkPath string      `json:"pkpath" bson:"pkpath"`
+	Type   string      `json:"type" bson:"type"`
+	Obj    interface{} `json:"object" bson:"object"`
 }
 
 func (d *mongoStore) TestConnection() error {
-	const timeout = 10 * time.Second
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+	defer cancel()
 
 	if d.Client != nil {
 		if d.Client.Ping(ctx, nil) == nil {
@@ -55,17 +67,82 @@ func (d *mongoStore) TestConnection() error {
 		return err
 	}
 
+	return d.prepare()
+}
+
+func (d *mongoStore) prepare() error {
+	collection := d.Client.Database(d.DB).Collection(collectionName)
+	indexModel := []mongo.IndexModel{
+		{
+			Keys: bson.M{
+				"idpath": 1,
+			}, Options: nil,
+		},
+		{
+			Keys: bson.M{
+				"pkpath": 1,
+			}, Options: nil,
+		},
+		{
+			Keys: bson.M{
+				"type": 1,
+			}, Options: nil,
+		},
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	for _, i := range indexModel {
+		collection.Indexes().CreateOne(ctx, i)
+	}
+
+	// /* Insert documents */
+	// docs := []interface{}{
+	// 	bson.D{{Key: "title", Value: "World"}, {Key: "body", Value: "Hello World"}},
+	// 	bson.D{{Key: "title", Value: "Mars"}, {Key: "body", Value: "Hello Mars"}},
+	// 	bson.D{{Key: "title", Value: "Pluto"}, {Key: "body", Value: "Hello Pluto"}},
+	// }
+
+	// res, insertErr := collection.InsertMany(ctx, docs)
+	// if insertErr != nil {
+	// 	log.Fatal(insertErr)
+	// }
+
+	// fmt.Println(res)
+
+	// /* Iterate a cursor and print it */
+	// cur, currErr := collection.Find(ctx, bson.D{})
+
+	// if currErr != nil {
+	// 	panic(currErr)
+	// }
+
+	// defer cur.Close(ctx)
+
+	// var posts []Post
+	// if err = cur.All(ctx, &posts); err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Println(posts)
+
 	return nil
 }
 
-func Factory(path string) store.Factory {
+func Factory(path string, db string) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &mongoStore{
 			Schema: schema,
 			Path:   path,
+			DB:     db,
 			Client: nil,
 		}
 
+		err := client.TestConnection()
+		if err != nil {
+			return nil, err
+		}
+
+		log.Printf("initialized %s %s", path, db)
 		return client, nil
 	}
 }
@@ -102,15 +179,17 @@ func (d *mongoStore) Create(
 		return nil, err
 	}
 
-	err = d.setIdentity(
-		obj.Metadata().Identity().Path(),
-		obj.PrimaryKey(),
-		obj.Metadata().Kind())
-	if err != nil {
-		return nil, err
-	}
+	typ := strings.ToLower(obj.Metadata().Kind())
 
-	err = d.setObject(obj.PrimaryKey(), obj.Metadata().Kind(), obj)
+	collection := d.Client.Database(d.DB).Collection(collectionName)
+	_, err = collection.InsertOne(ctx,
+		_Record{
+			IdPath: obj.Metadata().Identity().Path(),
+			PkPath: fmt.Sprintf("%s/%s", typ, obj.PrimaryKey()),
+			Type:   typ,
+			Obj:    toBSON(obj),
+		})
+
 	if err != nil {
 		return nil, err
 	}
@@ -139,41 +218,17 @@ func (d *mongoStore) Update(
 		return nil, constants.ErrObjectNil
 	}
 
-	existing, _ := d.Get(ctx, identity)
-	if existing == nil {
-		return nil, constants.ErrNoSuchObject
-	}
-
 	err = d.TestConnection()
 	if err != nil {
 		return nil, err
 	}
 
-	log.Object("existing", existing)
-
-	err = d.removeIdentity(existing.Metadata().Identity().Path())
-	if err != nil {
-		log.Printf("%s", err)
-	}
-
-	err = d.setIdentity(obj.Metadata().Identity().Path(),
-		obj.PrimaryKey(), obj.Metadata().Kind())
-
+	err = d.Delete(ctx, identity)
 	if err != nil {
 		return nil, err
 	}
 
-	err = d.removeObject(existing.PrimaryKey(), existing.Metadata().Kind())
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.setObject(obj.PrimaryKey(), obj.Metadata().Kind(), obj)
-	if err != nil {
-		return nil, err
-	}
-
-	return obj.Clone(), nil
+	return d.Create(ctx, obj)
 }
 
 func (d *mongoStore) Delete(
@@ -202,12 +257,14 @@ func (d *mongoStore) Delete(
 		return err
 	}
 
-	err = d.removeIdentity(existing.Metadata().Identity().Path())
-	if err != nil {
-		return err
-	}
+	collection := d.Client.Database(d.DB).Collection(collectionName)
+	_, err = collection.DeleteOne(ctx,
+		bson.M{
+			"idpath": identity.Path(),
+			"pkpath": identity.Path(),
+		})
 
-	return d.removeObject(existing.PrimaryKey(), existing.Metadata().Kind())
+	return err
 }
 
 func (d *mongoStore) Get(
@@ -231,14 +288,24 @@ func (d *mongoStore) Get(
 		return nil, err
 	}
 
-	pkey, typ, err := d.getIdentity(identity.Path())
-	if err == nil {
-		return d.getObject(pkey, typ)
+	collection := d.Client.Database(d.DB).Collection(collectionName)
+	var res bson.M
+	collection.FindOne(ctx,
+		bson.M{
+			"idpath": identity.Path(),
+		}).Decode(&res)
+
+	if res != nil {
+		return fromBSON(res, d.Schema)
 	}
 
-	tokens := strings.Split(identity.Path(), "/")
-	if len(tokens) == 2 {
-		return d.getObject(tokens[1], tokens[0])
+	collection.FindOne(ctx,
+		bson.M{
+			"pkpath": identity.Path(),
+		}).Decode(&res)
+
+	if res != nil {
+		return fromBSON(res, d.Schema)
 	}
 
 	return nil, constants.ErrNoSuchObject
@@ -305,182 +372,71 @@ func (d *mongoStore) List(
 
 	log.Printf(query)
 
-	rows, err := d.DB.Query(query, identity.Type())
-	if err != nil {
-		return nil, err
-	}
+	// rows, err := d.DB.Query(query, identity.Type())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	res := d.parseObjectRows(rows, identity.Type())
-	rows.Close()
+	// res := d.parseObjectRows(rows, identity.Type())
+	// rows.Close()
 
-	return res, nil
+	return nil, nil
 }
 
-func (d *mongoStore) getIdentity(path string) (string, string, error) {
-	row := d.DB.QueryRow("SELECT Pkey, Type FROM IdIndex WHERE Path=?", path)
+// func (d *mongoStore) parseObjectRow(row *sql.Row, typ string) (store.Object, error) {
+// 	var data string = ""
 
-	var pkey string = ""
-	var typ string = ""
+// 	err := row.Scan(&data)
 
-	err := row.Scan(&pkey, &typ)
-	return pkey, typ, err
-}
+// 	if err != nil {
+// 		// log.Fatal(err)
+// 		return nil, err
+// 	}
 
-func (d *mongoStore) setIdentity(path string, pkey string, typ string) error {
-	// log.Printf("setting identity %s %s %s", path, pkey, typ)
+// 	return utils.UnmarshalObject([]byte(data), d.Schema, typ)
+// }
 
-	query := ""
-	_, _, err := d.getIdentity(path)
+// func (d *mongoStore) parseObjectRows(rows *sql.Rows, typ string) store.ObjectList {
+// 	res := store.ObjectList{}
+// 	for rows.Next() {
+// 		var data string = ""
+// 		err := rows.Scan(&data)
 
-	if err == nil {
-		query = `update IdIndex set Pkey=?, Type=? where Path = ?`
-	} else {
-		query = `insert into IdIndex (Pkey, Type, Path) values (?, ?, ?)`
-	}
+// 		if err != nil {
+// 			log.Fatal(err)
+// 			return nil
+// 		}
 
-	_, err = d.DB.Exec(query, pkey, strings.ToLower(typ), path)
+// 		ret, err := utils.UnmarshalObject([]byte(data), d.Schema, typ)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 			return nil
+// 		}
 
-	return err
-}
+// 		res = append(res, ret)
+// 	}
 
-func (d *mongoStore) removeIdentity(path string) error {
-	query := "DELETE FROM IdIndex WHERE Path = ?"
+// 	return res
+// }
 
-	_, err := d.DB.Exec(query, path)
-	return err
-}
-
-func (d *mongoStore) getObject(pkey string, typ string) (store.Object, error) {
-	// log.Printf("getting %s %s", pkey, typ)
-
-	return d.parseObjectRow(
-		d.DB.QueryRow("SELECT Object FROM Objects WHERE Pkey=? AND Type=?",
-			pkey, strings.ToLower(typ)), typ)
-}
-
-func (d *mongoStore) setObject(pkey string, typ string, obj store.Object) error {
-	query := ""
-	_, err := d.getObject(pkey, typ)
-	if err == nil {
-		query = `update Objects set Object=@obj where Pkey = @pkey AND Type = @typ`
-	} else {
-		query = `insert into Objects (Object, Pkey, Type) values (?, ?, ?)`
-	}
-
-	data, err := utils.Serialize(obj)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = d.DB.Exec(query, string(data), pkey, strings.ToLower(typ))
-	return err
-}
-
-func (d *mongoStore) removeObject(pkey string, typ string) error {
-	query := "DELETE FROM Objects WHERE Pkey = ? AND Type = ?"
-
-	_, err := d.DB.Exec(query, pkey, strings.ToLower(typ))
-
-	return err
-}
-
-func (d *mongoStore) parseObjectRow(row *sql.Row, typ string) (store.Object, error) {
-	var data string = ""
-
-	err := row.Scan(&data)
-
-	if err != nil {
-		// log.Fatal(err)
-		return nil, err
-	}
-
-	return utils.UnmarshalObject([]byte(data), d.Schema, typ)
-}
-
-func (d *mongoStore) parseObjectRows(rows *sql.Rows, typ string) store.ObjectList {
-	res := store.ObjectList{}
-	for rows.Next() {
-		var data string = ""
-		err := rows.Scan(&data)
-
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
-
-		ret, err := utils.UnmarshalObject([]byte(data), d.Schema, typ)
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
-
-		res = append(res, ret)
-	}
-
+func toBSON(obj store.Object) interface{} {
+	data, _ := utils.Serialize(obj)
+	res := make(map[string]interface{})
+	json.Unmarshal(data, &res)
 	return res
 }
 
-func Mongo() {
-	/* Connect to my cluster */
-	client, err := mongo.NewClient(mopt.Client().ApplyURI("mongodb://localhost:27017/"))
+func fromBSON(bs interface{}, schema store.SchemaHolder) (store.Object, error) {
+	m := bs.(bson.M)
+	if m == nil {
+		return nil, fmt.Errorf("invalid bson")
+	}
+
+	data, err := json.Marshal(m["object"])
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return utils.UnmarshalObject(data, schema, utils.ObjeectKind(data))
 
-	defer client.Disconnect(ctx)
-	defer cancel()
-
-	/* List databases */
-	databases, err := client.ListDatabaseNames(ctx, bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(databases)
-
-	/* Define my document struct */
-	type Post struct {
-		Title string `bson:"title,omitempty"`
-		Body  string `bson:"body,omitempty"`
-	}
-
-	/* Get my collection instance */
-	collection := client.Database("blog").Collection("posts")
-
-	/* Insert documents */
-	docs := []interface{}{
-		bson.D{{Key: "title", Value: "World"}, {Key: "body", Value: "Hello World"}},
-		bson.D{{Key: "title", Value: "Mars"}, {Key: "body", Value: "Hello Mars"}},
-		bson.D{{Key: "title", Value: "Pluto"}, {Key: "body", Value: "Hello Pluto"}},
-	}
-
-	res, insertErr := collection.InsertMany(ctx, docs)
-	if insertErr != nil {
-		log.Fatal(insertErr)
-	}
-
-	fmt.Println(res)
-
-	/* Iterate a cursor and print it */
-	cur, currErr := collection.Find(ctx, bson.D{})
-
-	if currErr != nil {
-		panic(currErr)
-	}
-
-	defer cur.Close(ctx)
-
-	var posts []Post
-	if err = cur.All(ctx, &posts); err != nil {
-		panic(err)
-	}
-
-	fmt.Println(posts)
 }
