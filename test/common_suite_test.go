@@ -15,6 +15,7 @@ import (
 	"github.com/wazofski/storz/generated"
 	"github.com/wazofski/storz/internal/logger"
 	"github.com/wazofski/storz/memory"
+	"github.com/wazofski/storz/mongo"
 	"github.com/wazofski/storz/react"
 	"github.com/wazofski/storz/sql"
 	"github.com/wazofski/storz/store"
@@ -55,6 +56,10 @@ var stores []store.Store = []store.Store{
 				generated.Schema(),
 				sql.Factory(sql.MySqlConnection(
 					"root:qwerasdf@tcp(127.0.0.1:3306)/test"))))),
+
+	store.New(
+		generated.Schema(),
+		mongo.Factory("mongodb://localhost:27017/", "storz")),
 }
 
 func TestNegative(t *testing.T) {

@@ -38,7 +38,6 @@ type _Record struct {
 
 func (d *mongoStore) TestConnection() error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-
 	defer cancel()
 
 	if d.Client != nil {
@@ -90,40 +89,9 @@ func (d *mongoStore) prepare() error {
 		},
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	for _, i := range indexModel {
-		collection.Indexes().CreateOne(ctx, i)
+		collection.Indexes().CreateOne(context.Background(), i)
 	}
-
-	// /* Insert documents */
-	// docs := []interface{}{
-	// 	bson.D{{Key: "title", Value: "World"}, {Key: "body", Value: "Hello World"}},
-	// 	bson.D{{Key: "title", Value: "Mars"}, {Key: "body", Value: "Hello Mars"}},
-	// 	bson.D{{Key: "title", Value: "Pluto"}, {Key: "body", Value: "Hello Pluto"}},
-	// }
-
-	// res, insertErr := collection.InsertMany(ctx, docs)
-	// if insertErr != nil {
-	// 	log.Fatal(insertErr)
-	// }
-
-	// fmt.Println(res)
-
-	// /* Iterate a cursor and print it */
-	// cur, currErr := collection.Find(ctx, bson.D{})
-
-	// if currErr != nil {
-	// 	panic(currErr)
-	// }
-
-	// defer cur.Close(ctx)
-
-	// var posts []Post
-	// if err = cur.All(ctx, &posts); err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println(posts)
 
 	return nil
 }
@@ -382,42 +350,6 @@ func (d *mongoStore) List(
 
 	return nil, nil
 }
-
-// func (d *mongoStore) parseObjectRow(row *sql.Row, typ string) (store.Object, error) {
-// 	var data string = ""
-
-// 	err := row.Scan(&data)
-
-// 	if err != nil {
-// 		// log.Fatal(err)
-// 		return nil, err
-// 	}
-
-// 	return utils.UnmarshalObject([]byte(data), d.Schema, typ)
-// }
-
-// func (d *mongoStore) parseObjectRows(rows *sql.Rows, typ string) store.ObjectList {
-// 	res := store.ObjectList{}
-// 	for rows.Next() {
-// 		var data string = ""
-// 		err := rows.Scan(&data)
-
-// 		if err != nil {
-// 			log.Fatal(err)
-// 			return nil
-// 		}
-
-// 		ret, err := utils.UnmarshalObject([]byte(data), d.Schema, typ)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 			return nil
-// 		}
-
-// 		res = append(res, ret)
-// 	}
-
-// 	return res
-// }
 
 func toBSON(obj store.Object) interface{} {
 	data, _ := utils.Serialize(obj)

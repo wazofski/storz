@@ -16,7 +16,7 @@ import (
 
 var _ = Describe("common", func() {
 
-	It("can CLEANUP everything", func() {
+	It("can CLEAR everything", func() {
 		ret, err := clt.List(ctx, generated.WorldIdentity(""))
 		Expect(err).To(BeNil())
 		for _, r := range ret {
@@ -49,6 +49,32 @@ var _ = Describe("common", func() {
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
 		Expect(len(ret.Metadata().Identity())).ToNot(Equal(0))
+	})
+
+	It("can POST other objects", func() {
+		w := generated.SecondWorldFactory()
+
+		w.Spec().SetName("abc")
+
+		ret, err := clt.Create(ctx, w)
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret.Metadata().Identity())).ToNot(Equal(0))
+
+		ret, err = clt.Get(ctx, ret.Metadata().Identity())
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+
+		w = ret.(generated.SecondWorld)
+		Expect(w).ToNot(BeNil())
+
+		ret, err = clt.Get(ctx, generated.SecondWorldIdentity("abc"))
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+
+		w = ret.(generated.SecondWorld)
+		Expect(w).ToNot(BeNil())
 	})
 
 	It("can GET objects", func() {
