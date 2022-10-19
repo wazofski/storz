@@ -216,6 +216,8 @@
         })();
 
         json = JSON.parse({{ .Json }});
+        
+        renderjson.set_show_to_level(2);
         document.getElementById("test").appendChild(renderjson(json));
         
         el = document.createElement("div");
