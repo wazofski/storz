@@ -48,7 +48,7 @@ func (o ObjectIdentity) Path() string {
 
 func (o ObjectIdentity) Type() string {
 	tokens := strings.Split(o.Path(), "/")
-	return tokens[0]
+	return strings.ToLower(tokens[0])
 }
 
 func (o ObjectIdentity) Key() string {

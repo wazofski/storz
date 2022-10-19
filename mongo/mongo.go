@@ -229,6 +229,14 @@ func (d *mongoStore) Delete(
 	_, err = collection.DeleteOne(ctx,
 		bson.M{
 			"idpath": identity.Path(),
+		})
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	_, err = collection.DeleteOne(ctx,
+		bson.M{
 			"pkpath": identity.Path(),
 		})
 
@@ -300,55 +308,68 @@ func (d *mongoStore) List(
 		return nil, err
 	}
 
-	query := `SELECT Object FROM Objects
-		WHERE Type = ?`
-
-	// pkey filter
-	if copt.KeyFilter != nil {
-		query = query + fmt.Sprintf(
-			" AND Pkey IN ('%s')",
-			strings.Join(*copt.KeyFilter, "', '"))
+	collection := d.Client.Database(d.DB).Collection(collectionName)
+	filter := bson.M{
+		"type": identity.Type(),
 	}
 
-	// prop filter
-	if copt.PropFilter != nil {
-		query = query + fmt.Sprintf(
-			" AND json_extract(Object, '$.%s') = '%s'",
-			copt.PropFilter.Key, copt.PropFilter.Value)
-	}
-
-	if len(copt.OrderBy) > 0 {
-		query = fmt.Sprintf(`SELECT Object
-			FROM Objects
-			WHERE Type = ?
-			ORDER BY json_extract(Object, '$.%s')`, copt.OrderBy)
-
-		if copt.OrderIncremental {
-			query = query + " ASC"
-		} else {
-			query = query + " DESC"
-		}
-	}
-
-	if copt.PageSize > 0 {
-		query = query + fmt.Sprintf(" LIMIT %d", copt.PageSize)
-	}
-
-	if copt.PageOffset > 0 {
-		query = query + fmt.Sprintf(" OFFSET %d", copt.PageOffset)
-	}
-
-	log.Printf(query)
-
-	// rows, err := d.DB.Query(query, identity.Type())
-	// if err != nil {
-	// 	return nil, err
+	// // pkey filter
+	// if copt.KeyFilter != nil {
+	// 	// query = query + fmt.Sprintf(
+	// 	// 	" AND Pkey IN ('%s')",
+	// 	// 	strings.Join(*copt.KeyFilter, "', '"))
 	// }
 
-	// res := d.parseObjectRows(rows, identity.Type())
-	// rows.Close()
+	// // prop filter
+	// if copt.PropFilter != nil {
+	// 	// query = query + fmt.Sprintf(
+	// 	// 	" AND json_extract(Object, '$.%s') = '%s'",
+	// 	// 	copt.PropFilter.Key, copt.PropFilter.Value)
+	// }
 
-	return nil, nil
+	// if len(copt.OrderBy) > 0 {
+	// 	// query = fmt.Sprintf(`SELECT Object
+	// 	// 	FROM Objects
+	// 	// 	WHERE Type = ?
+	// 	// 	ORDER BY json_extract(Object, '$.%s')`, copt.OrderBy)
+
+	// 	// if copt.OrderIncremental {
+	// 	// 	query = query + " ASC"
+	// 	// } else {
+	// 	// 	query = query + " DESC"
+	// 	// }
+	// }
+
+	// if copt.PageSize > 0 {
+	// 	// query = query + fmt.Sprintf(" LIMIT %d", copt.PageSize)
+	// }
+
+	// if copt.PageOffset > 0 {
+	// 	// query = query + fmt.Sprintf(" OFFSET %d", copt.PageOffset)
+	// }
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var qres []bson.M
+	if err = cur.All(ctx, &qres); err != nil {
+		return nil, err
+	}
+
+	res := store.ObjectList{}
+	for _, r := range qres {
+		d, err := fromBSON(r, d.Schema)
+		if err != nil {
+			log.Printf(err.Error())
+			continue
+		}
+		res = append(res, d)
+	}
+
+	return res, nil
 }
 
 func toBSON(obj store.Object) interface{} {
@@ -358,8 +379,7 @@ func toBSON(obj store.Object) interface{} {
 	return res
 }
 
-func fromBSON(bs interface{}, schema store.SchemaHolder) (store.Object, error) {
-	m := bs.(bson.M)
+func fromBSON(m bson.M, schema store.SchemaHolder) (store.Object, error) {
 	if m == nil {
 		return nil, fmt.Errorf("invalid bson")
 	}
@@ -370,5 +390,4 @@ func fromBSON(bs interface{}, schema store.SchemaHolder) (store.Object, error) {
 	}
 
 	return utils.UnmarshalObject(data, schema, utils.ObjeectKind(data))
-
 }

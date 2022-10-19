@@ -71,6 +71,7 @@ STORE BROWSER:
 TESTS:
   - change naming prop @done
   - action tests by ID @done
+  - react tests
   - negative checks
     - pass nil @done
     - weird options ?

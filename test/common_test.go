@@ -1,9 +1,7 @@
 package common_test
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"sort"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -30,6 +28,11 @@ var _ = Describe("common", func() {
 			err = clt.Delete(ctx, r.Metadata().Identity())
 			Expect(err).To(BeNil())
 		}
+
+		ret, _ = clt.List(ctx, generated.SecondWorldIdentity(""))
+		Expect(len(ret)).To(Equal(0))
+		ret, _ = clt.List(ctx, generated.WorldIdentity(""))
+		Expect(len(ret)).To(Equal(0))
 
 		// ret, err = clt.List(ctx, generated.ThirdWorldIdentity(""))
 		// Expect(err).To(BeNil())
@@ -333,6 +336,13 @@ var _ = Describe("common", func() {
 		Expect(err).To(BeNil())
 		_, err = clt.Create(ctx, world2)
 		Expect(err).To(BeNil())
+
+		world3 := generated.SecondWorldFactory()
+		world3.Spec().SetName(anotherWorldName)
+		world3.Spec().SetDescription(newWorldDescription)
+
+		_, err = clt.Create(ctx, world3)
+		Expect(err).To(BeNil())
 	})
 
 	It("can LIST multiple objects", func() {
@@ -464,13 +474,6 @@ var _ = Describe("common", func() {
 		world := ret[0].(generated.World)
 		Expect(world.Spec().Name()).To(Equal(worldName))
 		Expect(world.Spec().Description()).To(Equal(worldDescription))
-	})
-
-	It("can try to remove test.sqlite", func() {
-		err := os.Remove("test.sqlite")
-		if err != nil {
-			fmt.Println(err)
-		}
 	})
 
 })
