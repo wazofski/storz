@@ -61,7 +61,7 @@ SQL STORE:
   - test with mysql @done
 
 MONGO STORE:
-  - basic implementation
+  - basic implementation @done
 
 OBJECT BROWSER:
   - 
