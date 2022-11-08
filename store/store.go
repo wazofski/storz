@@ -11,7 +11,7 @@ import (
 )
 
 type Endpoint interface {
-	Listen(int)
+	Listen(int) context.CancelFunc
 }
 
 type Object interface {

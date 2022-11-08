@@ -8,18 +8,38 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/storz/client"
 	"github.com/wazofski/storz/generated"
+	"github.com/wazofski/storz/memory"
+	"github.com/wazofski/storz/react"
+	"github.com/wazofski/storz/rest"
 	"github.com/wazofski/storz/store"
 )
 
 var stc store.Store
 var ctx context.Context
+var cancel context.CancelFunc
 
 var _ = BeforeSuite(func() {
+	sch := generated.Schema()
+
+	mem := store.New(sch, memory.Factory())
+	mhr := store.New(sch, react.MetaHHandlerFactory(mem))
+	// rct := store.New(sch, react.ReactFactory(mhr))
+	ssr := store.New(sch, react.StatusStripperFactory(mhr))
+
+	srv := rest.Server(sch, ssr)
+	cancel = srv.Listen(8000)
+
 	stc = store.New(
 		generated.Schema(),
 		client.Factory(
 			"http://localhost:8000/",
 			client.Header("test", "header")))
+})
+
+var _ = AfterSuite(func() {
+	if cancel != nil {
+		cancel()
+	}
 })
 
 func TestClient(t *testing.T) {

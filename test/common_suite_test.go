@@ -3,9 +3,7 @@ package common_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -17,68 +15,96 @@ import (
 	"github.com/wazofski/storz/memory"
 	"github.com/wazofski/storz/mongo"
 	"github.com/wazofski/storz/react"
+	"github.com/wazofski/storz/rest"
 	"github.com/wazofski/storz/sql"
 	"github.com/wazofski/storz/store"
 )
 
+type initializer func()
+
 var clt store.Store
-var ctx context.Context
+var ctx context.Context = context.Background()
+var cancel context.CancelFunc
 
-// os.Remove("test.sqlite")
+func suites(suite string) {
+	sch := generated.Schema()
 
-var stores []store.Store = []store.Store{
-	store.New(
-		generated.Schema(),
-		memory.Factory()),
+	stores := make(map[string]initializer)
 
-	store.New(
-		generated.Schema(),
-		react.ReactFactory(
-			store.New(
-				generated.Schema(),
-				memory.Factory()))),
+	stores["memory"] = func() {
+		clt = store.New(
+			sch,
+			memory.Factory())
+	}
 
-	store.New(
-		generated.Schema(),
-		client.Factory("http://localhost:8000/")),
+	stores["react"] = func() {
+		clt = store.New(
+			sch,
+			react.ReactFactory(
+				store.New(
+					generated.Schema(),
+					memory.Factory())))
+	}
 
-	store.New(
-		generated.Schema(),
-		logger.StoreFactory("SQLite",
-			store.New(
-				generated.Schema(),
-				sql.Factory(sql.SqliteConnection("test.sqlite"))))),
+	stores["client"] = func() {
+		mem := store.New(sch, memory.Factory())
+		mhr := store.New(sch, react.MetaHHandlerFactory(mem))
+		ssr := store.New(sch, react.StatusStripperFactory(mhr))
 
-	store.New(
-		generated.Schema(),
-		logger.StoreFactory("mySQL",
-			store.New(
-				generated.Schema(),
-				sql.Factory(sql.MySqlConnection(
-					"root:qwerasdf@tcp(127.0.0.1:3306)/test"))))),
+		srv := rest.Server(sch, ssr)
+		cancel = srv.Listen(8000)
 
-	store.New(
-		generated.Schema(),
-		mongo.Factory("mongodb://localhost:27017/", "storz")),
+		clt = store.New(
+			sch,
+			client.Factory("http://localhost:8000/"))
+	}
+
+	stores["sqlite"] = func() {
+		clt = store.New(
+			sch,
+			logger.StoreFactory("SQLite",
+				store.New(
+					generated.Schema(),
+					sql.Factory(sql.SqliteConnection("test.sqlite")))))
+	}
+
+	stores["mysql"] = func() {
+		clt = store.New(
+			sch,
+			logger.StoreFactory("mySQL",
+				store.New(
+					generated.Schema(),
+					sql.Factory(sql.MySqlConnection(
+						"root:qwerasdf@tcp(127.0.0.1:3306)/test")))))
+	}
+
+	stores["mongo"] = func() {
+		clt = store.New(
+			sch,
+			mongo.Factory("mongodb://localhost:27017/", "storz"))
+	}
+
+	stores[suite]()
 }
 
-func TestNegative(t *testing.T) {
+func TestCommon(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	argKey := "store="
 	for _, arg := range os.Args {
 		if strings.HasPrefix(arg, argKey) {
-			sarg, err := strconv.Atoi(
-				strings.Split(arg, "=")[1])
-			if err != nil {
-				log.Println(err)
-				return
-			}
+			sarg := strings.Split(arg, "=")[1]
 
-			clt = stores[sarg]
-			RunSpecs(t, fmt.Sprintf("Common Suite %d", sarg))
+			suites(sarg)
+			RunSpecs(t, fmt.Sprintf("Common Suite %s", sarg))
 
 			break
 		}
 	}
 }
+
+var _ = AfterSuite(func() {
+	if cancel != nil {
+		cancel()
+	}
+})

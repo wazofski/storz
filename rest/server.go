@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -38,9 +39,24 @@ type _Server struct {
 	Router  *mux.Router
 }
 
-func (d *_Server) Listen(port int) {
-	log.Fatal(http.ListenAndServe(
-		fmt.Sprintf(":%d", port), d.Router))
+func (d *_Server) Listen(port int) context.CancelFunc {
+	srv := http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: d.Router,
+	}
+
+	go func() {
+		err := srv.ListenAndServe()
+		if errors.Is(err, http.ErrServerClosed) {
+			fmt.Printf("server closed\n")
+		} else if err != nil {
+			fmt.Printf("error listening: %s\n", err)
+		} else {
+			fmt.Println("habidi dubidi")
+		}
+	}()
+
+	return func() { srv.Shutdown(context.Background()) }
 }
 
 func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
