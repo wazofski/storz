@@ -26,7 +26,7 @@ func Generate(model string) error {
 	}
 
 	var b strings.Builder
-	b.WriteString(render("mgen/templates/imports.gotext", imports))
+	b.WriteString(render("templates/imports.gotext", imports))
 	b.WriteString(compileResources(resources))
 	b.WriteString(compileStructs(structs))
 
@@ -91,11 +91,11 @@ func compileResources(resources []_Resource) string {
 		}
 
 		b.WriteString(compileStruct(s))
-		b.WriteString(render("mgen/templates/meta.gotext", r))
-		b.WriteString(render("mgen/templates/clone.gotext", s))
+		b.WriteString(render("templates/meta.gotext", r))
+		b.WriteString(render("templates/clone.gotext", s))
 	}
 
-	b.WriteString(render("mgen/templates/schema.gotext", resources))
+	b.WriteString(render("templates/schema.gotext", resources))
 
 	return b.String()
 }
@@ -134,26 +134,28 @@ func compileStruct(s _Struct) string {
 
 		if p.Prop == "Spec" {
 			b.WriteString(
-				render("mgen/templates/specinternal.gotext",
+				render("templates/specinternal.gotext",
 					_Tuple{A: s.Name, B: p.Type}))
 		}
 	}
 
 	impl := append(s.Implements, "json.Unmarshaler")
 
-	b.WriteString(render("mgen/templates/interface.gotext", _Interface{
+	b.WriteString(render("templates/interface.gotext", _Interface{
 		Name:       s.Name,
 		Methods:    methods,
 		Implements: impl,
 	}))
 
-	b.WriteString(render("mgen/templates/structure.gotext", s))
-	b.WriteString(render("mgen/templates/unmarshall.gotext", s))
+	b.WriteString(render("templates/structure.gotext", s))
+	b.WriteString(render("templates/unmarshall.gotext", s))
 
 	return b.String()
 }
 
-func render(path string, data interface{}) string {
+func render(rpath string, data interface{}) string {
+	path := fmt.Sprintf("%s/%s", utils.RuntimeDir(), rpath)
+
 	t, err := template.ParseFiles(path)
 	if err != nil {
 		log.Fatal(err)

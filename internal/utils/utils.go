@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -113,7 +115,7 @@ func ExportFile(targetDir string, name string, content string) error {
 
 	targetFile := fmt.Sprintf("%s/%s", targetDir, name)
 
-	log.Printf("exporting file %s", targetFile)
+	// log.Printf("exporting file %s", targetFile)
 
 	f, err := os.Create(targetFile)
 	if err != nil {
@@ -125,4 +127,14 @@ func ExportFile(targetDir string, name string, content string) error {
 	f.WriteString(content)
 
 	return nil
+}
+
+func RuntimeDir() string {
+	_, file, _, ok := runtime.Caller(1)
+	if ok {
+		return filepath.Dir(file)
+		// fmt.Printf("Called from %s, line #%d, func: %v\n",
+		// 	file, line, runtime.FuncForPC(pc).Name())
+	}
+	return "./"
 }

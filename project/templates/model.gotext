@@ -1,3 +1,3 @@
 package {{.}}
 
-// storz generate model
+//go:generate storz generate model

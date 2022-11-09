@@ -35,22 +35,22 @@ func Generate(name string) string {
 		return err.Error()
 	}
 
-	err = render("project/templates/go.modtext", name, "go.mod")
+	err = render("templates/go.modtext", name, "go.mod")
 	if err != nil {
 		return err.Error()
 	}
 
-	err = render("project/templates/model.gotext", name, "model.go")
+	err = render("templates/model.gotext", name, "model.go")
 	if err != nil {
 		return err.Error()
 	}
 
-	err = render("project/templates/main.gotext", name, "cmd/main.go")
+	err = render("templates/main.gotext", name, "cmd/main.go")
 	if err != nil {
 		return err.Error()
 	}
 
-	err = render("project/templates/object.yamltext", name, "model/objects.yaml")
+	err = render("templates/object.yamltext", name, "model/objects.yaml")
 	if err != nil {
 		return err.Error()
 	}
@@ -75,7 +75,9 @@ func validName(name string) bool {
 	return match
 }
 
-func render(tpath string, path string, name string) error {
+func render(rtpath string, path string, name string) error {
+	tpath := fmt.Sprintf("%s/%s", utils.RuntimeDir(), rtpath)
+
 	t, err := template.ParseFiles(tpath)
 	if err != nil {
 		log.Fatal(err)
