@@ -216,7 +216,9 @@ func prepResponse(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 }
 
-func render(path string, data interface{}) []byte {
+func render(rpath string, data interface{}) []byte {
+	path := fmt.Sprintf("%s/%s", utils.RuntimeDir(), rpath)
+
 	t, err := template.ParseFiles(path)
 	if err != nil {
 		log.Fatal(err)
