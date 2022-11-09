@@ -294,7 +294,11 @@ func (d *mongoStore) List(
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {
 
-	log.Printf("list %s", identity.Type())
+	log.Printf("list %s", identity)
+
+	if len(identity.Key()) > 0 {
+		return nil, constants.ErrInvalidPath
+	}
 
 	var err error
 	copt := options.CommonOptionHolderFactory()
@@ -339,6 +343,14 @@ func (d *mongoStore) List(
 
 	// prop filter
 	if copt.PropFilter != nil {
+		obj := d.Schema.ObjectForKind(identity.Type())
+		if obj == nil {
+			return nil, constants.ErrNoSuchObject
+		}
+		if utils.ObjectPath(obj, copt.PropFilter.Key) == nil {
+			return nil, constants.ErrInvalidFilter
+		}
+
 		filter[fmt.Sprintf("object.%s", copt.PropFilter.Key)] = copt.PropFilter.Value
 	}
 

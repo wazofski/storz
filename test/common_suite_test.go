@@ -9,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/wazofski/storz/cache"
 	"github.com/wazofski/storz/client"
 	"github.com/wazofski/storz/generated"
 	"github.com/wazofski/storz/internal/logger"
@@ -82,6 +83,16 @@ func suites(suite string) {
 		clt = store.New(
 			sch,
 			mongo.Factory("mongodb://localhost:27017/", "storz"))
+	}
+
+	stores["cache"] = func() {
+		s1 := store.New(
+			sch,
+			memory.Factory())
+
+		clt = store.New(
+			sch,
+			cache.Factory(s1))
 	}
 
 	stores[suite]()

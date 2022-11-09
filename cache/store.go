@@ -14,7 +14,7 @@ type cachedStore struct {
 	Cache  store.Store
 }
 
-func StoreFactory(module string, st store.Store) store.Factory {
+func Factory(st store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &cachedStore{
 			Schema: schema,

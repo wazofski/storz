@@ -14,6 +14,11 @@ import (
 
 var _ = Describe("common", func() {
 
+	worldName := "c137zxczx"
+	anotherWorldName := "j19zeta7 qweqw"
+	worldDescription := "zxkjhajkshdas world of argo"
+	newWorldDescription := "is only beoaoqwiewioqu"
+
 	It("can CLEAR everything", func() {
 		ret, err := clt.List(ctx, generated.WorldIdentity(""))
 		Expect(err).To(BeNil())
@@ -42,6 +47,15 @@ var _ = Describe("common", func() {
 		// }
 	})
 
+	It("can LIST empty lists", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(""))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(0))
+	})
+
 	It("can POST objects", func() {
 		w := generated.WorldFactory()
 
@@ -52,6 +66,18 @@ var _ = Describe("common", func() {
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
 		Expect(len(ret.Metadata().Identity())).ToNot(Equal(0))
+	})
+
+	It("can LIST single object", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(""))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal("abc"))
 	})
 
 	It("can POST other objects", func() {
@@ -311,11 +337,6 @@ var _ = Describe("common", func() {
 		Expect(err).ToNot(BeNil())
 	})
 
-	worldName := "c137zxczx"
-	anotherWorldName := "j19zeta7 qweqw"
-	worldDescription := "zxkjhajkshdas world of argo"
-	newWorldDescription := "is only beoaoqwiewioqu"
-
 	It("can CREATE multiple objects", func() {
 		ret, err := clt.List(ctx, generated.WorldIdentity(""))
 		Expect(err).To(BeNil())
@@ -461,11 +482,54 @@ var _ = Describe("common", func() {
 		}
 	})
 
+	It("cannot LIST and FILTER BY nonexistent props", func() {
+		ret, err := clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.PropFilter("metadata.askdjhasd", "asdsadas"))
+
+		Expect(err).ToNot(BeNil())
+		Expect(ret).To(BeNil())
+	})
+
+	It("cannot LIST specific object", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(worldName))
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+	})
+
+	It("cannot LIST specific nonexistent object", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity("akjhdsjkhdaskjhdaskj"))
+
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+	})
+
+	worldId := store.ObjectIdentity("")
+
 	It("can LIST and FILTER", func() {
 		ret, err := clt.List(
 			ctx,
 			generated.WorldIdentity(""),
 			options.PropFilter("spec.name", worldName))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world := ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(worldName))
+		Expect(world.Spec().Description()).To(Equal(worldDescription))
+		worldId = world.Metadata().Identity()
+	})
+
+	It("can LIST and FILTER BY ID", func() {
+		ret, err := clt.List(
+			ctx, generated.WorldIdentity(""),
+			options.PropFilter("metadata.identity", string(worldId)))
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())

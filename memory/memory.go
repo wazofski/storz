@@ -2,14 +2,13 @@ package memory
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/Jeffail/gabs"
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
 )
@@ -193,7 +192,7 @@ func (d *memoryStore) List(
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {
 
-	log.Printf("list %s", identity.Type())
+	log.Printf("list %s", identity)
 
 	var err error
 	copt := options.CommonOptionHolderFactory()
@@ -222,8 +221,7 @@ func (d *memoryStore) List(
 	}
 
 	if len(res) > 0 && copt.PropFilter != nil {
-		p := objectPath(res[0], copt.PropFilter.Key)
-		if p == "" {
+		if utils.ObjectPath(res[0], copt.PropFilter.Key) == nil {
 			return nil, constants.ErrInvalidFilter
 		}
 	}
@@ -265,7 +263,7 @@ func listFilter(list store.ObjectList, filter *options.PropFilterSetting) store.
 
 	res := store.ObjectList{}
 	for _, o := range list {
-		path := objectPath(o, filter.Key)
+		path := *utils.ObjectPath(o, filter.Key)
 
 		if filter.Value == path {
 			res = append(res, o)
@@ -282,9 +280,9 @@ func listOrder(list store.ObjectList, ob string, inc bool) store.ObjectList {
 
 	sort.Slice(list, func(p, q int) bool {
 		if inc {
-			return objectPath(list[p], ob) < objectPath(list[q], ob)
+			return *utils.ObjectPath(list[p], ob) < *utils.ObjectPath(list[q], ob)
 		}
-		return objectPath(list[p], ob) > objectPath(list[q], ob)
+		return *utils.ObjectPath(list[p], ob) > *utils.ObjectPath(list[q], ob)
 	})
 
 	return list
@@ -308,18 +306,4 @@ func listPagination(list store.ObjectList, offset int, size int) store.ObjectLis
 	}
 
 	return list[tl:tr]
-}
-
-func objectPath(obj store.Object, path string) string {
-	data, _ := json.Marshal(obj)
-	jsn, err := gabs.ParseJSON(data)
-	if err != nil {
-		log.Fatal(err)
-		return ""
-	}
-	if !jsn.Exists(strings.Split(path, ".")...) {
-		return ""
-	}
-	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
-	return ret
 }

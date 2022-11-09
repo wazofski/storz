@@ -40,11 +40,11 @@ func (d *_Server) Listen(port int) context.CancelFunc {
 	go func() {
 		err := srv.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
-			fmt.Printf("server closed\n")
+			log.Printf("server closed\n")
 		} else if err != nil {
-			fmt.Printf("error listening: %s\n", err)
+			log.Printf("error listening: %s\n", err)
 		} else {
-			fmt.Println("habidi dubidi")
+			log.Printf("habidi dubidi")
 		}
 	}()
 

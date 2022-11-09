@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"strings"
 	"time"
 
+	"github.com/Jeffail/gabs"
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/store"
 )
@@ -89,4 +91,17 @@ func Serialize(mo store.Object) ([]byte, error) {
 	}
 
 	return json.Marshal(mo)
+}
+
+func ObjectPath(obj store.Object, path string) *string {
+	data, _ := json.Marshal(obj)
+	jsn, err := gabs.ParseJSON(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !jsn.Exists(strings.Split(path, ".")...) {
+		return nil
+	}
+	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
+	return &ret
 }

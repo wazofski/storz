@@ -20,7 +20,7 @@ import (
 	"github.com/wazofski/storz/store/options"
 )
 
-var log = logger.Factory("client")
+var log = logger.Factory("rest client")
 
 type restStore struct {
 	BaseURL     *url.URL

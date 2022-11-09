@@ -7,6 +7,9 @@ MGEN:
   - templates implementation @done
   - generate schema @done
   - cloning @done
+  - schema
+    - add has prop method for each type
+      - fill with meta.id spec spec.name etc..?
   - error reporting
     - Invalid yaml
     - Invalid model
