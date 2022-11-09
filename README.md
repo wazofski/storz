@@ -61,17 +61,16 @@ Most modules are implementations of the following common interface.
 ### Mongo DB store
   
   
-## Intermediary modules
+## Functional modules
 ### Cache store
+### React store
+React provides a way to attach callbacks to object actions associated with an underlying store
 
   
 ## REST modules
 ### REST Server
 ### REST Client store
 
-  
-### React store
-React provides a way to attach callbacks to object actions associated with an underlying store
 
   
 ## Other useful modules
