@@ -6,7 +6,10 @@ import (
 	"go/format"
 	"html/template"
 	"log"
+	"os"
 	"strings"
+
+	"github.com/wazofski/storz/internal/utils"
 )
 
 func Generate(model string) error {
@@ -35,7 +38,10 @@ func Generate(model string) error {
 		res = []byte(str)
 	}
 
-	return exportFile("generated", "objects.go", string(res))
+	targetDir := "generated"
+	os.RemoveAll(targetDir)
+
+	return utils.ExportFile(targetDir, "objects.go", string(res))
 }
 
 type _Interface struct {

@@ -1,7 +1,6 @@
 package mgen
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,26 +37,6 @@ func capitalize(s string) string {
 
 func decapitalize(s string) string {
 	return strings.ToLower(s[:1]) + s[1:]
-}
-
-func exportFile(targetDir string, name string, content string) error {
-	targetDir = strings.ReplaceAll(targetDir, "//", "/")
-	os.RemoveAll(targetDir)
-	os.Mkdir(targetDir, 0755)
-
-	targetFile := fmt.Sprintf("%s/%s", targetDir, name)
-	// log.Printf("exporting file %s", targetFile)
-
-	f, err := os.Create(targetFile)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	f.WriteString(content)
-
-	return nil
 }
 
 func readFile(path string) []byte {

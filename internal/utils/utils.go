@@ -2,8 +2,10 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -104,4 +106,23 @@ func ObjectPath(obj store.Object, path string) *string {
 	}
 	ret := strings.ReplaceAll(jsn.Path(path).String(), "\"", "")
 	return &ret
+}
+
+func ExportFile(targetDir string, name string, content string) error {
+	os.Mkdir(targetDir, 0755)
+
+	targetFile := fmt.Sprintf("%s/%s", targetDir, name)
+
+	log.Printf("exporting file %s %s -> %s", targetDir, name, targetFile)
+
+	f, err := os.Create(targetFile)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	f.WriteString(content)
+
+	return nil
 }

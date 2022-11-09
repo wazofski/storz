@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wazofski/storz/project"
 )
 
 // initCmd represents the init command
@@ -17,7 +18,14 @@ var initCmd = &cobra.Command{
 For example:
 	storz init example`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
+		if len(args) == 0 {
+			fmt.Println("Missing argument: project name")
+			fmt.Println()
+			cmd.Help()
+			return
+		}
+
+		fmt.Println(project.Generate(args[0]))
 	},
 }
 
@@ -32,5 +40,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	initCmd.Flags().String("name", "", "Project name")
+	// initCmd.Flags().String("name", "", "Project name")
 }

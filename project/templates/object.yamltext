@@ -1,0 +1,21 @@
+types:
+  - kind: Resource
+    name: World
+    spec: WorldSpec
+    status: WorldStatus
+    pkey: spec.name
+    apimethods:
+      - apimethod: GET
+      - apimethod: PUT
+      - apimethod: POST
+      - apimethod: DELETE
+  - kind: Struct
+    name: WorldSpec
+    props:
+      - prop: name
+        type: string
+  - kind: Struct
+    name: WorldStatus
+    props:
+      - prop: description
+        type: string
