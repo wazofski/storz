@@ -204,7 +204,7 @@ type _Page struct {
 }
 
 func writeResponse(w http.ResponseWriter, title, data string) {
-	w.Write(render("browser/templates/base.html",
+	w.Write(render("templates/base.html",
 		_Page{
 			Title: title,
 			Json:  data,
