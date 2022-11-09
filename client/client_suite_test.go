@@ -9,7 +9,6 @@ import (
 	"github.com/wazofski/storz/client"
 	"github.com/wazofski/storz/generated"
 	"github.com/wazofski/storz/memory"
-	"github.com/wazofski/storz/react"
 	"github.com/wazofski/storz/rest"
 	"github.com/wazofski/storz/store"
 )
@@ -22,11 +21,9 @@ var _ = BeforeSuite(func() {
 	sch := generated.Schema()
 
 	mem := store.New(sch, memory.Factory())
-	mhr := store.New(sch, react.MetaHHandlerFactory(mem))
 	// rct := store.New(sch, react.ReactFactory(mhr))
-	ssr := store.New(sch, react.StatusStripperFactory(mhr))
 
-	srv := rest.Server(sch, ssr)
+	srv := rest.Server(sch, mem)
 	cancel = srv.Listen(8000)
 
 	stc = store.New(

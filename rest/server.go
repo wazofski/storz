@@ -59,10 +59,13 @@ func (d *_Server) Listen(port int) context.CancelFunc {
 	return func() { srv.Shutdown(context.Background()) }
 }
 
-func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
+func Server(schema store.SchemaHolder, stor store.Store) store.Endpoint {
+	mhr := store.New(schema, MetaHHandlerFactory(stor))
+	ssr := store.New(schema, StatusStripperFactory(mhr))
+
 	server := &_Server{
 		Schema:  schema,
-		Store:   store,
+		Store:   ssr,
 		Context: context.Background(),
 		Router:  mux.NewRouter(),
 	}

@@ -113,7 +113,7 @@ func ExportFile(targetDir string, name string, content string) error {
 
 	targetFile := fmt.Sprintf("%s/%s", targetDir, name)
 
-	log.Printf("exporting file %s %s -> %s", targetDir, name, targetFile)
+	log.Printf("exporting file %s", targetFile)
 
 	f, err := os.Create(targetFile)
 	if err != nil {

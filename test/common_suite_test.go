@@ -49,10 +49,8 @@ func suites(suite string) {
 
 	stores["client"] = func() {
 		mem := store.New(sch, memory.Factory())
-		mhr := store.New(sch, react.MetaHHandlerFactory(mem))
-		ssr := store.New(sch, react.StatusStripperFactory(mhr))
 
-		srv := rest.Server(sch, ssr)
+		srv := rest.Server(sch, mem)
 		cancel = srv.Listen(8000)
 
 		clt = store.New(

@@ -1,34 +1,34 @@
-package react
+package rest
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
-	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
 )
 
-type metaHandlerStore struct {
+type statusStripperStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
 	Log    logger.Logger
 }
 
-func MetaHHandlerFactory(data store.Store) store.Factory {
+func StatusStripperFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
-		client := &metaHandlerStore{
+		client := &statusStripperStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.Factory("meta handler"),
+			Log:    logger.Factory("status stripper"),
 		}
 
 		return client, nil
 	}
 }
 
-func (d *metaHandlerStore) Create(
+func (d *statusStripperStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...options.CreateOption) (store.Object, error) {
@@ -39,15 +39,22 @@ func (d *metaHandlerStore) Create(
 
 	d.Log.Printf("create %s", obj.PrimaryKey())
 
-	ms := obj.Metadata().(store.MetaSetter)
+	// initialize metadata
+	original := d.Schema.ObjectForKind(obj.Metadata().Kind())
+	if original == nil {
+		return nil, fmt.Errorf("unknown kind %s", obj.Metadata().Kind())
+	}
 
-	ms.SetIdentity(store.ObjectIdentityFactory())
-	ms.SetCreated(utils.Timestamp())
+	// update spec
+	specHolder := original.(store.SpecHolder)
+	if specHolder != nil {
+		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
+	}
 
-	return d.Store.Create(ctx, obj, opt...)
+	return d.Store.Create(ctx, original, opt...)
 }
 
-func (d *metaHandlerStore) Update(
+func (d *statusStripperStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -58,15 +65,31 @@ func (d *metaHandlerStore) Update(
 	}
 
 	d.Log.Printf("update %s", identity.Path())
+	// read the real object
+	original, err := d.Store.Get(ctx, identity)
 
-	// update metadata
-	ms := obj.Metadata().(store.MetaSetter)
-	ms.SetUpdated(utils.Timestamp())
+	// if doesn't exist return error
+	if err != nil {
+		return nil, err
+	}
+	if original == nil {
+		return nil, constants.ErrNoSuchObject
+	}
 
-	return d.Store.Update(ctx, identity, obj, opt...)
+	// update spec
+	specHolder := original.(store.SpecHolder)
+	if specHolder != nil && obj != nil {
+		objSpecHolder := obj.(store.SpecHolder)
+		if objSpecHolder != nil {
+			specHolder.SpecInternalSet(
+				objSpecHolder.SpecInternal())
+		}
+	}
+
+	return d.Store.Update(ctx, identity, original, opt...)
 }
 
-func (d *metaHandlerStore) Delete(
+func (d *statusStripperStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.DeleteOption) error {
@@ -76,7 +99,7 @@ func (d *metaHandlerStore) Delete(
 	return d.Store.Delete(ctx, identity, opt...)
 }
 
-func (d *metaHandlerStore) Get(
+func (d *statusStripperStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.GetOption) (store.Object, error) {
@@ -86,7 +109,7 @@ func (d *metaHandlerStore) Get(
 	return d.Store.Get(ctx, identity, opt...)
 }
 
-func (d *metaHandlerStore) List(
+func (d *statusStripperStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {

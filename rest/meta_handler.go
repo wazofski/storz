@@ -1,34 +1,34 @@
-package react
+package rest
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
+	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
 )
 
-type statusStripperStore struct {
+type metaHandlerStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
 	Log    logger.Logger
 }
 
-func StatusStripperFactory(data store.Store) store.Factory {
+func MetaHHandlerFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
-		client := &statusStripperStore{
+		client := &metaHandlerStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.Factory("status stripper"),
+			Log:    logger.Factory("meta handler"),
 		}
 
 		return client, nil
 	}
 }
 
-func (d *statusStripperStore) Create(
+func (d *metaHandlerStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...options.CreateOption) (store.Object, error) {
@@ -39,22 +39,15 @@ func (d *statusStripperStore) Create(
 
 	d.Log.Printf("create %s", obj.PrimaryKey())
 
-	// initialize metadata
-	original := d.Schema.ObjectForKind(obj.Metadata().Kind())
-	if original == nil {
-		return nil, fmt.Errorf("unknown kind %s", obj.Metadata().Kind())
-	}
+	ms := obj.Metadata().(store.MetaSetter)
 
-	// update spec
-	specHolder := original.(store.SpecHolder)
-	if specHolder != nil {
-		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
-	}
+	ms.SetIdentity(store.ObjectIdentityFactory())
+	ms.SetCreated(utils.Timestamp())
 
-	return d.Store.Create(ctx, original, opt...)
+	return d.Store.Create(ctx, obj, opt...)
 }
 
-func (d *statusStripperStore) Update(
+func (d *metaHandlerStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -65,31 +58,15 @@ func (d *statusStripperStore) Update(
 	}
 
 	d.Log.Printf("update %s", identity.Path())
-	// read the real object
-	original, err := d.Store.Get(ctx, identity)
 
-	// if doesn't exist return error
-	if err != nil {
-		return nil, err
-	}
-	if original == nil {
-		return nil, constants.ErrNoSuchObject
-	}
+	// update metadata
+	ms := obj.Metadata().(store.MetaSetter)
+	ms.SetUpdated(utils.Timestamp())
 
-	// update spec
-	specHolder := original.(store.SpecHolder)
-	if specHolder != nil && obj != nil {
-		objSpecHolder := obj.(store.SpecHolder)
-		if objSpecHolder != nil {
-			specHolder.SpecInternalSet(
-				objSpecHolder.SpecInternal())
-		}
-	}
-
-	return d.Store.Update(ctx, identity, original, opt...)
+	return d.Store.Update(ctx, identity, obj, opt...)
 }
 
-func (d *statusStripperStore) Delete(
+func (d *metaHandlerStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.DeleteOption) error {
@@ -99,7 +76,7 @@ func (d *statusStripperStore) Delete(
 	return d.Store.Delete(ctx, identity, opt...)
 }
 
-func (d *statusStripperStore) Get(
+func (d *metaHandlerStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.GetOption) (store.Object, error) {
@@ -109,7 +86,7 @@ func (d *statusStripperStore) Get(
 	return d.Store.Get(ctx, identity, opt...)
 }
 
-func (d *statusStripperStore) List(
+func (d *metaHandlerStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {
