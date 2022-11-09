@@ -11,8 +11,8 @@ interface that most storz modules expose/implement.
 1. Install the storz module
 
 ```
-  go get github.com/wazofski/storz.git
-  go install github.com/wazofski/storz.git
+  go get github.com/wazofski/storz
+  go install github.com/wazofski/storz
 ```
 
 2. Initialize your storz project
