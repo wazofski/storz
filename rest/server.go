@@ -14,9 +14,9 @@ import (
 
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
-	"github.com/wazofski/storz/internal/utils"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
 var log = logger.Factory("rest server")
@@ -56,6 +56,8 @@ func (d *_Server) Listen(port int) context.CancelFunc {
 		}
 	}()
 
+	log.Printf("listening on port %d", port)
+
 	return func() { srv.Shutdown(context.Background()) }
 }
 
@@ -87,7 +89,7 @@ func Server(schema store.SchemaHolder, stor store.Store) store.Endpoint {
 }
 
 func addHandler(router *mux.Router, pattern string, handler _HandlerFunc) {
-	log.Printf("serving %s", pattern)
+	// log.Printf("serving %s", pattern)
 	router.HandleFunc(pattern, handler)
 }
 

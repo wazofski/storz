@@ -8,7 +8,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/wazofski/storz/internal/utils"
+	"github.com/wazofski/storz/utils"
 )
 
 func Generate(name string) string {
@@ -36,6 +36,11 @@ func Generate(name string) string {
 	}
 
 	err = render("templates/go.modtext", name, "go.mod")
+	if err != nil {
+		return err.Error()
+	}
+
+	err = render("templates/go.sumtext", name, "go.sum")
 	if err != nil {
 		return err.Error()
 	}
