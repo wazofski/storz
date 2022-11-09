@@ -4,18 +4,6 @@ It features a simple object modeling language used to generate the golang object
 The generated code contains object and structure classes used to interact with the Store 
 interface that most storz modules expose/implement.
 
-## Store common interface
-
-Most modules is a Store implementation.
-
-```
-  Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)
-  List(context.Context, ObjectIdentity, ...ListOption) (ObjectList, error)
-  Create(context.Context, Object, ...CreateOption) (Object, error)
-  Delete(context.Context, ObjectIdentity, ...DeleteOption) error
-  Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
-```
-
 
 # Getting started
 
@@ -42,43 +30,52 @@ In your <project> directory, run
   go generate
 ```
 
+Don't forget to rerun go generate when making changes to your model YAML files.
+  
+  
+4. Build and run your code
+```
+  go build
+  ./<project>
+```
+
+# Modules
+
+## Store common interface
+
+Most modules are implementations of the following common interface.
+```
+  Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)
+  List(context.Context, ObjectIdentity, ...ListOption) (ObjectList, error)
+  Create(context.Context, Object, ...CreateOption) (Object, error)
+  Delete(context.Context, ObjectIdentity, ...DeleteOption) error
+  Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
+```
 
 
+## Persistification modules
+### In-memory store
 
+### SQL store
 
-## rest
+### Mongo DB store
+  
+  
+## Intermediary modules
+### Cache store
 
-### server
+  
+## REST modules
+### REST Server
+### REST Client store
 
-### client store
+  
+### React store
+React provides a way to attach callbacks to object actions associated with an underlying store
 
+  
+## Other useful modules
+### Detailed Logger store
+### Object Browser server
 
-
-## react store
-
-
-
-
-
-## memory store
-
-## cached store
-
-## sql store
-
-## mongodb store
-
-# other
-
-
-
-
-## visore
-
-
-## logging
-
-
-
-
-
+  
