@@ -20,6 +20,13 @@ func (o _Schema) ObjectForKind(kind string) store.Object {
 	return nil
 }
 
+func (o _Schema) Types() []store.SchemaType {
+	list := []store.SchemaType{
+		{{ range . }} store.SchemaType("{{.Name}}"), {{ end }}
+	}
+	return list
+}
+
 func Schema() store.SchemaHolder {
 	var objects map[string][]string = make(map[string][]string)
 	

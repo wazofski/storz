@@ -48,6 +48,8 @@ func (d *_Server) Listen(port int) context.CancelFunc {
 		}
 	}()
 
+	log.Printf("listening on port %d", port)
+
 	return func() { srv.Shutdown(context.Background()) }
 }
 
@@ -59,6 +61,7 @@ func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
 		Router:  mux.NewRouter(),
 	}
 
+	addHandler(server.Router, "/", makeIndexHandler(server))
 	addHandler(server.Router, "/id/{id}", makeIdHandler(server))
 	for k, v := range schema.ObjectMethods() {
 		addHandler(server.Router,
@@ -76,7 +79,7 @@ func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
 }
 
 func addHandler(router *mux.Router, pattern string, handler _HandlerFunc) {
-	log.Printf("serving %s", pattern)
+	// log.Printf("serving %s", pattern)
 	router.HandleFunc(pattern, handler)
 }
 
@@ -108,6 +111,14 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 		}
 
 		server.handlePath(w, r, id, robject)
+	}
+}
+
+func makeIndexHandler(server *_Server) _HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		prepResponse(w, r)
+
+		w.Write(render("templates/index.html", server.Schema.Types()))
 	}
 }
 
