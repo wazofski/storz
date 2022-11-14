@@ -17,7 +17,6 @@ MGEN:
     - 
   - add primary key @done  < only string type suppored
   - object identity @done
-  - handlers
 
 RAM STORE:
   - get @done
@@ -54,9 +53,9 @@ REACT STORE:
 MODULE REFACTOR:
   - module name @done
   - packages @done
-  - mgen install ?
-    - go geneerate integration
-  - service geenerator ?
+  - mgen install @done
+    - go geneerate integration @done
+  - service geenerator @done
 
 SQL STORE:
   - basic working implementation @done
@@ -67,7 +66,7 @@ MONGO STORE:
   - basic implementation @done
 
 OBJECT BROWSER:
-  - 
+  - base implementation @done
 
 TESTS:
   - change naming prop @done
