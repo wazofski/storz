@@ -56,7 +56,7 @@ func compileResources(resources []_Resource) string {
 	for _, r := range resources {
 		props := []_Prop{
 			{
-				Prop:    "Meta",
+				Name:    "Meta",
 				Type:    "store.Meta",
 				Json:    "metadata",
 				Default: fmt.Sprintf("store.MetaFactory(\"%s\")", r.Name),
@@ -66,7 +66,7 @@ func compileResources(resources []_Resource) string {
 		if len(r.Spec) > 0 {
 			props = append(props,
 				_Prop{
-					Prop: "Spec",
+					Name: "Spec",
 					Type: r.Spec,
 					Json: "spec",
 				})
@@ -75,7 +75,7 @@ func compileResources(resources []_Resource) string {
 		if len(r.Status) > 0 {
 			props = append(props,
 				_Prop{
-					Prop: "Status",
+					Name: "Status",
 					Type: r.Status,
 					Json: "status",
 				})
@@ -122,17 +122,17 @@ func compileStruct(s _Struct) string {
 	s.Props = addDefaultPropValues(s.Props)
 
 	for _, p := range s.Props {
-		if p.Prop != "Meta" {
+		if p.Name != "Meta" {
 			methods = append(methods,
-				fmt.Sprintf("%s() %s", p.Prop, p.Type))
+				fmt.Sprintf("%s() %s", p.Name, p.Type))
 		}
 
-		if p.Prop != "Meta" && p.Prop != "Spec" && p.Prop != "Status" {
+		if p.Name != "Meta" && p.Name != "Spec" && p.Name != "Status" {
 			methods = append(methods,
-				fmt.Sprintf("Set%s(v %s)", p.Prop, p.Type))
+				fmt.Sprintf("Set%s(v %s)", p.Name, p.Type))
 		}
 
-		if p.Prop == "Spec" {
+		if p.Name == "Spec" {
 			b.WriteString(
 				render("templates/specinternal.gotext",
 					_Tuple{A: s.Name, B: p.Type}))
@@ -181,7 +181,7 @@ func addDefaultPropValues(props []_Prop) []_Prop {
 		}
 
 		res = append(res, _Prop{
-			Prop:    p.Prop,
+			Name:    p.Name,
 			Json:    p.Json,
 			Type:    p.Type,
 			Default: typeDefault(p.Type),

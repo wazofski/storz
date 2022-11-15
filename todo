@@ -84,3 +84,11 @@ TESTS:
 BUGS:
   - http: superfluous response.WriteHeader call from rest.reportError (server.go:273) @done
   - can PUT objects BY ID @done
+
+PERFORMANCE TESTER APP:
+  - make a store
+  - stress test each action
+  - configure multiple resources
+  - measure
+  - loop thousand of times
+  - plot

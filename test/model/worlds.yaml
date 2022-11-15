@@ -1,5 +1,5 @@
 types:
-  - kind: Resource
+  - kind: Object
     name: World
     spec: WorldSpec
     status: WorldStatus
@@ -9,7 +9,7 @@ types:
       - apimethod: PUT
       - apimethod: POST
       - apimethod: DELETE
-  - kind: Resource
+  - kind: Object
     name: SecondWorld
     spec: WorldSpec
     pkey: spec.name
@@ -17,40 +17,40 @@ types:
       - apimethod: GET
       - apimethod: POST
       - apimethod: DELETE
-  - kind: Resource
+  - kind: Object
     name: ThirdWorld
     spec: WorldSpec
     pkey: spec.name
   - kind: Struct
     name: WorldSpec
-    props:
-      - prop: name
+    properties:
+      - name: name
         type: string
-      - prop: description
+      - name: description
         type: string
-      - prop: nested
+      - name: nested
         type: NestedWorld
   - kind: Struct
     name: WorldStatus
-    props:
-      - prop: description
+    properties:
+      - name: description
         type: string
-      - prop: list
+      - name: list
         type: "[]NestedWorld"
-      - prop: map
+      - name: map
         type: "map[string]NestedWorld"
   - kind: Struct
     name: NestedWorld
-    props:
-      - prop: description
+    properties:
+      - name: description
         type: string
-      - prop: anotherDescription
+      - name: anotherDescription
         type: string
-      - prop: counter
+      - name: counter
         type: int
-      - prop: alive
+      - name: alive
         type: bool
-      - prop: l1
+      - name: l1
         type: "[]bool"
-      - prop: l2
+      - name: l2
         type: map[string]int

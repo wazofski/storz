@@ -13,7 +13,7 @@ type _ApiMethod struct {
 }
 
 type _Prop struct {
-	Prop    string `yaml:"prop"`
+	Name    string `yaml:"name"`
 	Type    string `yaml:"type"`
 	Json    string
 	Default string
@@ -26,7 +26,7 @@ type _Type struct {
 	Status     string       `yaml:"status,omitempty"`
 	Pkey       string       `yaml:"pkey,omitempty"`
 	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
-	Props      []_Prop      `yaml:"props,omitempty"`
+	Props      []_Prop      `yaml:"properties,omitempty"`
 }
 
 type _Model struct {
@@ -71,7 +71,7 @@ func loadModel(path string) ([]_Struct, []_Resource) {
 				})
 				continue
 			}
-			if m.Kind == "Resource" {
+			if m.Kind == "Object" {
 				pkey := "metadata.identity"
 				if len(m.Pkey) > 0 {
 					pkey = m.Pkey
@@ -111,8 +111,8 @@ func capitalizeProps(l []_Prop) []_Prop {
 	for _, p := range l {
 		res = append(res,
 			_Prop{
-				Prop:    capitalize(p.Prop),
-				Json:    decapitalize(p.Prop),
+				Name:    capitalize(p.Name),
+				Json:    decapitalize(p.Name),
 				Type:    p.Type,
 				Default: p.Default,
 			})

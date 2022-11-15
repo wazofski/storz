@@ -29,7 +29,7 @@ func (entity *_{{.Name}}) UnmarshalJSON(data []byte) error {
 				res = append(res, ud)
 			}
 
-			entity.{{.Prop}}_ = &res
+			entity.{{.Name}}_ = &res
 			{{ else }}{{ if .IsMap }}
 			res := {{ .Default }}
 			rawSubmap := make(map[string]*json.RawMessage)
@@ -47,9 +47,9 @@ func (entity *_{{.Name}}) UnmarshalJSON(data []byte) error {
 				res[k] = ud
 			}
 
-			entity.{{.Prop}}_ = &res
+			entity.{{.Name}}_ = &res
 			{{ else }}
-			err := json.Unmarshal(*rawValue, entity.{{.Prop}}_)
+			err := json.Unmarshal(*rawValue, entity.{{.Name}}_)
 			if err != nil {
 				return err
 			}
