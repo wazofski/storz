@@ -6,7 +6,20 @@ actions associated with an underlying store
 ## Usage
 
 ```
+func WorldCreateCb(store.Object, store.Store) error {
+    // ...
+    return nil
+}
+
+func WorldDeleteCb(store.Object, store.Store) error {
+    // ...
+    return nil
+}
+
 store := store.New(
     generated.Schema(),
-    react.ReactFactory(underlying_store))
+    react.ReactFactory(underlying_store,
+        react.Subscribe("World", react.ActionCreate, WorldCreateCb),
+        react.Subscribe("World", react.ActionDelete, WorldDeleteCb),
+    ))
 ```

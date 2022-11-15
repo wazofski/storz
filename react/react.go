@@ -3,6 +3,7 @@ package react
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
@@ -10,45 +11,37 @@ import (
 	"github.com/wazofski/storz/store/options"
 )
 
+type Action int
+type Callback func(store.Object, store.Store) error
+
+const (
+	ActionCreate Action = 1
+	ActionUpdate Action = 2
+	ActionDelete Action = 3
+)
+
 type reactStore struct {
 	Schema           store.SchemaHolder
 	Store            store.Store
 	Log              logger.Logger
-	CallbackRegistry map[string]map[int]Callback
+	CallbackRegistry map[string]map[Action]Callback
 }
 
-const (
-	ActionCreate = 1
-	ActionUpdate = 2
-	ActionDelete = 3
-)
+type _Register struct {
+	Kind     string
+	Action   Action
+	Callback Callback
+}
 
-type _Register func(d *reactStore) error
-type Callback func(store.Object, store.Store) error
+func Subscribe(typ string, action Action, callback Callback) _Register {
+	if action < 1 || action > 3 {
+		log.Fatalf("invalid action %d", action)
+	}
 
-func Register(typ string, action int, callback Callback) _Register {
-	return func(d *reactStore) error {
-		if action < 1 || action > 3 {
-			return fmt.Errorf("invalid action %d", action)
-		}
-
-		proto := d.Schema.ObjectForKind(typ)
-		if proto == nil {
-			return fmt.Errorf("invalid type %s", typ)
-		}
-
-		_, ok := d.CallbackRegistry[proto.Metadata().Kind()]
-		if !ok {
-			d.CallbackRegistry[proto.Metadata().Kind()] = make(map[int]Callback)
-		}
-
-		_, ok = d.CallbackRegistry[proto.Metadata().Kind()][action]
-		if ok {
-			return fmt.Errorf("callback for %s %d already set", typ, action)
-		}
-
-		d.CallbackRegistry[proto.Metadata().Kind()][action] = callback
-		return nil
+	return _Register{
+		Kind:     typ,
+		Action:   action,
+		Callback: callback,
 	}
 }
 
@@ -58,14 +51,26 @@ func ReactFactory(data store.Store, callbacks ..._Register) store.Factory {
 			Schema:           schema,
 			Store:            data,
 			Log:              logger.Factory("react"),
-			CallbackRegistry: make(map[string]map[int]Callback),
+			CallbackRegistry: make(map[string]map[Action]Callback),
 		}
 
 		for _, c := range callbacks {
-			err := c(client)
-			if err != nil {
-				return nil, err
+			proto := schema.ObjectForKind(c.Kind)
+			if proto == nil {
+				continue
 			}
+
+			_, ok := client.CallbackRegistry[proto.Metadata().Kind()]
+			if !ok {
+				client.CallbackRegistry[proto.Metadata().Kind()] = make(map[Action]Callback)
+			}
+
+			_, ok = client.CallbackRegistry[proto.Metadata().Kind()][c.Action]
+			if ok {
+				return nil, fmt.Errorf("callback for %s %d already set", c.Kind, c.Action)
+			}
+
+			client.CallbackRegistry[proto.Metadata().Kind()][c.Action] = c.Callback
 		}
 
 		return client, nil
@@ -82,7 +87,6 @@ func (d *reactStore) Create(
 	}
 
 	d.Log.Printf("create %s", obj.PrimaryKey())
-
 	err := d.runCallback(obj, ActionCreate)
 	if err != nil {
 		return nil, err
@@ -107,12 +111,6 @@ func (d *reactStore) Update(
 		return nil, constants.ErrNoSuchObject
 	}
 
-	// update spec
-	specHolder := existing.(store.SpecHolder)
-	if specHolder != nil {
-		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
-	}
-
 	err := d.runCallback(existing, ActionUpdate)
 	if err != nil {
 		return nil, err
@@ -127,7 +125,6 @@ func (d *reactStore) Delete(
 	opt ...options.DeleteOption) error {
 
 	d.Log.Printf("delete %s", identity.Path())
-
 	existing, _ := d.Get(ctx, identity)
 	if existing == nil {
 		return constants.ErrNoSuchObject
@@ -147,7 +144,6 @@ func (d *reactStore) Get(
 	opt ...options.GetOption) (store.Object, error) {
 
 	d.Log.Printf("get %s", identity.Path())
-
 	return d.Store.Get(ctx, identity, opt...)
 }
 
@@ -157,12 +153,10 @@ func (d *reactStore) List(
 	opt ...options.ListOption) (store.ObjectList, error) {
 
 	d.Log.Printf("list %s", identity.Type())
-
 	return d.Store.List(ctx, identity, opt...)
 }
 
-func (d *reactStore) runCallback(obj store.Object, action int) error {
-
+func (d *reactStore) runCallback(obj store.Object, action Action) error {
 	_, ok := d.CallbackRegistry[obj.Metadata().Kind()]
 	if !ok {
 		return nil
