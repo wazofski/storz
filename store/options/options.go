@@ -134,6 +134,9 @@ func PageOffset(po int) ListOption {
 			if commonOptions.PageOffset > 0 {
 				return errors.New("page offset option has already been set")
 			}
+			if commonOptions.PageOffset < 0 {
+				return errors.New("page offset cannot be negative")
+			}
 			commonOptions.PageOffset = po
 			// log.Printf("pagination offset option %d", po)
 			return nil
