@@ -44,14 +44,14 @@ Multi-client, multi-server complexity of any desired depth can be achieved with 
 **Install the storz module**
 
 ```
-  go get github.com/wazofski/storz
-  go install github.com/wazofski/storz
+go get github.com/wazofski/storz
+go install github.com/wazofski/storz
 ```
 
 **Initialize your storz project**
 
 ```
-  storz init [project]
+storz init [project]
 ```
 
 This will create the [project] directory containing your go module, a sample model and the main.go source file.
@@ -62,13 +62,13 @@ In your [project] directory, run
 (re-run when making changes to your model YAML files)
 
 ```
-  go generate
+go generate
 ```
 
 **Build and run your code**
 ```
-  go build
-  ./[project]
+go build
+./[project]
 ```
 
 ## Modules
