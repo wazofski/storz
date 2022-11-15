@@ -37,6 +37,7 @@ type _Server struct {
 	Store   store.Store
 	Context context.Context
 	Router  *mux.Router
+	Exposed map[string][]Action
 }
 
 func (d *_Server) Listen(port int) context.CancelFunc {
@@ -61,7 +62,28 @@ func (d *_Server) Listen(port int) context.CancelFunc {
 	return func() { srv.Shutdown(context.Background()) }
 }
 
-func Server(schema store.SchemaHolder, stor store.Store) store.Endpoint {
+type Action string
+
+const (
+	ActionCreate Action = http.MethodPost
+	ActionUpdate Action = http.MethodPut
+	ActionDelete Action = http.MethodDelete
+	ActionGet    Action = http.MethodGet
+)
+
+type _TypeMethods struct {
+	Kind    string
+	Actions []Action
+}
+
+func TypeMethods(kind string, actions ...Action) _TypeMethods {
+	return _TypeMethods{
+		Kind:    kind,
+		Actions: actions,
+	}
+}
+
+func Server(schema store.SchemaHolder, stor store.Store, exposed ..._TypeMethods) store.Endpoint {
 	mhr := store.New(schema, MetaHHandlerFactory(stor))
 	ssr := store.New(schema, StatusStripperFactory(mhr))
 
@@ -70,19 +92,22 @@ func Server(schema store.SchemaHolder, stor store.Store) store.Endpoint {
 		Store:   ssr,
 		Context: context.Background(),
 		Router:  mux.NewRouter(),
+		Exposed: make(map[string][]Action),
 	}
 
 	addHandler(server.Router, "/id/{id}", makeIdHandler(server))
-	for k, v := range schema.ObjectMethods() {
+	for _, e := range exposed {
+		server.Exposed[e.Kind] = e.Actions
+
 		addHandler(server.Router,
-			fmt.Sprintf("/%s/{pkey}", strings.ToLower(k)),
-			makeObjectHandler(server, k, v))
+			fmt.Sprintf("/%s/{pkey}", strings.ToLower(e.Kind)),
+			makeObjectHandler(server, e.Kind, e.Actions))
 		addHandler(server.Router,
-			fmt.Sprintf("/%s", strings.ToLower(k)),
-			makeTypeHandler(server, k, v))
+			fmt.Sprintf("/%s", strings.ToLower(e.Kind)),
+			makeTypeHandler(server, e.Kind, e.Actions))
 		addHandler(server.Router,
-			fmt.Sprintf("/%s/", strings.ToLower(k)),
-			makeTypeHandler(server, k, v))
+			fmt.Sprintf("/%s/", strings.ToLower(e.Kind)),
+			makeTypeHandler(server, e.Kind, e.Actions))
 	}
 
 	return server
@@ -112,8 +137,8 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 		}
 
 		// method validation
-		objMethods := server.Schema.ObjectMethods()[kind]
-		if objMethods == nil || !slices.Contains(objMethods, r.Method) {
+		objMethods := server.Exposed[kind]
+		if objMethods == nil || !slices.Contains(objMethods, Action(r.Method)) {
 			reportError(w,
 				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
@@ -124,7 +149,7 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 	}
 }
 
-func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc {
+func makeObjectHandler(server *_Server, t string, methods []Action) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 		var robject store.Object = nil
@@ -135,7 +160,7 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 		}
 
 		// method validation
-		if !slices.Contains(methods, r.Method) {
+		if !slices.Contains(methods, Action(r.Method)) {
 			reportError(w,
 				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)
@@ -146,12 +171,12 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 	}
 }
 
-func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
+func makeTypeHandler(server *_Server, t string, methods []Action) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 
 		// method validation
-		if !slices.Contains(methods, r.Method) {
+		if !slices.Contains(methods, Action(r.Method)) {
 			reportError(w,
 				constants.ErrInvalidMethod,
 				http.StatusMethodNotAllowed)

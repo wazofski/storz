@@ -44,8 +44,8 @@
             <h1>Schema types</h1>
             <div class="container" style="overflow: auto;" >
                 <ul class="list">
-                {{ range . }}
-                    <li><a href="{{ .Lowercase }}">{{ . }}</a></li>
+                {{ range $k, $v := . }}
+                    <li><a href="{{ $v }}">{{ $k }}</a></li>
                 {{ end }}
                 </ul>
             </div>
@@ -53,7 +53,7 @@
         
         <footer class="footer">
             <div class="container">
-                <span class="text-muted m-0 p-0">footer content</span>
+                <span class="text-muted m-0 p-0">footer</span>
             </div>
         </footer>
     </body>

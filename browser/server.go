@@ -11,9 +11,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/exp/slices"
 
-	"github.com/wazofski/storz/internal/constants"
 	"github.com/wazofski/storz/internal/logger"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
@@ -63,16 +61,16 @@ func Server(schema store.SchemaHolder, store store.Store) store.Endpoint {
 
 	addHandler(server.Router, "/", makeIndexHandler(server))
 	addHandler(server.Router, "/id/{id}", makeIdHandler(server))
-	for k, v := range schema.ObjectMethods() {
+	for _, k := range schema.Types() {
 		addHandler(server.Router,
 			fmt.Sprintf("/%s/{pkey}", strings.ToLower(k)),
-			makeObjectHandler(server, k, v))
+			makeObjectHandler(server, k))
 		addHandler(server.Router,
 			fmt.Sprintf("/%s", strings.ToLower(k)),
-			makeTypeHandler(server, k, v))
+			makeTypeHandler(server, k))
 		addHandler(server.Router,
 			fmt.Sprintf("/%s/", strings.ToLower(k)),
-			makeTypeHandler(server, k, v))
+			makeTypeHandler(server, k))
 	}
 
 	return server
@@ -87,27 +85,10 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 		id := store.ObjectIdentity(mux.Vars(r)["id"])
-		existing, _ := server.Store.Get(server.Context, id)
 		var robject store.Object = nil
 		data, err := utils.ReadStream(r.Body)
 		if err == nil {
 			robject, _ = utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
-		}
-
-		kind := ""
-		if existing != nil {
-			kind = existing.Metadata().Kind()
-		} else if robject != nil {
-			kind = robject.Metadata().Kind()
-		}
-
-		// method validation
-		objMethods := server.Schema.ObjectMethods()[kind]
-		if objMethods == nil || !slices.Contains(objMethods, r.Method) {
-			reportError(w,
-				constants.ErrInvalidMethod,
-				http.StatusMethodNotAllowed)
-			return
 		}
 
 		server.handlePath(w, r, id, robject)
@@ -118,11 +99,16 @@ func makeIndexHandler(server *_Server) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 
-		w.Write(render("templates/index.html", server.Schema.Types()))
+		m := make(map[string]string)
+		for _, t := range server.Schema.Types() {
+			m[t] = strings.ToLower(t)
+		}
+
+		w.Write(render("templates/index.html", m))
 	}
 }
 
-func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc {
+func makeObjectHandler(server *_Server, t string) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 		var robject store.Object = nil
@@ -132,52 +118,28 @@ func makeObjectHandler(server *_Server, t string, methods []string) _HandlerFunc
 			robject, _ = utils.UnmarshalObject(data, server.Schema, t)
 		}
 
-		// method validation
-		if !slices.Contains(methods, r.Method) {
-			reportError(w,
-				constants.ErrInvalidMethod,
-				http.StatusMethodNotAllowed)
-			return
-		}
-
 		server.handlePath(w, r, id, robject)
 	}
 }
 
-func makeTypeHandler(server *_Server, t string, methods []string) _HandlerFunc {
+func makeTypeHandler(server *_Server, t string) _HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		prepResponse(w, r)
 
-		// method validation
-		if !slices.Contains(methods, r.Method) {
-			reportError(w,
-				constants.ErrInvalidMethod,
-				http.StatusMethodNotAllowed)
+		opts := []options.ListOption{}
+
+		ret, err := server.Store.List(
+			server.Context,
+			store.ObjectIdentity(
+				fmt.Sprintf("%s/", strings.ToLower(t))),
+			opts...)
+
+		if err != nil {
+			reportError(w, err, http.StatusBadRequest)
 			return
-		}
-
-		switch r.Method {
-		case http.MethodGet:
-			opts := []options.ListOption{}
-
-			ret, err := server.Store.List(
-				server.Context,
-				store.ObjectIdentity(
-					fmt.Sprintf("%s/", strings.ToLower(t))),
-				opts...)
-
-			if err != nil {
-				reportError(w, err, http.StatusBadRequest)
-				return
-			} else if ret != nil {
-				resp, _ := json.Marshal(ret)
-				writeResponse(w, t+" objects", string(resp))
-			}
-
-		default:
-			reportError(w,
-				constants.ErrInvalidMethod,
-				http.StatusMethodNotAllowed)
+		} else if ret != nil {
+			resp, _ := json.Marshal(ret)
+			writeResponse(w, t+" objects", string(resp))
 		}
 	}
 }

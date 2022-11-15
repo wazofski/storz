@@ -4,19 +4,10 @@ types:
     spec: WorldSpec
     status: WorldStatus
     primarykey: spec.name
-    apimethods:
-      - apimethod: GET
-      - apimethod: PUT
-      - apimethod: POST
-      - apimethod: DELETE
   - kind: Object
     name: SecondWorld
     spec: WorldSpec
     primarykey: spec.name
-    apimethods:
-      - apimethod: GET
-      - apimethod: POST
-      - apimethod: DELETE
   - kind: Object
     name: ThirdWorld
     spec: WorldSpec

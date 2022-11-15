@@ -23,7 +23,13 @@ var _ = BeforeSuite(func() {
 	mem := store.New(sch, memory.Factory())
 	// rct := store.New(sch, react.ReactFactory(mhr))
 
-	srv := rest.Server(sch, mem)
+	srv := rest.Server(sch, mem,
+		rest.TypeMethods("World",
+			rest.ActionGet, rest.ActionCreate,
+			rest.ActionDelete, rest.ActionUpdate),
+		rest.TypeMethods("SecondWorld",
+			rest.ActionGet, rest.ActionCreate, rest.ActionDelete))
+
 	cancel = srv.Listen(8000)
 
 	stc = store.New(

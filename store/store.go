@@ -67,16 +67,10 @@ type Store interface {
 	Update(context.Context, ObjectIdentity, Object, ...options.UpdateOption) (Object, error)
 }
 
-type SchemaType string
-
-func (s SchemaType) Lowercase() string {
-	return strings.ToLower(string(s))
-}
-
 type SchemaHolder interface {
 	ObjectForKind(kind string) Object
-	ObjectMethods() map[string][]string
-	Types() []SchemaType
+	// ObjectMethods() map[string][]string
+	Types() []string
 }
 
 type Factory func(schema SchemaHolder) (Store, error)

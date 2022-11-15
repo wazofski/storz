@@ -4,11 +4,6 @@ types:
     spec: WorldSpec
     status: WorldStatus
     primarykey: spec.name
-    apimethods:
-      - apimethod: GET
-      - apimethod: PUT
-      - apimethod: POST
-      - apimethod: DELETE
   - kind: Struct
     name: WorldSpec
     properties:

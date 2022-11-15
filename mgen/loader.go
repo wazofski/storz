@@ -8,9 +8,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type _ApiMethod struct {
-	ApiMethod string `yaml:"apimethod,omitempty"`
-}
+// type _ApiMethod struct {
+// 	ApiMethod string `yaml:"apimethod,omitempty"`
+// }
 
 type _Prop struct {
 	Name    string `yaml:"name"`
@@ -20,13 +20,13 @@ type _Prop struct {
 }
 
 type _Type struct {
-	Name       string       `yaml:"name"`
-	Kind       string       `yaml:"kind,omitempty"`
-	Spec       string       `yaml:"spec,omitempty"`
-	Status     string       `yaml:"status,omitempty"`
-	Pkey       string       `yaml:"primarykey,omitempty"`
-	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
-	Props      []_Prop      `yaml:"properties,omitempty"`
+	Name   string `yaml:"name"`
+	Kind   string `yaml:"kind,omitempty"`
+	Spec   string `yaml:"spec,omitempty"`
+	Status string `yaml:"status,omitempty"`
+	Pkey   string `yaml:"primarykey,omitempty"`
+	// ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
+	Props []_Prop `yaml:"properties,omitempty"`
 }
 
 type _Model struct {
@@ -41,11 +41,11 @@ type _Struct struct {
 }
 
 type _Resource struct {
-	Name       string
-	Spec       string
-	Status     string
-	Pkey       string
-	ApiMethods []_ApiMethod
+	Name   string
+	Spec   string
+	Status string
+	Pkey   string
+	// ApiMethods []_ApiMethod
 }
 
 func (r _Resource) IdentityPrefix() string {
@@ -79,11 +79,11 @@ func loadModel(path string) ([]_Struct, []_Resource) {
 				pkey = makePropCallerString(pkey)
 
 				resources = append(resources, _Resource{
-					Name:       m.Name,
-					Spec:       m.Spec,
-					Status:     m.Status,
-					Pkey:       pkey,
-					ApiMethods: m.ApiMethods,
+					Name:   m.Name,
+					Spec:   m.Spec,
+					Status: m.Status,
+					Pkey:   pkey,
+					// ApiMethods: m.ApiMethods,
 				})
 				continue
 			}

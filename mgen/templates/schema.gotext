@@ -1,10 +1,6 @@
 
 type _Schema struct {
-	Objects map[string][]string
-}
-
-func (o _Schema) ObjectMethods() map[string][]string {
-	return o.Objects
+	Objects []string
 }
 
 func (o _Schema) ObjectForKind(kind string) store.Object {
@@ -20,19 +16,14 @@ func (o _Schema) ObjectForKind(kind string) store.Object {
 	return nil
 }
 
-func (o _Schema) Types() []store.SchemaType {
-	list := []store.SchemaType{
-		{{ range . }} store.SchemaType("{{.Name}}"), {{ end }}
-	}
-	return list
+func (o _Schema) Types() []string {
+	return o.Objects
 }
 
 func Schema() store.SchemaHolder {
-	var objects map[string][]string = make(map[string][]string)
+	list := []string{
+		{{ range . }} "{{.Name}}", {{ end }}
+	}
 	
-	{{ range . }}
-	objects["{{.Name}}"] = []string { {{ range .ApiMethods }} "{{.ApiMethod }}", {{ end }} }
-	{{ end }}
-
-	return _Schema { Objects: objects }
+	return _Schema { Objects: list }
 }
