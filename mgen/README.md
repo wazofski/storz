@@ -12,11 +12,10 @@ The Object is structured as follows
     - Primary key
     - Framework assigned identitier
     - Object manipulation timestamps (create, update...)
-- External
-    - Can be assigned any Structure, can be modified by the external APIs
-- Internal
-    - Can be assigned any Structure, cannot be modified by external APIs
+- Spec (External) - any Structure, to be managed through external REST APIs
+- Status (Internal) - to be managed by internal service code (React callbacks)
 
+The Object contains 
 
 ### Structures
 Structures are named collections of typed properties.

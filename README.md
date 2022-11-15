@@ -92,9 +92,9 @@ another Store to operate.
   
 ### REST
 - [Server](https://github.com/wazofski/storz/tree/main/rest)
-- [Client](https://github.com/wazofski/storz/tree/main/client) (store)
+- [Client](https://github.com/wazofski/storz/tree/main/client) store
 
 
 ### Other
-- Object Logger (store)
+- Object Logger store
 - Object Browser
