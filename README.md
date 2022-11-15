@@ -82,6 +82,10 @@ another Store to operate.
 
 
 ### Functional
+Functional modules require existing Stores to operate.
+These modules are meant to enhance the functionality of an existing store by composing itself with another Store.
+Caching layer can be added to a Store and then wrapped into another layer of React that adds validation logic object changes.
+
 - [Cache](https://github.com/wazofski/storz/tree/main/cache) store - simple cachingg mechanism using an existing Store
 - [Route](https://github.com/wazofski/storz/tree/main/route) store - mapping between types and Stores is used to route requets
 - [React](https://github.com/wazofski/storz/tree/main/react) store - react to object changes before they get submitted
@@ -93,5 +97,4 @@ another Store to operate.
 
 
 ### Other
-- Object Logger store
-- Object Browser
+- [Browser](https://github.com/wazofski/storz/tree/main/browser)
