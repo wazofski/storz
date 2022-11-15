@@ -79,17 +79,17 @@ more complex systems.
 ### Persistification
 Persistification modules are independent, meaning they do not need 
 another Store to operate.
-- Memory store - simple in-memory store useful for temporary storage cases
-- SQL store - uses a SQL DB connection to store Objects
+- [Memory](https://github.com/wazofski/storz/tree/main/memory) store - simple in-memory store useful for temporary storage cases
+- [SQL](https://github.com/wazofski/storz/tree/main/sql) store - uses a SQL DB connection to store Objects
   - mySQL
   - sqlite
-- Mongo store - uses an existing Mongo DB to store Objects
+- [Mongo](https://github.com/wazofski/storz/tree/main/mongo) store - uses an existing Mongo DB to store Objects
 
 
 ### Functional
-- Cached store - simple cachingg mechanism using an existing Store
-- Router store - mapping between types and Stores is used to route requets (TBD)
-- [React](https://github.com/wazofski/storz/tree/main/react) store
+- [Cache](https://github.com/wazofski/storz/tree/main/cache) store - simple cachingg mechanism using an existing Store
+- [Route](https://github.com/wazofski/storz/tree/main/route) store - mapping between types and Stores is used to route requets
+- [React](https://github.com/wazofski/storz/tree/main/react) store - react to object changes before they get submitted
 
   
 ### REST

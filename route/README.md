@@ -7,7 +7,7 @@ Router store allows mapping object types to different Stores
 ```
 store := store.New(
     generated.Schema(),
-    router.Factory(deault_store,
-        router.Mapping("type1", store1),
-        router.Mapping("type2", store2)))
+    route.Factory(deault_store,
+        route.Mapping("type1", store1),
+        route.Mapping("type2", store2)))
 ```
