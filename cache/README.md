@@ -1,4 +1,4 @@
-# Cache Stores
+# Cache Store
 Store implementation that adds a layer of caching to any Store
 
 ## Usage

@@ -1,4 +1,4 @@
-# Mongo Stores
+# Mongo Store
 Store implementation that usees an instance of Mongo DB for persistification
 
 ## Usage

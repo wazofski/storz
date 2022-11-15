@@ -1,9 +1,7 @@
-# Router
-
-Router store allows mapping object types to different Stores
+# Route Store
+Route store allows mapping object types to different Stores
 
 ## Usage
-
 ```
 store := store.New(
     generated.Schema(),

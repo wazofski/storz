@@ -1,7 +1,6 @@
 # SQL Stores
 SQL package helps turn any SQL database into a Store
 
-
 ## Usage
 ```
 sqlite_store = store.New(
