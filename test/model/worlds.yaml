@@ -3,7 +3,7 @@ types:
     name: World
     spec: WorldSpec
     status: WorldStatus
-    pkey: spec.name
+    primarykey: spec.name
     apimethods:
       - apimethod: GET
       - apimethod: PUT
@@ -12,7 +12,7 @@ types:
   - kind: Object
     name: SecondWorld
     spec: WorldSpec
-    pkey: spec.name
+    primarykey: spec.name
     apimethods:
       - apimethod: GET
       - apimethod: POST
@@ -20,7 +20,7 @@ types:
   - kind: Object
     name: ThirdWorld
     spec: WorldSpec
-    pkey: spec.name
+    primarykey: spec.name
   - kind: Struct
     name: WorldSpec
     properties:

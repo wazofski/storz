@@ -24,7 +24,7 @@ type _Type struct {
 	Kind       string       `yaml:"kind,omitempty"`
 	Spec       string       `yaml:"spec,omitempty"`
 	Status     string       `yaml:"status,omitempty"`
-	Pkey       string       `yaml:"pkey,omitempty"`
+	Pkey       string       `yaml:"primarykey,omitempty"`
 	ApiMethods []_ApiMethod `yaml:"apimethods,omitempty"`
 	Props      []_Prop      `yaml:"properties,omitempty"`
 }
