@@ -81,8 +81,6 @@ Persistification modules are independent, meaning they do not need
 another Store to operate.
 - [Memory](https://github.com/wazofski/storz/tree/main/memory) store - simple in-memory store useful for temporary storage cases
 - [SQL](https://github.com/wazofski/storz/tree/main/sql) store - uses a SQL DB connection to store Objects
-  - mySQL
-  - sqlite
 - [Mongo](https://github.com/wazofski/storz/tree/main/mongo) store - uses an existing Mongo DB to store Objects
 
 

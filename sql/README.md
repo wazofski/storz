@@ -1,5 +1,10 @@
-# SQL Stores
+# SQL Store
 SQL package helps turn any SQL database into a Store
+
+## Support
+- mySQL
+- sqlite
+- 
 
 ## Usage
 ```
