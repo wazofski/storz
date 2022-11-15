@@ -1,10 +1,7 @@
-# React
-
-React store exposes a way to attach callbacks to object 
-actions associated with an underlying store
+# React Store
+React store allows attaching callbacks to object actions
 
 ## Usage
-
 ```
 func WorldCreateCb(store.Object, store.Store) error {
     // ...
