@@ -16,7 +16,7 @@ type metaHandlerStore struct {
 	Log    logger.Logger
 }
 
-func MetaHHandlerFactory(data store.Store) store.Factory {
+func _MetaHHandlerFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &metaHandlerStore{
 			Schema: schema,

@@ -84,8 +84,8 @@ func TypeMethods(kind string, actions ...Action) _TypeMethods {
 }
 
 func Server(schema store.SchemaHolder, stor store.Store, exposed ..._TypeMethods) store.Endpoint {
-	mhr := store.New(schema, MetaHHandlerFactory(stor))
-	ssr := store.New(schema, StatusStripperFactory(mhr))
+	mhr := store.New(schema, _MetaHHandlerFactory(stor))
+	ssr := store.New(schema, _StatusStripperFactory(mhr))
 
 	server := &_Server{
 		Schema:  schema,

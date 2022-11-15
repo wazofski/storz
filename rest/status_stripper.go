@@ -16,7 +16,7 @@ type statusStripperStore struct {
 	Log    logger.Logger
 }
 
-func StatusStripperFactory(data store.Store) store.Factory {
+func _StatusStripperFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &statusStripperStore{
 			Schema: schema,
