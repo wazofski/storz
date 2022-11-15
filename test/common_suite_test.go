@@ -86,7 +86,7 @@ func suites(suite string) {
 	stores["mongo"] = func() {
 		clt = store.New(
 			sch,
-			mongo.Factory("mongodb://localhost:27017/", "storz"))
+			mongo.Factory("mongodb://localhost:27017/", "tests"))
 	}
 
 	stores["cache"] = func() {

@@ -1,11 +1,11 @@
-# REST client
-
-client package provides REST API store based client functionality
+# REST Client Store
+Store implementation that uses a remote [Storz REST Server](https://github.com/wazofski/storz/tree/main/rest) as storage
 
 ## Usage
-
 ```
 store := store.New(
     generated.Schema(),
-    client.Factory("server url"))
+    client.Factory("http://server-host:port",
+        client.Header("A", "B"), ...// headers
+    ))
 ```

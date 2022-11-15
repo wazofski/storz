@@ -1,9 +1,7 @@
-# REST
-
-REST package provides Store exposing REST API server
+# REST Server
+REST API Server that exposes Store functionality
 
 ## Usage
-
 ```
 srv := rest.Server(generated.Schema(), store_to_expose,
     rest.TypeMethods("World",
