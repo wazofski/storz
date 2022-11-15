@@ -1,5 +1,9 @@
 # Store Definitions
 
+The Store common interface defined below exposes
+five main operations over Objects allowing various
+options like pagination, filtering and sorting.
+
 **Store common interface**
 
 ```
