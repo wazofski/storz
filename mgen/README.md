@@ -1,5 +1,4 @@
 # Model GENerator
-
 The model is a collection of yaml files holding Store Object and Structure definitions. 
 
 ## Model
@@ -15,7 +14,6 @@ The Object is structured as follows
 - Spec (External) - any Structure, to be managed through external REST APIs
 - Status (Internal) - to be managed by internal service code (React callbacks)
 
-The Object contains 
 
 ### Structures
 Structures are named collections of typed properties.
@@ -36,7 +34,6 @@ Supported property types
 
 
 ## Generated
-
 Import the "generated" package to access Object interfaces and Schema.
 
 Use <object>Factory() functions to create Model specific mutable Objects
