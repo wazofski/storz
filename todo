@@ -14,8 +14,9 @@ MGEN:
     - Invalid yaml
     - Invalid model
     - Missing class
-    - 
-  - add primary key @done  < only string type suppored
+  - add primary key @done
+    - string type support @done
+    - other types?
   - object identity @done
 
 RAM STORE:
@@ -47,8 +48,11 @@ REACT STORE:
     - create @done
     - update @done
   - simple callback mechanism @done
-  - transactor ?
-  - test various callback types
+  - test various callbacks
+
+ROUTE STORE:
+  - implementation
+  - tests ?
 
 MODULE REFACTOR:
   - module name @done
@@ -71,10 +75,9 @@ OBJECT BROWSER:
 TESTS:
   - change naming prop @done
   - action tests by ID @done
-  - react tests
   - negative checks
+    - weird options
     - pass nil @done
-    - weird options ?
   	- not-allowed actions (client suite) @done
   	  -	new resource needed for this @done
       - try per id @done
@@ -86,9 +89,9 @@ BUGS:
   - can PUT objects BY ID @done
 
 PERFORMANCE TESTER APP:
-  - make a store
-  - stress test each action
-  - configure multiple resources
-  - measure
-  - loop thousand of times
-  - plot
+  - make a store @done
+  - stress test each action @done
+  - configure multiple resources @done
+  - measure @done
+  - loop thousand of times @done
+  - plot @done
