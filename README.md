@@ -59,8 +59,8 @@ Most modules are implementations of the [Store](https://github.com/wazofski/stor
 
   
 ### REST
-- Server
-- Client (store)
+- [Server](https://github.com/wazofski/storz/tree/main/rest)
+- [Client](https://github.com/wazofski/storz/tree/main/client) (store)
 
 
 ### Other

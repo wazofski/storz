@@ -2,7 +2,8 @@
 
 The model is a collection of yaml files holding Store Object and Structure definitions. 
 
-## Objects
+## Model
+### Objects
 Modeled Object describes the high-level abstraction used to manipulate all data via the Store inteface.
 
 The Object is structured as follows
@@ -17,7 +18,7 @@ The Object is structured as follows
     - Can be assigned any Structure, cannot be modified by external APIs
 
 
-## Structures
+### Structures
 Structures are named collections of typed properties.
 
 Supported property types
@@ -34,3 +35,14 @@ Supported property types
     - []int (string, float...)
     - []Struct
 
+
+## Generated
+
+Import the "generated" package to access Object interfaces and Schema.
+
+Use <object>Factory() functions to create Model specific mutable Objects.
+
+- Metadata
+- Spec
+- Status
+- Property Getters/Setters
