@@ -1,4 +1,4 @@
-# STORZ
+# Storz
 
 Storz is an Object Store framework built in golang.
 
