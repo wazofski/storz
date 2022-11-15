@@ -40,9 +40,8 @@ Supported property types
 
 Import the "generated" package to access Object interfaces and Schema.
 
-Use <object>Factory() functions to create Model specific mutable Objects.
-
+Use <object>Factory() functions to create Model specific mutable Objects
+which contain Object
 - Metadata
-- Spec
-- Status
-- Property Getters/Setters
+- Spec / Status
+    - Property Getters/Setters
