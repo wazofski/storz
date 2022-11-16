@@ -6,7 +6,8 @@ REST API Server that exposes Store functionality
 srv := rest.Server(generated.Schema(), store_to_expose,
     rest.TypeMethods("World",
         rest.ActionGet, rest.ActionCreate,
-        rest.ActionDelete, rest.ActionUpdate))
+        rest.ActionDelete, rest.ActionUpdate),
+    rest.TypeMethods("AnotherWorld", rest.ActionGet))
 )
 
 // use cancel function to stop server
