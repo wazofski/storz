@@ -73,15 +73,13 @@ Most Storz modules are implementations of the [Store](https://github.com/wazofsk
 This allows mixing and matching various modules together into 
 more complex systems.
 
-### Persistification
-Persistification modules are independent, meaning they do not need 
-another Store to operate.
+### Persistence Layer
+Persistence modules are independent, meaning they do not need  another Store to operate.
 - [Memory](https://github.com/wazofski/storz/tree/main/memory) store - simple in-memory store useful for temporary storage cases
 - [Mongo](https://github.com/wazofski/storz/tree/main/mongo) store - uses an existing Mongo DB to store Objects
 - [SQL](https://github.com/wazofski/storz/tree/main/sql) store - uses a SQL database connection for storage
 
-
-### Functional
+### Functional Layer
 Functional modules require existing Stores to operate.
 These modules are meant to enhance the functionality of an existing store by composing itself with another Store.
 Caching layer can be added to a Store and then wrapped into another layer of React that adds validation logic object changes.
@@ -90,11 +88,9 @@ Caching layer can be added to a Store and then wrapped into another layer of Rea
 - [Route](https://github.com/wazofski/storz/tree/main/route) store - mapping between types and Stores is used to route requets
 - [React](https://github.com/wazofski/storz/tree/main/react) store - react to object changes before they get submitted
 
-  
 ### REST
 - [Server](https://github.com/wazofski/storz/tree/main/rest)
 - [Client](https://github.com/wazofski/storz/tree/main/client) store
 
-
-### Other
+### Utility
 - [Browser](https://github.com/wazofski/storz/tree/main/browser)
