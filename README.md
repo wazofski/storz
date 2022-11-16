@@ -1,26 +1,12 @@
 # Storz
 
-Storz is an Object Store framework built in golang.
+**Storz** is an Object Store framework built in golang. It consists of a set of modules implementing the [Store](https://github.com/wazofski/storz/tree/main/store) interface and features a simple object [modeling language](https://github.com/wazofski/storz/tree/main/mgen) used to generate the golang object class meta it manipulates using `Store` modules.
 
-It features a simple object modeling language used to [generate ](https://github.com/wazofski/storz/tree/main/mgen)
-the golang object class meta.
+**Storz Modules** provide the functionality to store, modify and retrieve modeled objects from various sources. Such modules can be composed together to chain Store functionality into more complex logical modules. Combining modules provides ways to handle object changes, manipulate data in complex 
+ways within a single service or across multiple services.
+Multi-server complexity of any desired depth can be achieved with ease. 
 
-The generated code contains object and structure classes used to interact 
-with the Store interface that most storz modules expose.
-
-
-## Purpose
-Storz Modules can be used to store and retrieve objects from a database.
-
-Modules can be composed together to chain Store functionality into more complex logical modules.
-
-Such combined modules can provide ways to handle object changes and routing 
-objects to different Stores of any complexity.
-
-The interfaces are exposed from the `store` package to allow custom store implementations if needed.
-
-Multi-client, multi-server complexity of any desired depth can be achieved with ease basically for free:
-
+Example:
 - Frontend service
   - Cached store based on..
   - ..Rest client connected to the backend service
@@ -29,7 +15,7 @@ Multi-client, multi-server complexity of any desired depth can be achieved with 
   - ..React store running validations and other logic on top of ..
   - ..Router store which routes 
     - Coke objects to a cached store based on..
-    - ..SQL store (in another network)
+      - ..SQL store (in another network)
     - Pepsi objects to a local MongoDB store
     - RootBeer objects to a cached..
       - ..REST client store connected to another service

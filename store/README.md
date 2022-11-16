@@ -1,10 +1,10 @@
 # Store Definitions
 
-The Store common interface defined below exposes
+`Store` interface defined below exposes
 five main operations over Objects allowing various
 options like pagination, filtering and sorting.
 
-**Store common interface**
+**The interface is fully exposed from the `store` package to allow custom store implementations if needed.**
 
 ```
   Get(context.Context, ObjectIdentity, ...GetOption) (Object, error)
@@ -14,30 +14,75 @@ options like pagination, filtering and sorting.
   Update(context.Context, ObjectIdentity, Object, ...UpdateOption) (Object, error)
 ```
 
-## Usage
-
+## Create an object
 ```
 // Given a Store
-var store_ store.Store = ...
+var str store.Store = ...
 
 // Initialize the object
 world := generated.WorldFactory()
 world.Spec().SetName("abc")
 
-// Create the object on
-world, err = store_.Create(ctx, world)
+world, err = str.Create(ctx, world)
+```
 
+## Update an object
+```
 world.Spec().SetDescription("abc")
 
-// Update the object
-world, err = clt.Update(ctx, world.Metadata().Identity(), world)
+ret, err = clt.Update(ctx, 
+  world.Metadata().Identity(), world)
+```
 
-// Delete the object
+## Delete an object
+```
+err = str.Delete(ctx, generated.WorldIdentity("abc"))
+
 err = clt.Delete(ctx, world.Metadata().Identity())
+```
 
-// Get the object by Identity or PKey
-world, err = store_.Get(ctx, generated.WorldIdentity("abc"))
+## Get an object by Identity or PKey
+```
+world, err = str.Get(ctx, generated.WorldIdentity("abc"))
 
-// List the World objects
-world_list, err = store_.List(ctx, generated.WorldIdentity(""))
+world, err = str.Get(ctx, world.Metadata().Identity())
+```
+
+## List all World objects
+```
+world_list, err = str.List(ctx, generated.WorldIdentity(""))
+```
+
+## List World objects with a property filter
+```
+world_list, err = str.List(ctx,
+    generated.WorldIdentity(""),
+    options.PropFilter("spec.name", "abc"))
+```
+
+## List World objects with a primary key filter
+```
+world_list, err = str.List(ctx,
+    generated.WorldIdentity(""),
+    options.KeyFilter("a", "b", "c"))
+```
+
+## List World objects and sort by a given property
+```
+world_list, err = str.List(ctx,
+    generated.WorldIdentity(""),
+    options.OrderBy("spec.name"))
+
+world_list, err = str.List(ctx,
+    generated.WorldIdentity(""),
+    options.OrderBy("spec.name"),
+    options.OrderDescending())
+```
+
+## List the World objects and paginate the results
+```
+world_list, err = str.List(ctx,
+    generated.WorldIdentity(""),
+    options.PageOffset(10),
+    options.PageSize(50))
 ```

@@ -9,5 +9,5 @@ ginkgo -r -focus "react"
 ginkgo -r -focus "client"
 
 cd test
-./run_tests.sh
+./tests.sh
 cd ..

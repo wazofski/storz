@@ -449,6 +449,20 @@ var _ = Describe("common", func() {
 
 		world = ret[0].(generated.World)
 		Expect(world.Spec().Name()).To(Equal(anotherWorldName))
+
+		ret, err = clt.List(
+			ctx,
+			generated.WorldIdentity(""),
+			options.OrderBy("spec.name"),
+			options.PageSize(1000),
+			options.PageOffset(1))
+
+		Expect(err).To(BeNil())
+		Expect(ret).ToNot(BeNil())
+		Expect(len(ret)).To(Equal(1))
+
+		world = ret[0].(generated.World)
+		Expect(world.Spec().Name()).To(Equal(anotherWorldName))
 	})
 
 	It("can LIST and filter by primary key", func() {
