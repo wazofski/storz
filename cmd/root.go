@@ -16,7 +16,7 @@ const VERSION = "v0.0.3"
 var rootCmd = &cobra.Command{
 	Use:   "storz",
 	Short: "Object store and service bootstrap framework",
-	Long: fmt.Sprintf(`Storz %s
+	Long: fmt.Sprintf(`storz %s
 An object store framework
 
 github.com/wazofski/storz
