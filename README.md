@@ -8,7 +8,7 @@
 
 **storz** modules provide functionality to store, modify and retrieve modeled objects from various sources. Such modules can be composed together to chain `Store` functionality into more complex logical modules. Combining modules allows handling object changes and manipulating data in complex ways *within or across* services making multi-level server complexity achievable with ease. The modules are fully compatible with each other and can be composed in any combination since they all implement or expose the sane [Store](https://github.com/wazofski/storz/tree/main/store) interface.
 
-## Quick start guide
+## Quick Start Guide
 
 ### Installation
 ```
@@ -16,20 +16,20 @@ go get github.com/wazofski/storz
 go install github.com/wazofski/storz
 ```
 
-### Project creation
+### Project Creation
 Create a **storz** project containing go module, sample model and main.go source file.
 ```
 storz init [project]
 cd [project]
 ```
 
-### Generate class meta
+### Generate Class Meta
 Generate **storz** class meta using project model YAML files
 ```
 go generate
 ```
 
-### Build and execute
+### Build and Execute
 ```
 go build
 ./[project]
@@ -64,7 +64,7 @@ Caching layer can be added to a Store and then wrapped into another layer of Rea
 - [Browser](https://github.com/wazofski/storz/tree/main/browser)
 
 
-## Sample module composition
+## Module Composition Example
 - Frontend service
   - Cached store based on..
   - ..Rest client connected to the backend service
