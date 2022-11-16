@@ -1,24 +1,24 @@
 # Model GENerator
-The model is a collection of yaml files holding Store Object and Structure definitions. 
+The model is a collection of YAML files describing `Store` Objects and Structures. 
 
-## Model
-### Objects
-Modeled Object describes the high-level abstraction used to manipulate all data via the Store inteface.
-
-The Object is structured as follows
-- Metadata
+**Modeled Objects** are used by the `Store` interface to manipulate data. Objects contain
+- Metadata (**managed internally**)
     - Kind information
     - Primary key
     - Framework assigned identitier
     - Object manipulation timestamps (create, update...)
-- Spec (External) - any Structure, to be managed through external REST APIs
-- Status (Internal) - to be managed by internal service code (React callbacks)
+- Spec (External) - any Structure, to be managed through external REST APIs (**optional**)
+- Status (Internal) - to be managed by internal service code (React callbacks) (**optional**)
 
+```
+  - kind: Object
+    name: World
+    spec: WorldSpecStruct
+    status: WorldStatusStruct
+    primarykey: spec.name
+```
 
-### Structures
-Structures are named collections of typed properties.
-
-Supported property types
+**Structures** are named collections of typed properties. Supported property types include
 - Golang standard types
     - string
     - int
@@ -32,8 +32,20 @@ Supported property types
     - []int (string, float...)
     - []Struct
 
+```
+  - kind: Struct
+    name: WorldSpecStruct
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: string
+      - name: nested
+        type: NestedWorldStruct
+```
 
-## Generated
+
+## Generated Package
 Import the "generated" package to access Object interfaces and Schema.
 
 Use <object>Factory() functions to create Model specific mutable Objects
