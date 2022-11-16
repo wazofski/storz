@@ -66,18 +66,19 @@ Caching layer can be added to a Store and then wrapped into another layer of Rea
 
 ## Module Composition Example
 - Frontend service
-  - Cached store based on..
-  - ..Rest client connected to the backend service
+  - Cached store based on
+    - Rest client connected to the backend service
 - Backend service
-  - Rest server exposing..
-  - ..React store running validations and other logic on top of ..
-  - ..Router store which routes 
-    - Coke objects to a cached store based on..
-      - ..SQL store (in another network)
-    - Pepsi objects to a local MongoDB store
-    - RootBeer objects to a cached..
-      - ..REST client store connected to another service
+  - Rest server exposing
+    - React store running validations and other logic on top of
+      - Router store which routes 
+        - Coke objects to a cached store based on
+          - SQL store (in another network)
+        - Pepsi objects to 
+          - Local MongoDB store
+        - RootBeer objects to a cached
+          - REST client store connected to another service
 - Second backend service
-  - Rest server exposing..
-  - ..React store running validations and other logic on top of ..
-    - ..local MongoDB store
+  - Rest server exposing
+    - React store running validations and other logic on top of
+      - Local MongoDB store
