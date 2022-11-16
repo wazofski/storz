@@ -4,7 +4,7 @@
 
 <!-- ![storz](https://github.com/wazofski/storz/blob/main/logo.png?raw=true) -->
 
-**Storz** is an Object Store framework built in golang. It consists of a set of modules implementing the [Store](https://github.com/wazofski/storz/tree/main/store) interface and features a simple [object modeling language](https://github.com/wazofski/storz/tree/main/mgen) used to generate the golang object class meta it manipulates using `Store` modules.
+**Storz** is an Object Store framework built in golang. It consists of a set of modules implementing the [Store](https://github.com/wazofski/storz/tree/main/store) interface and features a simple [object modeling language](https://github.com/wazofski/storz/tree/main/mgen) used to generate golang object class meta to interact with `Store` APIs.
 
 **Storz Modules** provide the functionality to store, modify and retrieve modeled objects from various sources. Such modules can be composed together to chain Store functionality into more complex logical modules. Combining modules provides ways to handle object changes, manipulate data in complex 
 ways within a single service or across multiple services.
