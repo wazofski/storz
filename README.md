@@ -58,9 +58,7 @@ go build
 ```
 
 ## Modules
-Most Storz modules are implementations of the [Store](https://github.com/wazofski/storz/tree/main/store) interface.
-This allows mixing and matching various modules together into 
-more complex systems.
+**storz** modules all implement or expose the [Store](https://github.com/wazofski/storz/tree/main/store) interface and are fully compatible with each other, so comoposing modules is allowed in any combination.
 
 ### Persistence Layer
 Persistence modules are independent, meaning they do not need  another Store to operate.
