@@ -1,17 +1,15 @@
 # SQL Store
 SQL package helps turn any SQL database into a Store
 
-## Support
-- mySQL
-- sqlite
-- 
-
-## Usage
+## SQLite
 ```
 sqlite_store = store.New(
     generated.Schema(),
     sql.Factory(sql.SqliteConnection("test.sqlite")))
+```
 
+## mySQL
+```
 mysql_store = store.New(
     generated.Schema(),
     sql.Factory(sql.MySqlConnection(
