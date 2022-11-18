@@ -359,7 +359,7 @@ func (d *mongoStore) List(
 	}
 
 	if copt.PageOffset > 0 {
-		opts = opts.SetSkip(int64(copt.PageSize))
+		opts = opts.SetSkip(int64(copt.PageOffset))
 	}
 
 	cur, err := collection.Find(ctx, filter, opts)
