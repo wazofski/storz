@@ -30,7 +30,7 @@ var _ = BeforeSuite(func() {
 	str = store.New(
 		sch,
 		react.ReactFactory(mem,
-			react.Subscribe("World", react.ActionDelete, WorldDeleteCb),
-			react.Subscribe("World", react.ActionUpdate, WorldUpdateCb),
-			react.Subscribe("World", react.ActionCreate, WorldCreateCb)))
+			react.Subscribe(generated.WorldKind(), react.ActionDelete, WorldDeleteCb),
+			react.Subscribe(generated.WorldKind(), react.ActionUpdate, WorldUpdateCb),
+			react.Subscribe(generated.WorldKind(), react.ActionCreate, WorldCreateCb)))
 })

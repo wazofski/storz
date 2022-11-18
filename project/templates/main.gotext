@@ -17,7 +17,7 @@ func main() {
 	rct := store.New(sch, react.ReactFactory(mem))
 
 	srv := rest.Server(sch, rct,
-		rest.TypeMethods("World",
+		rest.TypeMethods(generated.WorldKind(),
 			rest.ActionGet, rest.ActionCreate,
 			rest.ActionDelete, rest.ActionUpdate))
 	

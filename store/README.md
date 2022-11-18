@@ -50,31 +50,31 @@ world, err = str.Get(ctx, world.Metadata().Identity())
 
 ## List all World objects
 ```
-world_list, err = str.List(ctx, generated.WorldIdentity(""))
+world_list, err = str.List(ctx, generated.WorldKindIdentity())
 ```
 
 ## List World objects with a property filter
 ```
 world_list, err = str.List(ctx,
-    generated.WorldIdentity(""),
+    generated.WorldKindIdentity(),
     options.PropFilter("spec.name", "abc"))
 ```
 
 ## List World objects with a primary key filter
 ```
 world_list, err = str.List(ctx,
-    generated.WorldIdentity(""),
+    generated.WorldKindIdentity(),
     options.KeyFilter("a", "b", "c"))
 ```
 
 ## List World objects and sort by a given property
 ```
 world_list, err = str.List(ctx,
-    generated.WorldIdentity(""),
+    generated.WorldKindIdentity(),
     options.OrderBy("spec.name"))
 
 world_list, err = str.List(ctx,
-    generated.WorldIdentity(""),
+    generated.WorldKindIdentity(),
     options.OrderBy("spec.name"),
     options.OrderDescending())
 ```
@@ -82,7 +82,7 @@ world_list, err = str.List(ctx,
 ## List the World objects and paginate the results
 ```
 world_list, err = str.List(ctx,
-    generated.WorldIdentity(""),
+    generated.WorldKindIdentity(),
     options.PageOffset(10),
     options.PageSize(50))
 ```

@@ -16,7 +16,7 @@ func WorldDeleteCb(store.Object, store.Store) error {
 store := store.New(
     generated.Schema(),
     react.ReactFactory(underlying_store,
-        react.Subscribe("World", react.ActionCreate, WorldCreateCb),
-        react.Subscribe("World", react.ActionDelete, WorldDeleteCb),
+        react.Subscribe(generated.WorldKind(), react.ActionCreate, WorldCreateCb),
+        react.Subscribe(generated.WorldKind(), react.ActionDelete, WorldDeleteCb),
     ))
 ```

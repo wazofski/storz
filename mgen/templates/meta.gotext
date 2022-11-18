@@ -14,3 +14,11 @@ func {{.Name}}Identity(pkey string) store.ObjectIdentity {
 			pkey))
 }
 
+func {{.Name}}KindIdentity() store.ObjectIdentity {
+	return store.ObjectIdentity("{{ .IdentityPrefix }}/")
+}
+
+func {{.Name}}Kind() string {
+	return "{{ .Name }}"
+}
+

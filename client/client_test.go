@@ -104,7 +104,7 @@ var _ = Describe("client", func() {
 
 	It("cannot LIST non-allowed", func() {
 		ret, err := stc.List(
-			ctx, generated.ThirdWorldIdentity(""))
+			ctx, generated.ThirdWorldKindIdentity())
 
 		Expect(err).ToNot(BeNil())
 		// Expect(err.Error()).To(Equal("http 405"))

@@ -24,10 +24,10 @@ var _ = BeforeSuite(func() {
 	// rct := store.New(sch, react.ReactFactory(mhr))
 
 	srv := rest.Server(sch, mem,
-		rest.TypeMethods("World",
+		rest.TypeMethods(generated.WorldKind(),
 			rest.ActionGet, rest.ActionCreate,
 			rest.ActionDelete, rest.ActionUpdate),
-		rest.TypeMethods("SecondWorld",
+		rest.TypeMethods(generated.SecondWorldKind(),
 			rest.ActionGet, rest.ActionCreate, rest.ActionDelete))
 
 	cancel = srv.Listen(8000)

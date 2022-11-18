@@ -34,7 +34,7 @@ var _ = Describe("mgen", func() {
 
 	It("has metadata", func() {
 		world := generated.WorldFactory()
-		Expect(world.Metadata().Kind()).To(Equal("World"))
+		Expect(world.Metadata().Kind()).To(Equal(generated.WorldKind()))
 	})
 
 	It("can deserialize", func() {

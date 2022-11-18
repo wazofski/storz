@@ -20,26 +20,26 @@ var _ = Describe("common", func() {
 	newWorldDescription := "is only beoaoqwiewioqu"
 
 	It("can CLEAR everything", func() {
-		ret, err := clt.List(ctx, generated.WorldIdentity(""))
+		ret, err := clt.List(ctx, generated.WorldKindIdentity())
 		Expect(err).To(BeNil())
 		for _, r := range ret {
 			err = clt.Delete(ctx, r.Metadata().Identity())
 			Expect(err).To(BeNil())
 		}
 
-		ret, err = clt.List(ctx, generated.SecondWorldIdentity(""))
+		ret, err = clt.List(ctx, generated.SecondWorldKindIdentity())
 		Expect(err).To(BeNil())
 		for _, r := range ret {
 			err = clt.Delete(ctx, r.Metadata().Identity())
 			Expect(err).To(BeNil())
 		}
 
-		ret, _ = clt.List(ctx, generated.SecondWorldIdentity(""))
+		ret, _ = clt.List(ctx, generated.SecondWorldKindIdentity())
 		Expect(len(ret)).To(Equal(0))
-		ret, _ = clt.List(ctx, generated.WorldIdentity(""))
+		ret, _ = clt.List(ctx, generated.WorldKindIdentity())
 		Expect(len(ret)).To(Equal(0))
 
-		// ret, err = clt.List(ctx, generated.ThirdWorldIdentity(""))
+		// ret, err = clt.List(ctx, generated.ThirdWorldKindIdentity())
 		// Expect(err).To(BeNil())
 		// for _, r := range ret {
 		// 	err = clt.Delete(ctx, r.Metadata().Identity())
@@ -49,7 +49,7 @@ var _ = Describe("common", func() {
 
 	It("can LIST empty lists", func() {
 		ret, err := clt.List(
-			ctx, generated.WorldIdentity(""))
+			ctx, generated.WorldKindIdentity())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -70,7 +70,7 @@ var _ = Describe("common", func() {
 
 	It("can LIST single object", func() {
 		ret, err := clt.List(
-			ctx, generated.WorldIdentity(""))
+			ctx, generated.WorldKindIdentity())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -338,7 +338,7 @@ var _ = Describe("common", func() {
 	})
 
 	It("can CREATE multiple objects", func() {
-		ret, err := clt.List(ctx, generated.WorldIdentity(""))
+		ret, err := clt.List(ctx, generated.WorldKindIdentity())
 		Expect(err).To(BeNil())
 		for _, r := range ret {
 			err = clt.Delete(ctx, r.Metadata().Identity())
@@ -368,7 +368,7 @@ var _ = Describe("common", func() {
 
 	It("can LIST multiple objects", func() {
 		ret, err := clt.List(
-			ctx, generated.WorldIdentity(""))
+			ctx, generated.WorldKindIdentity())
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -390,7 +390,7 @@ var _ = Describe("common", func() {
 	It("can LIST and sort multiple objects", func() {
 		ret, err := clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.OrderBy("spec.name"))
 
 		Expect(err).To(BeNil())
@@ -407,7 +407,7 @@ var _ = Describe("common", func() {
 
 		ret, err = clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.OrderBy("spec.name"),
 			options.OrderDescending())
 
@@ -424,7 +424,7 @@ var _ = Describe("common", func() {
 	It("can LIST and paginate multiple objects", func() {
 		ret, err := clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.OrderBy("spec.name"),
 			options.PageSize(1))
 
@@ -438,7 +438,7 @@ var _ = Describe("common", func() {
 
 		ret, err = clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.OrderBy("spec.name"),
 			options.PageSize(1),
 			options.PageOffset(1))
@@ -452,10 +452,10 @@ var _ = Describe("common", func() {
 
 		ret, err = clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.OrderBy("spec.name"),
-			options.PageSize(1000),
-			options.PageOffset(1))
+			options.PageOffset(1),
+			options.PageSize(1000))
 
 		Expect(err).To(BeNil())
 		Expect(ret).ToNot(BeNil())
@@ -467,7 +467,7 @@ var _ = Describe("common", func() {
 
 	It("can LIST and filter by primary key", func() {
 		ret, err := clt.List(
-			ctx, generated.WorldIdentity(""))
+			ctx, generated.WorldKindIdentity())
 
 		Expect(err).To(BeNil())
 
@@ -479,7 +479,7 @@ var _ = Describe("common", func() {
 		Expect(len(keys)).To(Equal(2))
 
 		ret, err = clt.List(
-			ctx, generated.WorldIdentity(""),
+			ctx, generated.WorldKindIdentity(),
 			options.KeyFilter(keys[0], keys[1]))
 
 		Expect(err).To(BeNil())
@@ -487,7 +487,7 @@ var _ = Describe("common", func() {
 
 		for _, k := range keys {
 			ret, err = clt.List(
-				ctx, generated.WorldIdentity(""),
+				ctx, generated.WorldKindIdentity(),
 				options.KeyFilter(k))
 
 			Expect(err).To(BeNil())
@@ -499,7 +499,7 @@ var _ = Describe("common", func() {
 	It("cannot LIST and FILTER BY nonexistent props", func() {
 		ret, err := clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.PropFilter("metadata.askdjhasd", "asdsadas"))
 
 		Expect(err).ToNot(BeNil())
@@ -527,7 +527,7 @@ var _ = Describe("common", func() {
 	It("can LIST and FILTER", func() {
 		ret, err := clt.List(
 			ctx,
-			generated.WorldIdentity(""),
+			generated.WorldKindIdentity(),
 			options.PropFilter("spec.name", worldName))
 
 		Expect(err).To(BeNil())
@@ -542,7 +542,7 @@ var _ = Describe("common", func() {
 
 	It("can LIST and FILTER BY ID", func() {
 		ret, err := clt.List(
-			ctx, generated.WorldIdentity(""),
+			ctx, generated.WorldKindIdentity(),
 			options.PropFilter("metadata.identity", string(worldId)))
 
 		Expect(err).To(BeNil())
