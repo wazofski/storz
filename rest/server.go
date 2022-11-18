@@ -111,7 +111,6 @@ func Server(schema store.SchemaHolder, stor store.Store, exposed ..._TypeMethods
 }
 
 func addHandler(router *mux.Router, pattern string, handler _HandlerFunc) {
-	// log.Printf("serving %s", pattern)
 	router.HandleFunc(pattern, handler)
 }
 
@@ -120,17 +119,13 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 		prepResponse(w, r)
 		id := store.ObjectIdentity(mux.Vars(r)["id"])
 		existing, _ := server.Store.Get(server.Context, id)
-		var robject store.Object = nil
-		data, err := utils.ReadStream(r.Body)
-		if err == nil {
-			robject, _ = utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
-		}
 
+		var robject store.Object = nil
 		if existing != nil {
 			kind := existing.Metadata().Kind()
-			if robject != nil {
-				robject.Metadata().(store.MetaSetter).SetKind(kind)
-				robject.Metadata().(store.MetaSetter).SetIdentity(id)
+			data, err := utils.ReadStream(r.Body)
+			if err == nil {
+				robject, _ = utils.UnmarshalObject(data, server.Schema, kind)
 			}
 
 			// method validation
@@ -245,8 +240,6 @@ func makeTypeHandler(server *_Server, t string, methods []Action) _HandlerFunc {
 					fmt.Sprintf("%s/", strings.ToLower(t))),
 				opts...)
 
-			// log.Printf("size of list %d", len(ret))
-
 			if err != nil {
 				reportError(w, err, http.StatusBadRequest)
 				return
@@ -296,7 +289,6 @@ func (d *_Server) handlePath(
 			return
 		}
 	case http.MethodPost:
-		object.Metadata().(store.MetaSetter).SetKind(identity.Type())
 		ret, err = d.Store.Create(d.Context, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)
