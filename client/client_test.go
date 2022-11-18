@@ -88,15 +88,22 @@ var _ = Describe("client", func() {
 	})
 
 	It("cannot DELETE non-allowed", func() {
-		err := stc.Delete(
-			ctx, generated.ThirdWorldIdentity(worldName))
+		w := generated.SecondWorldFactory()
+		w.Spec().SetName(worldName)
+		ret, err := stc.Create(ctx, w)
+		Expect(err).To(BeNil())
+
+		err = stc.Delete(
+			ctx, generated.SecondWorldIdentity(worldName))
 
 		Expect(err).ToNot(BeNil())
-		// Expect(err.Error()).To(Equal("http 405"))
+		Expect(err.Error()).To(Equal("http 405"))
+
+		sw := ret.(generated.SecondWorld)
 
 		err = stc.Delete(
 			ctx,
-			store.ObjectIdentity("id/aliksjdlsakjdaslkjdaslkj"))
+			sw.Metadata().Identity())
 
 		Expect(err).ToNot(BeNil())
 		Expect(err.Error()).To(Equal("http 405"))

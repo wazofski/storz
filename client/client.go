@@ -279,7 +279,7 @@ func (d *restStore) Create(
 		}
 	}
 
-	data, err := utils.Serialize(obj)
+	data, err := stripSerialize(obj)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (d *restStore) Update(
 		}
 	}
 
-	data, err := utils.Serialize(obj)
+	data, err := stripSerialize(obj)
 	if err != nil {
 		return nil, err
 	}
@@ -455,4 +455,21 @@ func (d *restStore) List(
 	}
 
 	return marshalledResult, nil
+}
+
+type strippedObject struct {
+	Spec map[string]*json.RawMessage `json:"spec"`
+}
+
+func stripSerialize(object store.Object) ([]byte, error) {
+	data, err := utils.Serialize(object)
+	if err != nil {
+		return nil, err
+	}
+	obj := strippedObject{}
+	err = json.Unmarshal(data, &obj)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(obj)
 }

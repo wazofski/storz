@@ -84,12 +84,9 @@ func TypeMethods(kind string, actions ...Action) _TypeMethods {
 }
 
 func Server(schema store.SchemaHolder, stor store.Store, exposed ..._TypeMethods) store.Endpoint {
-	mhr := store.New(schema, _MetaHHandlerFactory(stor))
-	ssr := store.New(schema, _StatusStripperFactory(mhr))
-
 	server := &_Server{
 		Schema:  schema,
-		Store:   ssr,
+		Store:   store.New(schema, internalFactory(stor)),
 		Context: context.Background(),
 		Router:  mux.NewRouter(),
 		Exposed: make(map[string][]Action),
@@ -129,20 +126,21 @@ func makeIdHandler(server *_Server) _HandlerFunc {
 			robject, _ = utils.UnmarshalObject(data, server.Schema, utils.ObjeectKind(data))
 		}
 
-		kind := ""
 		if existing != nil {
-			kind = existing.Metadata().Kind()
-		} else if robject != nil {
-			kind = robject.Metadata().Kind()
-		}
+			kind := existing.Metadata().Kind()
+			if robject != nil {
+				robject.Metadata().(store.MetaSetter).SetKind(kind)
+				robject.Metadata().(store.MetaSetter).SetIdentity(id)
+			}
 
-		// method validation
-		objMethods := server.Exposed[kind]
-		if objMethods == nil || !slices.Contains(objMethods, Action(r.Method)) {
-			reportError(w,
-				constants.ErrInvalidMethod,
-				http.StatusMethodNotAllowed)
-			return
+			// method validation
+			objMethods := server.Exposed[kind]
+			if objMethods == nil || !slices.Contains(objMethods, Action(r.Method)) {
+				reportError(w,
+					constants.ErrInvalidMethod,
+					http.StatusMethodNotAllowed)
+				return
+			}
 		}
 
 		server.handlePath(w, r, id, robject)
@@ -273,7 +271,7 @@ func makeTypeHandler(server *_Server, t string, methods []Action) _HandlerFunc {
 				return
 			}
 
-			server.handlePath(w, r, store.ObjectIdentity(""), robject)
+			server.handlePath(w, r, store.ObjectIdentity(t+"/"), robject)
 		default:
 			reportError(w,
 				constants.ErrInvalidMethod,
@@ -298,6 +296,7 @@ func (d *_Server) handlePath(
 			return
 		}
 	case http.MethodPost:
+		object.Metadata().(store.MetaSetter).SetKind(identity.Type())
 		ret, err = d.Store.Create(d.Context, object)
 		if err != nil {
 			reportError(w, err, http.StatusNotAcceptable)

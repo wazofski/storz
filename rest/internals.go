@@ -8,27 +8,28 @@ import (
 	"github.com/wazofski/storz/internal/logger"
 	"github.com/wazofski/storz/store"
 	"github.com/wazofski/storz/store/options"
+	"github.com/wazofski/storz/utils"
 )
 
-type statusStripperStore struct {
+type internalStore struct {
 	Schema store.SchemaHolder
 	Store  store.Store
 	Log    logger.Logger
 }
 
-func _StatusStripperFactory(data store.Store) store.Factory {
+func internalFactory(data store.Store) store.Factory {
 	return func(schema store.SchemaHolder) (store.Store, error) {
-		client := &statusStripperStore{
+		client := &internalStore{
 			Schema: schema,
 			Store:  data,
-			Log:    logger.Factory("status stripper"),
+			Log:    logger.Factory("server internal"),
 		}
 
 		return client, nil
 	}
 }
 
-func (d *statusStripperStore) Create(
+func (d *internalStore) Create(
 	ctx context.Context,
 	obj store.Object,
 	opt ...options.CreateOption) (store.Object, error) {
@@ -51,10 +52,15 @@ func (d *statusStripperStore) Create(
 		specHolder.SpecInternalSet(obj.(store.SpecHolder).SpecInternal())
 	}
 
+	ms := original.Metadata().(store.MetaSetter)
+
+	ms.SetIdentity(store.ObjectIdentityFactory())
+	ms.SetCreated(utils.Timestamp())
+
 	return d.Store.Create(ctx, original, opt...)
 }
 
-func (d *statusStripperStore) Update(
+func (d *internalStore) Update(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	obj store.Object,
@@ -86,10 +92,13 @@ func (d *statusStripperStore) Update(
 		}
 	}
 
+	ms := original.Metadata().(store.MetaSetter)
+	ms.SetUpdated(utils.Timestamp())
+
 	return d.Store.Update(ctx, identity, original, opt...)
 }
 
-func (d *statusStripperStore) Delete(
+func (d *internalStore) Delete(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.DeleteOption) error {
@@ -99,7 +108,7 @@ func (d *statusStripperStore) Delete(
 	return d.Store.Delete(ctx, identity, opt...)
 }
 
-func (d *statusStripperStore) Get(
+func (d *internalStore) Get(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.GetOption) (store.Object, error) {
@@ -109,7 +118,7 @@ func (d *statusStripperStore) Get(
 	return d.Store.Get(ctx, identity, opt...)
 }
 
-func (d *statusStripperStore) List(
+func (d *internalStore) List(
 	ctx context.Context,
 	identity store.ObjectIdentity,
 	opt ...options.ListOption) (store.ObjectList, error) {

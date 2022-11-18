@@ -28,7 +28,7 @@ var _ = BeforeSuite(func() {
 			rest.ActionGet, rest.ActionCreate,
 			rest.ActionDelete, rest.ActionUpdate),
 		rest.TypeMethods(generated.SecondWorldKind(),
-			rest.ActionGet, rest.ActionCreate, rest.ActionDelete))
+			rest.ActionGet, rest.ActionCreate))
 
 	cancel = srv.Listen(8000)
 
