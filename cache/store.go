@@ -10,7 +10,7 @@ import (
 	"github.com/wazofski/storz/store/options"
 )
 
-var log = logger.Factory("rest client")
+var log = logger.Factory("cache")
 
 type cachedStore struct {
 	Schema            store.SchemaHolder
