@@ -23,7 +23,7 @@ func Expire(duration time.Duration) expiryOption {
 		Function: func(options options.OptionHolder) error {
 			cacheOpts, ok := options.(*cacheOptions)
 			if !ok {
-				log.Printf("cannot apply Cache specific option")
+				// log.Printf("cannot apply Cache specific option")
 				return nil
 			}
 

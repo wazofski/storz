@@ -100,6 +100,7 @@ func (d *cachedStore) Update(
 
 	ret, err := d.Cache.Update(ctx, identity, obj, opt...)
 	if copt.Expiration > 0 && err == nil {
+		log.Printf("setting update expiration: %d", copt.Expiration)
 		d.Policies[ret.Metadata().Identity()] = copt.Expiration
 		d.Modiffies[ret.Metadata().Identity()] = time.Now()
 	}
@@ -126,33 +127,40 @@ func (d *cachedStore) Get(
 	identity store.ObjectIdentity,
 	opt ...options.GetOption) (store.Object, error) {
 
+	existing, err := d.Store.Get(ctx, identity, opt...)
+
+	if existing == nil || err != nil {
+		return nil, err
+	}
+
+	cached, cached_err := d.Cache.Get(ctx, identity)
+
 	has_expired := false
 	exp := time.Duration(0)
-	exp, ok := d.Policies[identity]
+	exp, ok := d.Policies[existing.Metadata().Identity()]
 	if !ok {
 		exp = d.DefaultExpiration
 	}
 
 	if exp > 0 {
-		expt := d.Modiffies[identity].Add(exp)
+		expt := d.Modiffies[existing.Metadata().Identity()].Add(exp)
 		if expt.Before(time.Now()) {
+			// log.Printf("has expired %d %s < %s", exp, expt.String(), time.Now().String())
 			has_expired = true
 		}
 	}
 
-	cached, cached_err := d.Cache.Get(ctx, identity)
 	if has_expired || cached == nil {
-		ret, err := d.Store.Get(ctx, identity, opt...)
-		if ret != nil && err == nil {
-			d.Policies[identity] = exp
-			d.Modiffies[identity] = time.Now()
+		if existing != nil && err == nil {
+			d.Policies[existing.Metadata().Identity()] = exp
+			d.Modiffies[existing.Metadata().Identity()] = time.Now()
 			if cached == nil {
-				d.Cache.Create(ctx, ret)
+				d.Cache.Create(ctx, existing)
 			} else {
-				d.Cache.Update(ctx, identity, ret)
+				d.Cache.Update(ctx, identity, existing)
 			}
 		}
-		return ret, err
+		return existing, err
 	}
 
 	return cached, cached_err

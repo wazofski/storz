@@ -146,11 +146,12 @@ var _ = Describe("cache", func() {
 
 		// must match the cached one
 		Expect(world.Spec().Description()).To(Equal(worldDesc))
+
+		err = cached.Delete(ctx, world.Metadata().Identity())
+		Expect(err).To(BeNil())
 	})
 
 	It("can expire - create", func() {
-		// create into cache with 2 sec expiration
-		// update inside the real one
 		// wait one sec
 		// get from cache
 		// must match the cached one
@@ -158,42 +159,164 @@ var _ = Describe("cache", func() {
 		// wait one sec
 		// get from cache
 		// must match the real one
+
+		// create into cache with 2 sec expiration
+		world := generated.WorldFactory()
+		world.Spec().SetName(worldName)
+		ret, err := cached.Create(ctx, world, cache.Expire(2*time.Second))
+
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
+		// update inside the real one
+		world = ret.(generated.World)
+		world.Spec().SetDescription(worldDesc)
+		ret, err = mainst.Update(ctx, world.Metadata().Identity(), world)
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
+		// wait one sec
+		time.Sleep(1 * time.Second)
+
+		// get from cache
+		ret, err = cached.Get(ctx, world.Metadata().Identity())
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+		world = ret.(generated.World)
+
+		// must match the cached one
+		Expect(world.Spec().Description()).To(Equal(""))
+
+		// wait one sec
+		time.Sleep(1 * time.Second)
+
+		// cached one must be expired so the real one will be fetched
+		// get from cache
+		ret, err = cached.Get(ctx, world.Metadata().Identity())
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+		world = ret.(generated.World)
+
+		// must match the real one
+		Expect(world.Spec().Description()).To(Equal(worldDesc))
 	})
 
 	It("can expire - update", func() {
+		ret, err := cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
 		// update into cache with 2 sec expiration
+		// log.Printf("update into cache with 2 sec expiration")
+		world := ret.(generated.World)
+		world.Spec().SetDescription("")
+
+		ret, err = cached.Update(ctx,
+			world.Metadata().Identity(),
+			world,
+			cache.Expire(2*time.Second))
+
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
 		// update inside the real one
-		// wait one sec
-		// get from cache
-		// must match the cached one
+		// log.Printf("update inside the real one")
+		world = ret.(generated.World)
+		world.Spec().SetDescription("xyz")
+
+		ret, err = mainst.Update(ctx,
+			world.Metadata().Identity(),
+			world)
+
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
 
 		// wait one sec
+		// log.Printf("wait 1 sec")
+		time.Sleep(1 * time.Second)
+
 		// get from cache
+		// log.Printf("get from cache")
+		ret, err = cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
+		// must match the cached one
+		// log.Printf("must match the cached one")
+		world = ret.(generated.World)
+		Expect(world.Spec().Description()).To(Equal(""))
+
+		// log.Printf("wait another sec")
+		time.Sleep(1 * time.Second)
+
+		// get from cache
+		// log.Printf("get from cache")
+		ret, err = cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
 		// must match the real one
+		world = ret.(generated.World)
+		Expect(world.Spec().Description()).To(Equal("xyz"))
 	})
 
 	It("can delete unexpired", func() {
-		// update into cache with 2 sec expiration
-		// update inside the real one
-		// wait one sec
-		// get from cache
-		// must match the cached one
+		ret, err := cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
 
-		// wait one sec
-		// get from cache
-		// must match the real one
+		// update into cache with 2 sec expiration
+		world := ret.(generated.World)
+		world.Spec().SetDescription("")
+
+		ret, err = cached.Update(ctx,
+			world.Metadata().Identity(),
+			world,
+			cache.Expire(2*time.Second))
+
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
+		// delete the cached version
+		err = cached.Delete(ctx, world.Metadata().Identity())
+		Expect(err).To(BeNil())
+
+		// make sure object is deleted from both
+		ret, err = cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+
+		ret, err = mainst.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
 	})
 
 	It("can delete expired", func() {
 		// update into cache with 2 sec expiration
-		// update inside the real one
-		// wait one sec
-		// get from cache
-		// must match the cached one
+		world := generated.WorldFactory()
+		world.Spec().SetName(worldName)
 
-		// wait one sec
-		// get from cache
-		// must match the real one
+		ret, err := cached.Create(ctx,
+			world,
+			cache.Expire(2*time.Second))
+
+		Expect(ret).ToNot(BeNil())
+		Expect(err).To(BeNil())
+
+		time.Sleep(2 * time.Second)
+
+		// delete the cached version
+		err = cached.Delete(ctx, world.Metadata().Identity())
+		Expect(err).To(BeNil())
+
+		// make sure object is deleted from both
+		ret, err = cached.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
+
+		ret, err = mainst.Get(ctx, generated.WorldIdentity(worldName))
+		Expect(ret).To(BeNil())
+		Expect(err).ToNot(BeNil())
 	})
 
 })

@@ -25,7 +25,7 @@ func Header(key string, val string) headerOption {
 		Function: func(options options.OptionHolder) error {
 			restOpts, ok := options.(*restOptions)
 			if !ok {
-				log.Printf("cannot apply REST client specific header option")
+				// log.Printf("cannot apply REST client specific header option")
 				return nil
 			}
 			if len(strings.Split(key, " ")) > 1 {
