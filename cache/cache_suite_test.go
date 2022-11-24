@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/wazofski/storz/cache"
 	"github.com/wazofski/storz/generated"
@@ -23,6 +23,6 @@ var cached store.Store
 var _ = BeforeSuite(func() {
 	sch := generated.Schema()
 
-	mainst := store.New(sch, memory.Factory())
+	mainst = store.New(sch, memory.Factory())
 	cached = store.New(sch, cache.Factory(mainst, 1*time.Second))
 })

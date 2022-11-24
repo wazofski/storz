@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/wazofski/storz/internal/logger"
@@ -40,6 +41,10 @@ func (d *cacheOptions) CommonOptions() *options.CommonOptionHolder {
 }
 
 func Factory(st store.Store, exp ...time.Duration) store.Factory {
+	if len(exp) > 1 {
+		log.Fatal(fmt.Errorf("multiple expiration durations cannot be set"))
+	}
+
 	return func(schema store.SchemaHolder) (store.Store, error) {
 		client := &cachedStore{
 			Schema:    schema,

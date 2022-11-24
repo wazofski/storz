@@ -13,6 +13,7 @@ type cacheExpiryOption struct {
 
 type expiryOption interface {
 	options.Option
+	// options.GetOption
 	options.CreateOption
 	options.UpdateOption
 }
@@ -45,3 +46,7 @@ func (d *cacheExpiryOption) GetCreateOption() options.Option {
 func (d *cacheExpiryOption) GetUpdateOption() options.Option {
 	return d
 }
+
+// func (d *cacheExpiryOption) GetGetOption() options.Option {
+// 	return d
+// }
